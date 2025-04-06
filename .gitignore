@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+game
+
+# Build directories
+bin/
+obj/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
