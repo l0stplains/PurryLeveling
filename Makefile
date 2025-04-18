@@ -94,7 +94,8 @@ distclean:
 
 format:
 	@echo -e "$(COLOR_INFO)[INFO]$(COLOR_RESET) Formatting all source files with clang-format..."
-	@find src include -regex '.*\.(cpp\|hpp)' -exec clang-format -i {} \;
+	@find src include \( -name '*.cpp' -o -name '*.hpp' \) \
+	    -exec clang-format -i {} \;
 	@echo -e "$(COLOR_SUCCESS)[SUCCESS]$(COLOR_RESET) Code formatted."
 
 help:

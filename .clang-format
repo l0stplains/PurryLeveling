@@ -1,0 +1,137 @@
+# .clang-format for Game Development & OOP Projects
+# -------------------------------------------------
+# Optimized for readability, consistency, and OOP best practices
+
+Language:        Cpp
+Standard:        c++17
+BasedOnStyle:    LLVM
+
+# Basic Indentation and Layout
+IndentWidth:                   4
+TabWidth:                      4
+UseTab:                        Never
+ColumnLimit:                   100
+AccessModifierOffset:          -4
+IndentCaseLabels:              true
+IndentPPDirectives:            AfterHash
+NamespaceIndentation:          None
+IndentWrappedFunctionNames:    false
+MaxEmptyLinesToKeep:           1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# Function Declarations and Definitions
+AlwaysBreakAfterReturnType:    None
+AlwaysBreakTemplateDeclarations: Yes
+AllowShortFunctionsOnASingleLine: Inline
+BinPackArguments:              false
+BinPackParameters:             false
+
+# Braces & Wrapping Style (Allman-style for clear visual blocks)
+BreakBeforeBraces:             Custom
+BraceWrapping:
+  AfterClass:                  true
+  AfterStruct:                 true
+  AfterUnion:                  true
+  AfterEnum:                   true
+  AfterFunction:               true
+  AfterNamespace:              true
+  AfterExternBlock:            true
+  AfterControlStatement:       true
+  BeforeElse:                  true
+  BeforeCatch:                 true
+  BeforeWhile:                 false
+  IndentBraces:                false
+  SplitEmptyFunction:          false
+  SplitEmptyRecord:            false
+  SplitEmptyNamespace:         false
+
+# Control Flow Statements
+AllowShortBlocksOnASingleLine:      false
+AllowShortCaseLabelsOnASingleLine:  false
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine:       false
+
+# Alignment Options for Readability
+AlignAfterOpenBracket:         Align
+AlignConsecutiveAssignments:   true
+AlignConsecutiveDeclarations:  true
+AlignConsecutiveMacros:        true
+AlignEscapedNewlines:          Right
+AlignOperands:                 true
+AlignTrailingComments:         true
+
+# Constructor Formatting
+BreakConstructorInitializers:  BeforeColon
+BreakInheritanceList:          BeforeColon
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+
+# Spacing
+SpaceAfterCStyleCast:           false
+SpaceAfterLogicalNot:           false
+SpaceAfterTemplateKeyword:      true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList:     true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon:    true
+SpaceBeforeParens:              ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses:        false
+SpacesBeforeTrailingComments:   2
+SpacesInAngles:                 false
+SpacesInCStyleCastParentheses:  false
+SpacesInContainerLiterals:      false
+SpacesInParentheses:            false
+SpacesInSquareBrackets:         false
+
+# Line Breaking
+BreakBeforeBinaryOperators:    None
+BreakBeforeTernaryOperators:   true
+BreakStringLiterals:           true
+
+# Pointers and References
+PointerAlignment:               Left
+ReferenceAlignment:             Left
+
+# Comments
+ReflowComments:                 true
+CommentPragmas:                 '^ IWYU pragma:'
+FixNamespaceComments:           true
+
+# Includes Organization
+IncludeBlocks:                  Regroup
+SortIncludes:                   true
+IncludeCategories:
+  - Regex:           '^<(Windows\.h|windows\.h)>'
+    Priority:        1
+  - Regex:           '^<(GL\/|GLFW\/|SDL|sfml|vulkan|DirectX|dx|d3d)'
+    Priority:        2
+  - Regex:           '^<(glm|bullet|physx|box2d)'
+    Priority:        3
+  - Regex:           '^<(json|yaml|xml|rapidjson)'
+    Priority:        4
+  - Regex:           '^<.*\.h>'
+    Priority:        5
+  - Regex:           '^<.*>'
+    Priority:        6
+  - Regex:           '^"(Engine|Core|Physics|Rendering|Audio|Input)/'
+    Priority:        7
+  - Regex:           '^"(Components|Systems|Entities)/'
+    Priority:        8
+  - Regex:           '^"(Game|Levels|UI)/'
+    Priority:        9
+  - Regex:           '^".*"'
+    Priority:        10
+
+# Other Settings
+DerivePointerAlignment:         false
+SortUsingDeclarations:          true
+
+# Penalties
+PenaltyBreakAssignment:         10
+PenaltyBreakBeforeFirstCallParameter: 30
+PenaltyBreakComment:            10
+PenaltyBreakFirstLessLess:      0
+PenaltyBreakString:             10
+PenaltyExcessCharacter:         10
+PenaltyReturnTypeOnItsOwnLine:  200

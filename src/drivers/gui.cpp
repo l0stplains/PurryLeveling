@@ -1,9 +1,9 @@
 #include <SFML/Graphics.hpp>
+
 #include <imgui-SFML.h>
 #include <imgui.h>
 
-int
-main()
+int main()
 {
     // 1) Create SFML window using Vector2u constructor for SFML 3
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(1280, 720)), "Purry Leveling");
@@ -11,7 +11,8 @@ main()
 
     // 2) Initialize ImGui-SFML
     bool initSuccess = ImGui::SFML::Init(window);
-    if (!initSuccess) {
+    if (!initSuccess)
+    {
         // Handle initialization failure
         return -1;
     }
@@ -20,11 +21,13 @@ main()
     sf::Clock deltaClock;
 
     // 3) Main loop
-    while (window.isOpen()) {
+    while (window.isOpen())
+    {
         // Event handling for SFML 3
         std::optional<sf::Event> eventOpt;
 
-        while ((eventOpt = window.pollEvent())) {
+        while ((eventOpt = window.pollEvent()))
+        {
             const sf::Event& event = *eventOpt;
 
             // Process event with window and event parameters
@@ -32,7 +35,8 @@ main()
 
             // In SFML 3, we need to check the event variant type differently
             // Use the `is<>()` and `as<>()` methods for event type checking
-            if (eventOpt->is<sf::Event::Closed>()) {
+            if (eventOpt->is<sf::Event::Closed>())
+            {
                 window.close();
             }
         }
@@ -50,7 +54,8 @@ main()
         static bool showDemo = false;
         ImGui::Checkbox("Show ImGui Demo", &showDemo);
 
-        if (showDemo) {
+        if (showDemo)
+        {
             ImGui::ShowDemoWindow(&showDemo);
         }
 
