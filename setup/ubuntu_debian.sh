@@ -17,14 +17,13 @@ fi
 
 echo -e "${BLUE}[INFO]${NC} Installing build essentials and tools..."
 sudo apt update || { echo -e "${RED}[ERROR]${NC} Failed to update package lists"; exit 1; }
-sudo apt install -y build-essential g++ make pkg-config clang-format git cmake || { 
+sudo apt install -y build-essential libfreetype6-dev g++ make pkg-config clang-format git cmake || { 
     echo -e "${RED}[ERROR]${NC} Failed to install build tools"; 
     exit 1; 
 }
 sudo apt install --install-recommends \
     mesa-utils  freeglut3-dev mesa-common-dev \
     mesa-vulkan-drivers \
-    libgl1-mesa-glx \
     libgl1-mesa-dri \
     libgl-dev libglu1-mesa-dev  || { 
     echo -e "${RED}[ERROR]${NC} Failed to install build tools"; 
