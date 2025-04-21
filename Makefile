@@ -23,7 +23,7 @@ endif
 
 # linker: look in /usr/local/lib for ImGui-SFML
 LDFLAGS := -L/usr/local/lib -Wl,-rpath=/usr/local/lib \
-  $(shell pkg-config --libs sfml-graphics sfml-window sfml-system) \
+  $(shell pkg-config --libs sfml-graphics sfml-window sfml-audio sfml-system) \
   -lImGui-SFML
 
 SRCDIR := src

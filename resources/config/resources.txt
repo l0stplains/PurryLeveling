@@ -1,0 +1,16 @@
+# Resources configuration file
+# Format: [category] id = path
+
+[fonts]
+main_font = resources/fonts/m5x7.ttf
+main_bold_font = resources/fonts/m6x11.ttf
+
+[textures]
+main_menu_background = resources/textures/ui/main_menu_background.jpg
+main_logo_shadow = resources/textures/ui/main_logo_shadow.png
+main_menu_button = resources/textures/ui/main_menu_button.png
+
+[audio]
+menu_backsound = resources/audio/music/main_menu_theme.mp3
+button_hover = resources/audio/sfx/cursor_style_2.ogg
+button_click = resources/audio/sfx/confirm_style_4_001.ogg
