@@ -5,6 +5,9 @@
 #include "core/EntityManager.hpp"
 #include "core/ResourceManager.hpp"
 
+class StateManager;  // forward declaration
+// class EntityManager;  // forward declaration
+
 /**
  * @class GameContext
  * @brief Context class for sharing resources between states
@@ -42,6 +45,13 @@ public:
      * @return EntityManager* Pointer to the entity manager
      */
     EntityManager* GetEntityManager() const;
+
+    /**
+     * @brief Get the state manager
+     *
+     * @return StateManager* Pointer to the state manager
+     */
+    StateManager* GetStateManager() const;
 
     /**
      * @brief Get the window
@@ -88,6 +98,13 @@ public:
     void SetEntityManager(EntityManager* entityManager);
 
     /**
+     * @brief Set the state manager
+     *
+     * @param stateManager Pointer to the state manager
+     */
+    void SetStateManager(StateManager* stateManager);
+
+    /**
      * @brief Set the window
      *
      * @param window Pointer to the SFML render window
@@ -118,6 +135,7 @@ public:
 private:
     ResourceManager* m_resourceManager;  ///< Pointer to the resource manager
     EntityManager*   m_entityManager;    ///< Pointer to the entity manager
+    StateManager*    m_stateManager;     ///< Pointer to the state manager
 
     sf::RenderWindow* m_window;  ///< Pointer to the SFML render window
 

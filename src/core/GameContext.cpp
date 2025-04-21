@@ -1,6 +1,8 @@
 #include "core/GameContext.hpp"
 
-GameContext::GameContext() : m_resourceManager(nullptr), m_entityManager(nullptr) {}
+GameContext::GameContext()
+    : m_resourceManager(nullptr), m_entityManager(nullptr), m_stateManager(nullptr)
+{}
 
 GameContext::~GameContext()
 {
@@ -15,6 +17,11 @@ ResourceManager* GameContext::GetResourceManager() const
 EntityManager* GameContext::GetEntityManager() const
 {
     return m_entityManager;
+}
+
+StateManager* GameContext::GetStateManager() const
+{
+    return m_stateManager;
 }
 
 sf::RenderWindow* GameContext::GetWindow() const
@@ -45,6 +52,11 @@ void GameContext::SetResourceManager(ResourceManager* resourceManager)
 void GameContext::SetEntityManager(EntityManager* entityManager)
 {
     m_entityManager = entityManager;
+}
+
+void GameContext::SetStateManager(StateManager* stateManager)
+{
+    m_stateManager = stateManager;
 }
 
 void GameContext::SetWindow(sf::RenderWindow* window)
