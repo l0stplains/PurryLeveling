@@ -1,7 +1,7 @@
 #include "core/GameContext.hpp"
 
 GameContext::GameContext()
-    : m_resourceManager(nullptr), m_entityManager(nullptr), m_stateManager(nullptr)
+    : m_resourceManager(nullptr), m_unitManager(nullptr), m_stateManager(nullptr)
 {}
 
 GameContext::~GameContext()
@@ -14,9 +14,9 @@ ResourceManager* GameContext::GetResourceManager() const
     return m_resourceManager;
 }
 
-EntityManager* GameContext::GetEntityManager() const
+UnitManager* GameContext::GetUnitManager() const
 {
-    return m_entityManager;
+    return m_unitManager;
 }
 
 StateManager* GameContext::GetStateManager() const
@@ -49,9 +49,9 @@ void GameContext::SetResourceManager(ResourceManager* resourceManager)
     m_resourceManager = resourceManager;
 }
 
-void GameContext::SetEntityManager(EntityManager* entityManager)
+void GameContext::SetUnitManager(UnitManager* unitManager)
 {
-    m_entityManager = entityManager;
+    m_unitManager = unitManager;
 }
 
 void GameContext::SetStateManager(StateManager* stateManager)

@@ -26,7 +26,7 @@ Game::Game()
 
     // Set up context with pointers to resources and entities
     m_context.SetResourceManager(&m_resourceManager);
-    m_context.SetEntityManager(&m_entityManager);
+    m_context.SetUnitManager(&m_unitManager);
     m_context.SetWindow(&m_window);
 
     m_context.SetVSyncEnabled(false);

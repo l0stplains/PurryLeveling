@@ -1,23 +1,22 @@
-// Entity.h
 #pragma once
 #include <SFML/Graphics.hpp>
 
 #include <memory>
 #include <string>
 
-class Entity
+class Unit
 {
 public:
-    Entity();
-    Entity(const std::string& name, const sf::Vector2f& position);
-    virtual ~Entity() = default;
+    Unit();
+    Unit(const std::string& name, const sf::Vector2f& position);
+    virtual ~Unit() = default;
     // Core entity methods
     virtual void Update(const sf::Time& dt);
     virtual void Draw(sf::RenderWindow& window);
     // Position methods
     void         SetPosition(const sf::Vector2f& position);
     sf::Vector2f GetPosition() const;
-    // Entity properties
+    // Unit properties
     void        SetName(const std::string& name);
     std::string GetName() const;
     void        SetActive(bool active);

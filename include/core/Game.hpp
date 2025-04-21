@@ -1,10 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-#include "core/EntityManager.hpp"
 #include "core/ImGuiManager.hpp"
 #include "core/ResourceManager.hpp"
 #include "core/StateManager.hpp"
+#include "core/UnitManager.hpp"
 
 /**
  * @class Game
@@ -44,7 +44,7 @@ private:
     // Game systems
     GameContext     m_context;          ///< Context for sharing resources between states
     ResourceManager m_resourceManager;  ///< Resource manager for loading and managing game assets
-    EntityManager   m_entityManager;    ///< Entity manager for managing game entities
+    UnitManager     m_unitManager;      ///< Unit manager for managing game entities
     StateManager    m_stateManager;     ///< State manager for handling game states
     ImGuiManager    m_gui;              ///< ImGui backend manager for rendering UI
 
