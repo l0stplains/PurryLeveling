@@ -4,10 +4,7 @@
 
 #include <memory>
 #include <string>
-/**
 
-Base Entity class for game objects
-*/
 class Entity
 {
 public:

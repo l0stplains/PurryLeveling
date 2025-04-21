@@ -132,7 +132,14 @@ public:
 
     // Optional state lifecycle hooks
 
+    /**
+     * @brief Pause the state
+     */
     virtual void Pause();
+
+    /**
+     * @brief Resume the state
+     */
     virtual void Resume();
 
     // Optional UI rendering method (for ImGui controls)
@@ -145,23 +152,61 @@ public:
     virtual void RenderUI();
 
     // State properties with virtual getters
-    virtual bool IsTransparent() const { return false; }     // Should states below be rendered
+
+    /**
+     * @brief Check if the state is transparent
+     */
+    virtual bool IsTransparent() const { return false; }  // Should states below be rendered
+
+    /**
+     * @brief Check if the state has transparent UI
+     */
     virtual bool HasTransparentUI() const { return false; }  // Should UI below be rendered
+
+    /**
+     * @brief Check if the state allows input passthrough
+     *
+     * @return true if input should go to states below, false otherwise
+     */
     virtual bool AllowsInputPassthrough() const
     {
         return false;
     }  // Should input go to states below
+
+    /**
+     * @brief Check if the state allows update passthrough
+     *
+     * @return true if update should go to states below, false otherwise
+     */
     virtual bool AllowsUpdatePassthrough() const
     {
         return false;
     }  // Should update go to states below
+
+    /**
+     * @brief Check if the state allows passthrough for both input and update
+     *
+     * @return true if both input and update should go to states below, false otherwise
+     */
     virtual bool AllowsPassthrough() const { return false; }  // Shorthand for both input and update
 
     // For debugging
+
+    /**
+     * @brief Get the name of the state
+     *
+     * @return The name of the state
+     */
     virtual std::string GetName() const { return "State"; }
 
 protected:
     // Protected accessor for the context
+
+    /**
+     * @brief Get the game context
+     *
+     * @return The game context
+     */
     const GameContext& GetContext() const;
 
 private:

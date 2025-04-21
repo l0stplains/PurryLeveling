@@ -21,6 +21,7 @@ public:
      * @brief Default constructor for EntityManager
      */
     EntityManager();
+
     /**
      * @brief Destructor for EntityManager
      */

@@ -19,13 +19,15 @@ class Game
 public:
     /**
      * @brief Constructor for the Game class.
-     * Initializes the game window and context.
+     *
+     * Initializes the game window, managers, and context.
      */
     Game();
 
     /**
      * @brief Destructor for the Game class.
-     * Cleans up resources and shuts down the game.
+     *
+     * Cleans shuts down the gui.
      */
     ~Game();
 
