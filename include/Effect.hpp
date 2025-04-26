@@ -1,3 +1,6 @@
+#ifndef EFFECT_HPP
+#define EFFECT_HPP
+
 #include <string>
 using namespace std;
 
@@ -16,3 +19,5 @@ class Effect
         void apply();
         void remove();
 };
+
+#endif // EFFECT_HPP

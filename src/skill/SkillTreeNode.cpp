@@ -1,6 +1,6 @@
 #include "SkillTreeNode.hpp"
 
-SkillTreeNode::SkillTreeNode(string name, float manaCost, int masteryCost, float damage, float effectChance, vector<Effect> effectVec, vector<SkillTreeNode*> treeNodeVec) {
+SkillTreeNode::SkillTreeNode(string name, float manaCost, int masteryCost, float damage, float effectChance, vector<Effect> effectVec, vector<SkillTreeNode*> treeNodeVec, bool learn, bool activate) {
     this->name = name;
     this->manaCost = manaCost;
     this->masteryCost = masteryCost;
@@ -8,6 +8,8 @@ SkillTreeNode::SkillTreeNode(string name, float manaCost, int masteryCost, float
     this->effectChance = effectChance;
     this->effects = effectVec;
     this->children = treeNodeVec;
+    this->isLearned = learn;
+    this->activated = activate;
 }
 
 SkillTreeNode::~SkillTreeNode() {
@@ -17,9 +19,15 @@ SkillTreeNode::~SkillTreeNode() {
 }
 
 void SkillTreeNode::learn() {
-    // Debug
-    cout << "Learning skill: " << name << endl;
-    for (Effect& effect : effects) {
-        effect.apply();
+    for (SkillTreeNode* child : children) {
+        if(child->isLearned == false) {
+            child->activated = true;
+            child->isLearned = true;
+            this-> activated = false;
+        }
+        else
+        {
+            child->learn();
+        }
     }
 }

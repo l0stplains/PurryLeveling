@@ -11,5 +11,3 @@ SkillTree::SkillTree(const SkillTree& other) {
 SkillTree::~SkillTree() {
     delete skillTreeNode;
 }
-
-
