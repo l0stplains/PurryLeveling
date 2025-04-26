@@ -7,7 +7,7 @@ class SkillTreeNode
 {
     private:
         string name;
-        float manaCOst;
+        float manaCost;
         int masteryCost;
         float damage;
         float effectChance;
