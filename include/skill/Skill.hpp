@@ -3,7 +3,8 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include "Effect.hpp"
+#include "effects/Effect.hpp"
+#include "effects/Stats.hpp"
 using namespace std;
 
 class Skill
@@ -16,6 +17,7 @@ class Skill
         float effectChance;
         vector<Effect> effects;
         vector<Skill*> children;
+        Stats skillStats;
         bool isLearned;
         bool activated;
 
@@ -42,6 +44,8 @@ class Skill
         float getEffectChance() const { return effectChance; }
         vector<Effect> getEffects() const { return effects; }
         vector<Skill*> getChildren() const { return children; }
+        Stats getSkillStats() const { return skillStats; }
+        void setSkillStats(Stats stats) { skillStats = stats; }
         bool getIsLearned() const { return isLearned; }
         bool getActivated() const { return activated; }
 
