@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class ArcanePrecisionEffect : public Effect
+class ArcanePrecision : public Effect
 {
 public:
-    ArcanePrecisionEffect(int intel, float accMul, float critMul, int dur)
+    ArcanePrecision(int intel, float accMul, float critMul, int dur)
       : Effect("Arcane Precision",
                "Int+" + std::to_string(intel)
              + ", Acc×" + std::to_string(accMul)

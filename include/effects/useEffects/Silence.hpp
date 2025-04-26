@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class SilenceEffect : public Effect
+class Silence : public Effect
 {
 public:
-    SilenceEffect(int intPen, float accMul, int dur)
+    Silence(int intPen, float accMul, int dur)
       : Effect("Silence",
                "Int–" + std::to_string(intPen)
              + ", Acc×" + std::to_string(accMul),

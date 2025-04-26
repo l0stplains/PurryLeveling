@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class FortunesCallEffect : public Effect
+class FortunesCall : public Effect
 {
 public:
-    FortunesCallEffect(int luck, float buffMul, int dur)
+    FortunesCall(int luck, float buffMul, int dur)
       : Effect("Fortune’s Call",
                "Luck+" + std::to_string(luck)
              + ", Buff×" + std::to_string(buffMul),

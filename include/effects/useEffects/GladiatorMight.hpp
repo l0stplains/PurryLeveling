@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class GladiatorMightEffect : public Effect
+class GladiatorMight : public Effect
 {
 public:
-    GladiatorMightEffect(int str, int physDef, float costMul, int dur)
+    GladiatorMight(int str, int physDef, float costMul, int dur)
       : Effect("Gladiator’s Might",
                "Str+" + std::to_string(str)
              + ", PhysDef+" + std::to_string(physDef)

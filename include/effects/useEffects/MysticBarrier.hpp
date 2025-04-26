@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class MysticBarrierEffect : public Effect
+class MysticBarrier : public Effect
 {
 public:
-    MysticBarrierEffect(int magDef, float statRes, float hasteMul, int dur)
+    MysticBarrier(int magDef, float statRes, float hasteMul, int dur)
       : Effect("Mystic Barrier",
                "MagDef+" + std::to_string(magDef)
              + ", Res+" + std::to_string(int(statRes*100)) + "%"

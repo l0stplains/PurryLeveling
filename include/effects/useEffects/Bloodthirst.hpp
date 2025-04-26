@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class BloodthirstEffect : public Effect
+class Bloodthirst : public Effect
 {
 public:
-    BloodthirstEffect(int str, float critChance, float skipChance, int dur)
+    Bloodthirst(int str, float critChance, float skipChance, int dur)
       : Effect("Bloodthirst",
                "Str+" + std::to_string(str)
              + ", Crit%+" + std::to_string(int(critChance*100)) + "%"

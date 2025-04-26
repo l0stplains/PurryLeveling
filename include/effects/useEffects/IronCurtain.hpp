@@ -1,18 +1,19 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class StalwartResolveEffect : public Effect
+
+class IronCurtain : public Effect
 {
 public:
-    StalwartResolveEffect(int physDef, int magDef, int luckDebuff, int dur)
-      : Effect("Stalwart Resolve",
+    IronCurtain(int physDef, int magDef, float hasteDebuff, int dur)
+      : Effect("Iron Curtain",
                "PhysDef+" + std::to_string(physDef)
              + ", MagDef+" + std::to_string(magDef)
-             + ", Luck–" + std::to_string(luckDebuff),
+             + ", Haste×" + std::to_string(hasteDebuff),
                dur)
     {
         m_modifiers.physicalDefense = physDef;
         m_modifiers.magicDefense    = magDef;
-        m_modifiers.luck            = -luckDebuff;
+        m_modifiers.hasteMultiplier = hasteDebuff;
     }
 };

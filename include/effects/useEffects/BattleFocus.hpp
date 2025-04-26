@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class BattleFocusEffect : public Effect
+class BattleFocus : public Effect
 {
 public:
-    BattleFocusEffect(float accMul, float critAdd, float dodgeDebuff, int dur)
+    BattleFocus(float accMul, float critAdd, float dodgeDebuff, int dur)
       : Effect("Battle Focus",
                "Acc×" + std::to_string(accMul)
              + ", Crit%+" + std::to_string(int(critAdd*100)) + "%"

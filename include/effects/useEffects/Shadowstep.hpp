@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class ShadowstepEffect : public Effect
+class Shadowstep : public Effect
 {
 public:
-    ShadowstepEffect(float dodge, float hasteMul, float accMul, int dur)
+    Shadowstep(float dodge, float hasteMul, float accMul, int dur)
       : Effect("Shadowstep",
                "Dodge+" + std::to_string(int(dodge*100)) + "%"
              + ", Haste×" + std::to_string(hasteMul)

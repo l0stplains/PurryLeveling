@@ -1,10 +1,10 @@
 #pragma once
 #include "effects/Effect.hpp"
 
-class EtherealFormEffect : public Effect
+class EtherealForm : public Effect
 {
 public:
-    EtherealFormEffect(float dodgeAdd, float statResAdd, int defPen, int dur)
+    EtherealForm(float dodgeAdd, float statResAdd, int defPen, int dur)
       : Effect("Ethereal Form",
                "Dodge+" + std::to_string(int(dodgeAdd*100)) + "%"
              + ", Res+" + std::to_string(int(statResAdd*100)) + "%"
