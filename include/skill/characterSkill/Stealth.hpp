@@ -1,7 +1,8 @@
 #pragma once
 #include "skill/Skill.hpp"
-#include "skill/unitSkill/secondSkill/Stealth2.hpp"
+#include "skill/characterSkill/Mastery2/ShadowArtistry.hpp"
 
+// Root Skill untuk Assassin
 class Stealth : public Skill
 {
     private:
@@ -14,11 +15,9 @@ class Stealth : public Skill
         {
             vector<Skill*> secondSkill;
 
-            ShadowStep* shadowStep = new ShadowStep();
-            Assassinate* assassinate = new Assassinate();
+            ShadowArtistry* shadowArtistry = new ShadowArtistry();
             
-            secondSkill.push_back(shadowStep);
-            secondSkill.push_back(assassinate);
+            secondSkill.push_back(shadowArtistry);
             this->setChildren(secondSkill);
         };
 };

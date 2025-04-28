@@ -1,7 +1,9 @@
 #pragma once
 #include "skill/Skill.hpp"
-#include "skill/unitSkill/secondSkill/LifeSteal2.hpp"
+#include "skill/characterSkill/Mastery2/BloodRitual.hpp"
+#include "skill/characterSkill/Mastery2/UndeadLegion.hpp"
 
+// Root Skill untuk Necromancer
 class LifeSteal : public Skill
 {
     private:

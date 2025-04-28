@@ -1,15 +1,17 @@
 #pragma once
 #include "skill/Skill.hpp"
-#include "skill/unitSkill/secondSkill/Bravery2.hpp"
+#include "skill/characterSkill/Mastery2/Warcry.hpp"
+#include "skill/characterSkill/Mastery2/IronWill.hpp"
 
+
+// Root Skill Untuk Fighter
 class Bravery : public Skill
 {
     private:
         float strengthMultiplier = 0.12f;           
-        float damageBoost = 0.0f;           // Additional damage boost
+        float damageBoost = 0.0f;           
         float damageReduction = 0.0f; 
-        float critChanceBonus = 0.0f;       // Increased critical hit chance
-        float healthCost = 0.0f;            // Costs health to maintain
+        float critChanceBonus = 0.0f;       
         float reflectDamage = 0.0f;  
 
     public:

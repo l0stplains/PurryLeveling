@@ -17,7 +17,6 @@ class Skill
         float effectChance;
         vector<Effect> effects;
         vector<Skill*> children;
-        Stats skillStats;
         bool isLearned;
         bool activated;
 
@@ -43,15 +42,17 @@ class Skill
         float getDamage() const { return damage; }
         float getEffectChance() const { return effectChance; }
         vector<Effect> getEffects() const { return effects; }
+        void setEffects(vector<Effect> effectVec) { effects = effectVec; }
         vector<Skill*> getChildren() const { return children; }
-        Stats getSkillStats() const { return skillStats; }
-        void setSkillStats(Stats stats) { skillStats = stats; }
+        void setChildren(vector<Skill*> treeNodeVec) { children = treeNodeVec; }
         bool getIsLearned() const { return isLearned; }
         bool getActivated() const { return activated; }
+        void setActivated(bool state) { activated = state; }
+        void setIsLearned(bool state) { isLearned = state; }
 
 
         /* @brief Learn the skill by activating the child skilTreeNode and deactivate the parent Skill
          * and change the isLearned state
          */
-        void learn();
+        void learn(int* masteryPoint);
 };

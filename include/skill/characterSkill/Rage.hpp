@@ -1,7 +1,9 @@
 #pragma once
 #include "skill/Skill.hpp"
-#include "skill/unitSkill/secondSkill/Rage2.hpp"
+#include "skill/characterSkill/Mastery2/Bloodlust.hpp"
+#include "skill/characterSkill/Mastery2/Devastation.hpp"
 
+// Root Skill untuk 
 class Rage : public Skill
 {
     private:

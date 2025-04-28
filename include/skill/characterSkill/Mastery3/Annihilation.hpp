@@ -20,5 +20,5 @@ class Annihilation : public Skill
             effectVec.push_back(GladiatorMight(10, 5, 1.2f, 3)); // +10 Str, +5 PhysDef, 120% resource cost, 3 turns
             effectVec.push_back(Overclock(1.5f, 1.3f, 10, 2)); // 150% haste, 130% cost, -10 PhysDef, 2 turns
             this->setEffects(effectVec);
-        };
+        }
 };

@@ -18,17 +18,25 @@ Skill::~Skill() {
     }
 }
 
-void Skill::learn() {
+void Skill::learn(int* masteryPoint) {
+    bool allChildrenLearned = true;
+    
     for (Skill* child : children) {
-        if(child->isLearned == false) {
-            child->activated = true;
-            child->isLearned = true;
-            this-> activated = false;
+        if (!child->isLearned) {
+            if (*masteryPoint >= child->getMasteryCost()) {
+                child->activated = true;
+                child->isLearned = true;
+                *masteryPoint -= child->getMasteryCost();
+            } else {
+                allChildrenLearned = false; 
+            }
+        } else {
+            child->learn(masteryPoint);
         }
-        else
-        {
-            child->learn();
-        }
+    }
+    
+    if (allChildrenLearned && !children.empty()) {
+        this->activated = false;
     }
 }
 
