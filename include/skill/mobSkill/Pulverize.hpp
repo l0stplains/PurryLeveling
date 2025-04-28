@@ -4,14 +4,13 @@
 // Skill Boss Ogre
 class Pulverize : public Skill
 {
-    private:
-        float damageMultiplier = 2.5f; // Damage multiplier for the skill
-        float stunChance = 0.9f;      // Chance to stun
-    
-    public:
-        Pulverize() : Skill("Pulverize", 0, 0, 0, 0.0f, {}, {}, false, false){};
+private:
+    float damageMultiplier = 2.5f;  // Damage multiplier for the skill
+    float stunChance       = 0.9f;  // Chance to stun
 
-        float getDamageMultiplier() const { return damageMultiplier; }
-        float getStunChance() const { return stunChance; }
+public:
+    Pulverize() : Skill("Pulverize", 0, 0, 0, 0.0f, {}, {}, false, false) {};
 
+    float getDamageMultiplier() const { return damageMultiplier; }
+    float getStunChance() const { return stunChance; }
 };

@@ -5,17 +5,17 @@
 
 class SkillTree
 {
-    private:
-        Skill* skill;
+private:
+    Skill* skill;
 
-    public:
-        // -- 4 Sekawan
-        SkillTree(Skill* rootNode);
-        SkillTree(const SkillTree& other);
-        ~SkillTree();
+public:
+    // -- 4 Sekawan
+    SkillTree(Skill* rootNode);
+    SkillTree(const SkillTree& other);
+    ~SkillTree();
 
-        // - Getter
-        Skill* getSkill() const{return this->skill; }
+    // - Getter
+    Skill* getSkill() const { return this->skill; }
 };
 
-#endif // SKILLTREE_HPP
+#endif  // SKILLTREE_HPP

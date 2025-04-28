@@ -1,13 +1,16 @@
 #include "SkillTree.hpp"
 
-SkillTree::SkillTree(Skill* rootNode) {
+SkillTree::SkillTree(Skill* rootNode)
+{
     this->skill = rootNode;
 }
 
-SkillTree::SkillTree(const SkillTree& other) {
+SkillTree::SkillTree(const SkillTree& other)
+{
     this->skill = new Skill(*other.skill);
 }
 
-SkillTree::~SkillTree() {
+SkillTree::~SkillTree()
+{
     delete skill;
 }

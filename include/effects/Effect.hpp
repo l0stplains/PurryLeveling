@@ -1,6 +1,7 @@
 #pragma once
-#include "effects/Stats.hpp"
 #include <string>
+
+#include "effects/Stats.hpp"
 
 class Effect
 {
@@ -28,5 +29,5 @@ protected:
     std::string m_description;
     int         m_duration;  // in turns
     int         m_remainingDuration;
-    Stats m_modifiers;
+    Stats       m_modifiers;
 };

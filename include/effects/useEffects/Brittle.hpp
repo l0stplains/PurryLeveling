@@ -4,11 +4,8 @@
 class Brittle : public Effect
 {
 public:
-    Brittle(int defPen)
-      : Effect("Brittle",
-               "PhysDef–" + std::to_string(defPen),
-               2)
+    Brittle(int defPen) : Effect("Brittle", "PhysDef–" + std::to_string(defPen), 2)
     {
-        m_modifiers.physicalDefense  = -defPen;
+        m_modifiers.physicalDefense = -defPen;
     }
 };

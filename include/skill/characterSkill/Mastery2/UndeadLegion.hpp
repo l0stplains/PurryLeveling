@@ -4,17 +4,17 @@
 
 class UndeadLegion : public Skill
 {
-    private:
-        float damageMultiplier = 0.12f;
-        int summonedUnit = 1;
+private:
+    float damageMultiplier = 0.12f;
+    int   summonedUnit     = 1;
 
-    public:
-        UndeadLegion() : Skill("Undead Legion", 10, 3, 0, 0, {}, {}, true, true)
-        {
-            vector<Skill*> thirdSkill;
+public:
+    UndeadLegion() : Skill("Undead Legion", 10, 3, 0, 0, {}, {}, true, true)
+    {
+        vector<Skill*> thirdSkill;
 
-            Arise* arise = new Arise();
-            thirdSkill.push_back(arise);
-            this->setChildren(thirdSkill);
-        }
+        Arise* arise = new Arise();
+        thirdSkill.push_back(arise);
+        this->setChildren(thirdSkill);
+    }
 };
