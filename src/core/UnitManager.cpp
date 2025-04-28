@@ -1,120 +1,254 @@
 #include "core/UnitManager.hpp"
 
-UnitManager::UnitManager()
-{
-    // Constructor
-}
+#include <iostream>  // For potential debug messages
 
-UnitManager::~UnitManager()
-{
-    // The unique_ptr will handle cleanup automatically
-}
+#include "units/AnimatedUnit.hpp"  // Include derived headers needed for casting
+#include "units/Unit.hpp"
+#include "units/characters/Character.hpp"
+
+// Constructor/Destructor are defaulted in header now
 
 void UnitManager::AddUnit(std::unique_ptr<Unit> unit)
 {
-    unsigned int id   = unit->GetId();
-    std::string  name = unit->GetName();
-    // Store raw pointers for fast lookup
-    m_unitsById[id] = unit.get();
+    if (!unit)
+        return;  // Don't add null units
 
-    // Only store in name map if name is not empty
+    unsigned int id     = unit->GetId();
+    std::string  name   = unit->GetName();
+    Unit*        rawPtr = unit.get();  // Get raw pointer before moving
+
+    // Store raw pointers for fast lookup
+    m_unitsById[id] = rawPtr;
+
+    // Only store in name map if name is not empty and not already present (or handle duplicates)
     if (!name.empty())
     {
-        m_unitsByName[name] = unit.get();
+        m_unitsByName[name] = rawPtr;
     }
 
-    // Transfer ownership to the manager
+    // Transfer ownership to the manager's vector
     m_units.push_back(std::move(unit));
+
+    // Mark that sorting is needed before the next draw
+    m_needsSorting = true;
 }
 
 void UnitManager::RemoveUnit(unsigned int id)
 {
-    auto it = std::find_if(m_units.begin(), m_units.end(), [id](const std::unique_ptr<Unit>& unit) {
-        return unit->GetId() == id;
+    // Find the unit in the main vector using its ID
+    auto it = std::find_if(m_units.begin(), m_units.end(), [id](const std::unique_ptr<Unit>& u) {
+        return u->GetId() == id;
     });
+
     if (it != m_units.end())
     {
-        // Remove from lookup maps first
-        std::string name = (*it)->GetName();
+        // Get pointer details before erasing
+        Unit*       rawPtr = it->get();
+        std::string name   = rawPtr->GetName();
+
+        // Remove from lookup maps using details
+        m_unitsById.erase(id);
         if (!name.empty())
         {
             m_unitsByName.erase(name);
         }
 
-        m_unitsById.erase(id);
-
-        // Remove from main container
+        // Erase the unique_ptr from the vector, triggering destruction
         m_units.erase(it);
+        // No need to sort after removal, relative order maintained
     }
 }
 
 Unit* UnitManager::GetUnit(unsigned int id)
 {
     auto it = m_unitsById.find(id);
+    // Check if found and if the pointer is still valid (although map should be synced)
     return (it != m_unitsById.end()) ? it->second : nullptr;
 }
 
 Unit* UnitManager::GetUnitByName(const std::string& name)
 {
+    if (name.empty())
+        return nullptr;
     auto it = m_unitsByName.find(name);
     return (it != m_unitsByName.end()) ? it->second : nullptr;
 }
 
-template <typename T>
-T* UnitManager::GetUnitOfType(unsigned int id)
-{
-    Unit* unit = GetUnit(id);
-    return unit ? dynamic_cast<T*>(unit) : nullptr;
-}
-
-template <typename T>
-std::vector<T*> UnitManager::GetAllUnitsOfType()
-{
-    std::vector<T*> result;
-    for (const auto& unit : m_units)
-    {
-        if (T* derivedUnit = dynamic_cast<T*>(unit.get()))
-        {
-            result.push_back(derivedUnit);
-        }
-    }
-
-    return result;
-}
 void UnitManager::Update(const sf::Time& dt)
 {
     // Update all active units
-    for (auto& unit : m_units)
+    for (auto& unitPtr : m_units)  // Iterate unique_ptrs
     {
-        if (unit->IsActive())
+        if (unitPtr->IsActive())
         {
-            unit->Update(dt);
+            // dynamic cast to animated unit
+            if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
+            {
+                animatedUnit->Update(dt);  // Call Update on AnimatedUnit
+            }
+            else
+            {
+                std::cerr << "Warning: Unit " << unitPtr->GetName()
+                          << " is not an AnimatedUnit, cannot Update." << std::endl;
+            }
         }
     }
-    // Remove any units marked for deletion
-    // This would be implemented if we had a "marked for deletion" flag
+
+    // --- Optional: Remove inactive units after update ---
+    // It's often better to mark units for removal and sweep them later
+    // to avoid issues while iterating during updates (e.g., callbacks).
+    // For simplicity, we don't auto-remove here. Call RemoveUnit explicitly.
 }
 
 void UnitManager::Draw(sf::RenderWindow& window)
 {
-    // Draw all active units
-    for (auto& unit : m_units)
+    // Ensure units are sorted by Z-order before drawing
+    if (m_needsSorting)
     {
-        if (unit->IsActive())
+        SortUnitsByZOrder();
+        m_needsSorting = false;
+    }
+
+    // Units vector is now sorted by Z-order (ascending)
+    for (const auto& unitPtr : m_units)
+    {
+        if (unitPtr->IsActive())
         {
-            unit->Draw(window);
+            // dynamic cast to animated unit
+            if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
+            {
+                animatedUnit->Draw(window);
+            }
+            else
+            {
+                std::cerr << "Warning: Unit " << unitPtr->GetName()
+                          << " is not an AnimatedUnit, cannot Update." << std::endl;
+            }
         }
     }
 }
 
+void UnitManager::DrawUI(sf::RenderWindow& window)
+{
+    // Draw UI elements for relevant units (e.g., Characters)
+    for (const auto& unitPtr : m_units)
+    {
+        if (unitPtr->IsActive())
+        {
+            if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
+            {
+                animatedUnit->RenderUI(window);
+            }
+            // Add else if for other types with UI if needed
+        }
+    }
+}
+
+void UnitManager::ProcessEvent(const sf::Event& event)
+{
+    // Forward keyboard input only to active, player-controlled Characters
+    for (auto& unitPtr : m_units)
+    {
+        if (unitPtr->IsActive())
+        {
+            if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
+            {
+                // Check if this character is player-controlled
+                if (animatedUnit->IsPlayerControlled())
+                {
+                    // Call ProcessInput on the Character
+                    animatedUnit->ProcessEvent(event);
+                }
+            }
+        }
+    }
+}
+
+void UnitManager::SetUnitZOrder(unsigned int id, int zOrder)
+{
+    Unit* unit = GetUnit(id);
+    if (unit)
+    {
+        // Attempt to cast to AnimatedUnit to set Z-order
+        if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unit))
+        {
+            animatedUnit->SetZOrder(zOrder);
+            m_needsSorting = true;  // Mark for resorting
+        }
+        // else: Unit is not animated, cannot set Z-order - optionally log warning
+    }
+}
+
+void UnitManager::BringUnitToFront(unsigned int id)
+{
+    int highestZOrder = 0;  // Default Z-Order is effectively 0 for non-animated
+
+    // Find the current highest Z-order among AnimatedUnits
+    for (const auto& unitPtr : m_units)
+    {
+        // Attempt to cast to AnimatedUnit to get Z-order
+        if (const AnimatedUnit* animatedUnit = dynamic_cast<const AnimatedUnit*>(unitPtr.get()))
+        {
+            highestZOrder = std::max(highestZOrder, animatedUnit->GetZOrder());
+        }
+    }
+
+    // Set the target unit's Z-order to be one higher than the current max
+    // SetUnitZOrder handles the cast and marks for sorting
+    SetUnitZOrder(id, highestZOrder + 1);
+}
+
 void UnitManager::Clear()
 {
+    // Clearing the vector destroys the unique_ptrs and thus the Units
     m_units.clear();
+    // Clear the lookup maps
     m_unitsById.clear();
     m_unitsByName.clear();
+    m_needsSorting = false;
 }
 
 size_t UnitManager::GetUnitCount() const
 {
     return m_units.size();
+}
+
+void UnitManager::SortUnitsByZOrder()
+{
+    std::stable_sort(m_units.begin(),
+                     m_units.end(),
+                     [](const std::unique_ptr<Unit>& a, const std::unique_ptr<Unit>& b) -> bool {
+                         // Default Z-order for non-animated units
+                         int zOrderA = 0;
+                         int zOrderB = 0;
+
+                         // Attempt to get Z-order if they are AnimatedUnits
+                         if (const AnimatedUnit* animA = dynamic_cast<const AnimatedUnit*>(a.get()))
+                         {
+                             zOrderA = animA->GetZOrder();
+                         }
+                         if (const AnimatedUnit* animB = dynamic_cast<const AnimatedUnit*>(b.get()))
+                         {
+                             zOrderB = animB->GetZOrder();
+                         }
+
+                         // Sort primarily by Z-order (ascending)
+                         if (zOrderA != zOrderB)
+                         {
+                             return zOrderA < zOrderB;
+                         }
+
+                         // --- Optional: Secondary sort by Y position for units with the same
+                         // Z-order --- This helps with pseudo-3D layering where units lower on
+                         // screen draw on top. return a->GetPosition().y < b->GetPosition().y;
+
+                         // If Z-orders are equal and no secondary sort, maintain relative order
+                         // (stable_sort)
+                         return false;
+                     });
+
+    // After sorting, update the non-owning pointers in maps if necessary,
+    // although generally not needed if only vector order matters for draw.
+    // If lookup maps become invalid after sort (they shouldn't with stable_sort),
+    // they would need rebuilding here.
 }

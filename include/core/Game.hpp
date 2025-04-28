@@ -44,7 +44,7 @@ private:
     // Game systems
     GameContext     m_context;          ///< Context for sharing resources between states
     ResourceManager m_resourceManager;  ///< Resource manager for loading and managing game assets
-    UnitManager     m_unitManager;      ///< Unit manager for managing game entities
+    UnitManager     m_unitManager;      ///< Unit manager for managing game units
     StateManager    m_stateManager;     ///< State manager for handling game states
     ImGuiManager    m_gui;              ///< ImGui backend manager for rendering UI
 

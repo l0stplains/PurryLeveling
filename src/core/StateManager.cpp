@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <iostream>
 
-StateManager::StateManager(const GameContext& context) : m_context(context) {}
+StateManager::StateManager() {}
 
 void StateManager::PushState(std::unique_ptr<State> state)
 {
@@ -82,7 +82,7 @@ void StateManager::ApplyStateChange(State::StateChange& change)
     }
 }
 
-void StateManager::ProcessEvent(const sf::Event& event, const sf::Window& window)
+void StateManager::ProcessEvent(const sf::Event& event)
 {
     if (m_states.empty())
         return;
@@ -95,8 +95,8 @@ void StateManager::ProcessEvent(const sf::Event& event, const sf::Window& window
     {
         State* state = *it;
 
-        // Get state change request from input handling
-        State::StateChange change = state->HandleInput(event, window);
+        // Get state change request from event handling
+        State::StateChange change = state->ProcessEvent(event);
 
         // If there's a requested state change, queue it
         if (change.GetAction() != State::StateAction::NONE)
@@ -155,10 +155,10 @@ void StateManager::Draw(sf::RenderWindow& window)
     std::vector<State*> visibleStates;
 
     // Collect states that should be rendered
-    // Start from the bottom of the stack
+    // Start from the top of the stack
     std::vector<State*> stateStack = GetStateStack();
 
-    for (auto it = stateStack.rbegin(); it != stateStack.rend(); ++it)
+    for (auto it = stateStack.begin(); it != stateStack.end(); ++it)
     {
         State* state = *it;
         visibleStates.push_back(state);
@@ -188,7 +188,7 @@ void StateManager::RenderUI()
     // Get states with visible UI
     std::vector<State*> stateStack = GetStateStack();
 
-    for (auto it = stateStack.rbegin(); it != stateStack.rend(); ++it)
+    for (auto it = stateStack.begin(); it != stateStack.end(); ++it)
     {
         State* state = *it;
         uiStates.push_back(state);

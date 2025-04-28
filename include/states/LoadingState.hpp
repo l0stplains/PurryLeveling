@@ -9,9 +9,8 @@
 #include <string>
 #include <thread>
 
-#include "core/State.hpp"
-
 #include "parser/ResourceConfigParser.hpp"
+#include "states/State.hpp"
 
 /**
  * @class LoadingState
@@ -42,13 +41,12 @@ public:
     void Init() override;
 
     /**
-     * @brief Handle input events
+     * @brief Process events
      *
      * @param event The SFML event to handle
-     * @param window The SFML window
      * @return StateChange The state change information
      */
-    StateChange HandleInput(const sf::Event& event, const sf::Window& window) override;
+    StateChange ProcessEvent(const sf::Event& event) override;
 
     /**
      * @brief Update the loading state

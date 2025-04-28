@@ -10,9 +10,10 @@
 #include <vector>
 
 #include "core/GameContext.hpp"
-#include "core/State.hpp"
 
 #include "ui/Button.hpp"
+
+#include "states/State.hpp"
 
 // Include ImGuiFileDialog
 #include "external/ImGuiFileDialog.h"
@@ -38,7 +39,7 @@ public:
      *
      * @param context The game context to share resources
      */
-    explicit MainMenuState(const GameContext& context);
+    explicit MainMenuState(GameContext& context);
 
     /**
      * @brief Initialize the main menu state
@@ -54,7 +55,7 @@ public:
      * @param window The SFML window
      * @return State::StateChange The state change information
      */
-    State::StateChange HandleInput(const sf::Event& event, const sf::Window& window) override;
+    State::StateChange ProcessEvent(const sf::Event& event) override;
 
     /**
      * @brief Update the main menu state
@@ -85,6 +86,9 @@ public:
      * It handles thread cleanup and resource unloading.
      */
     void Exit() override;  // Important for thread cleanup!
+    void Pause() override;
+    void Resume() override;
+
 private:
     sf::Sound m_backsound;         ///< Background music sound
     sf::Sound m_buttonHoverSound;  ///< Button hover sound

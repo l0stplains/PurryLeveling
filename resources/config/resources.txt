@@ -7,8 +7,118 @@ main_bold_font = resources/fonts/m6x11.ttf
 
 [textures]
 main_menu_background = resources/textures/ui/main_menu_background.jpg
+choose_character_menu_background = resources/textures/ui/choose_character_menu_background.jpg
 main_logo_shadow = resources/textures/ui/main_logo_shadow.png
 main_menu_button = resources/textures/ui/main_menu_button.png
+square_button = resources/textures/ui/square_button.png
+world_background = resources/textures/ui/world_background.jpg
+
+# Dungeons Background
+normal_base = resources/textures/ui/normal_base.jpg
+normal_boss = resources/textures/ui/normal_boss.jpg
+misty_base = resources/textures/ui/misty_base.jpg
+misty_boss = resources/textures/ui/misty_boss.jpg
+lava_base = resources/textures/ui/lava_base.jpg
+lava_boss = resources/textures/ui/lava_boss.jpg
+crystal_base = resources/textures/ui/crystal_base.jpg
+crystal_boss = resources/textures/ui/crystal_boss.jpg
+
+# Props
+portal_e = resources/textures/props/portal_e.png
+portal_d = resources/textures/props/portal_d.png
+portal_c = resources/textures/props/portal_c.png
+portal_b = resources/textures/props/portal_b.png
+portal_a = resources/textures/props/portal_a.png
+portal_s = resources/textures/props/portal_s.png
+portal_special = resources/textures/props/portal_special.png
+
+# Centaur
+character_centaur_attack = resources/textures/characters/Centaur/CentaurAttack.png
+character_centaur_die = resources/textures/characters/Centaur/CentaurDie.png
+character_centaur_dmg = resources/textures/characters/Centaur/CentaurDmg.png
+character_centaur_idle = resources/textures/characters/Centaur/CentaurIdle.png
+character_centaur_jump = resources/textures/characters/Centaur/CentaurJump.png
+character_centaur_walk = resources/textures/characters/Centaur/CentaurWalk.png
+
+# Cyclop
+character_cyclop_attack = resources/textures/characters/Cyclop/CyclopAttack.png
+character_cyclop_die = resources/textures/characters/Cyclop/CyclopDie.png
+character_cyclop_dmg = resources/textures/characters/Cyclop/CyclopDmg.png
+character_cyclop_idle = resources/textures/characters/Cyclop/CyclopIdle.png
+character_cyclop_jump = resources/textures/characters/Cyclop/CyclopJump.png
+character_cyclop_walk = resources/textures/characters/Cyclop/CyclopWalk.png
+
+# Dwarf Yellow Beard
+character_dwarf_attack = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearAttack.png
+character_dwarf_charged_attack = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearChargedAttack.png
+character_dwarf_dmg = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearDmg.png
+character_dwarf_idle = resources/textures/characters/Dwarf_Yellow_Beard/YellowBeardIdle.png
+character_dwarf_jump = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearJump.png
+character_dwarf_die = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearSpinDie.png
+character_dwarf_walk = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearWalk.png
+
+# Elf
+character_elf_attack = resources/textures/characters/Elf/ElfAttack.png
+character_elf_charged_attack = resources/textures/characters/Elf/ElfChargedAttack.png
+character_elf_dmg = resources/textures/characters/Elf/ElfDmg.png
+character_elf_idle = resources/textures/characters/Elf/ElfIdle.png
+character_elf_jump = resources/textures/characters/Elf/ElfJump.png
+character_elf_die_spin = resources/textures/characters/Elf/ElfSpinDie.png
+character_elf_walk = resources/textures/characters/Elf/ElfWalk.png
+
+# Human Amazon
+character_amazon_attack = resources/textures/characters/Human_Amazon/AmazonAttack.png
+character_amazon_charged_attack = resources/textures/characters/Human_Amazon/AmazonChargedAttack.png
+character_amazon_die = resources/textures/characters/Human_Amazon/AmazonDie.png
+character_amazon_dmg = resources/textures/characters/Human_Amazon/AmazonDmg.png
+character_amazon_idle = resources/textures/characters/Human_Amazon/AmazonIdle.png
+character_amazon_jump = resources/textures/characters/Human_Amazon/AmazonJump.png
+character_amazon_walk = resources/textures/characters/Human_Amazon/AmazonWalk.png
+
+# Centaur Shadows
+character_centaur_attack_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurAttack.png
+character_centaur_die_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurDie.png
+character_centaur_dmg_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurDmg.png
+character_centaur_idle_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurIdle.png
+character_centaur_jump_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurJump.png
+character_centaur_walk_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurWalk.png
+
+# Cyclop Shadows
+character_cyclop_attack_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowAttack.png
+character_cyclop_die_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowDie.png
+character_cyclop_dmg_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowDmg.png
+character_cyclop_idle_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowIdle.png
+character_cyclop_jump_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowJump.png
+character_cyclop_walk_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowWalk.png
+
+# Dwarf Yellow Beard Shadows
+character_dwarf_attack_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfAttack.png
+character_dwarf_charged_attack_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfChargedAttack.png
+character_dwarf_dmg_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfDmg.png
+character_dwarf_idle_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfIdle.png
+character_dwarf_jump_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarJump.png
+character_dwarf_die_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarSpinDie.png
+character_dwarf_walk_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarWalk.png
+
+# Elf Shadows
+character_elf_attack_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidAttack.png
+character_elf_charged_attack_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidChargedAttack.png
+character_elf_dmg_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidDmg.png
+character_elf_idle_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidIdle.png
+character_elf_jump_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidJump.png
+character_elf_die_soul_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidSoulDie.png
+character_elf_die_spin_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidSpinDie.png
+character_elf_walk_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidWalk.png
+
+# Human Amazon Shadows
+character_amazon_attack_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidAttack.png
+character_amazon_charged_attack_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidChargedAttack.png
+character_amazon_dmg_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidDmg.png
+character_amazon_idle_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidIdle.png
+character_amazon_jump_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidJump.png
+# character_amazon_die_soul_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidSoulDie.png
+character_amazon_die_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidSpinDie.png
+character_amazon_walk_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidWalk.png
 
 [audio]
 menu_backsound = resources/audio/music/main_menu_theme.mp3

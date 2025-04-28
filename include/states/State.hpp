@@ -83,7 +83,7 @@ public:
      *
      * @param context The game context to share resources
      */
-    explicit State(const GameContext& context);
+    explicit State(GameContext& context);
 
     /**
      * @brief Virtual destructor
@@ -106,7 +106,7 @@ public:
      * @param window The SFML window
      * @return StateChange The state change information
      */
-    virtual StateChange HandleInput(const sf::Event& event, const sf::Window& window) = 0;
+    virtual StateChange ProcessEvent(const sf::Event& event) = 0;
 
     /**
      * @brief Update the state
@@ -153,51 +153,20 @@ public:
 
     // State properties with virtual getters
 
-    /**
-     * @brief Check if the state is transparent
-     */
-    virtual bool IsTransparent() const { return false; }  // Should states below be rendered
+    virtual bool        IsTransparent() const { return m_transparent; }
+    virtual bool        HasTransparentUI() const { return m_transparentUI; }
+    virtual bool        AllowsInputPassthrough() const { return m_inputPassthrough; }
+    virtual bool        AllowsUpdatePassthrough() const { return m_updatePassthrough; }
+    virtual bool        AllowsPassthrough() const { return m_passthrough; }
+    virtual std::string GetName() const { return m_name; }
 
-    /**
-     * @brief Check if the state has transparent UI
-     */
-    virtual bool HasTransparentUI() const { return false; }  // Should UI below be rendered
-
-    /**
-     * @brief Check if the state allows input passthrough
-     *
-     * @return true if input should go to states below, false otherwise
-     */
-    virtual bool AllowsInputPassthrough() const
-    {
-        return false;
-    }  // Should input go to states below
-
-    /**
-     * @brief Check if the state allows update passthrough
-     *
-     * @return true if update should go to states below, false otherwise
-     */
-    virtual bool AllowsUpdatePassthrough() const
-    {
-        return false;
-    }  // Should update go to states below
-
-    /**
-     * @brief Check if the state allows passthrough for both input and update
-     *
-     * @return true if both input and update should go to states below, false otherwise
-     */
-    virtual bool AllowsPassthrough() const { return false; }  // Shorthand for both input and update
-
-    // For debugging
-
-    /**
-     * @brief Get the name of the state
-     *
-     * @return The name of the state
-     */
-    virtual std::string GetName() const { return "State"; }
+    // Setters
+    void SetTransparent(bool transparent) { m_transparent = transparent; }
+    void SetTransparentUI(bool transparentUI) { m_transparentUI = transparentUI; }
+    void SetAllowsInputPassthrough(bool passthrough) { m_inputPassthrough = passthrough; }
+    void SetAllowsUpdatePassthrough(bool passthrough) { m_updatePassthrough = passthrough; }
+    void SetAllowsPassthrough(bool passthrough) { m_passthrough = passthrough; }
+    void SetName(const std::string& name) { m_name = name; }
 
 protected:
     // Protected accessor for the context
@@ -207,8 +176,14 @@ protected:
      *
      * @return The game context
      */
-    const GameContext& GetContext() const;
+    GameContext& GetContext();
 
 private:
-    const GameContext& m_context;  ///< The game context to share resources
+    GameContext& m_context;                      ///< The game context to share resources
+    bool         m_transparent       = false;    // Should states below be rendered
+    bool         m_transparentUI     = false;    // Should UI below be rendered
+    bool         m_inputPassthrough  = false;    // Should input go to states below
+    bool         m_updatePassthrough = false;    // Should update go to states below
+    bool         m_passthrough       = false;    // Shorthand for both input and update
+    std::string  m_name              = "State";  // Debug name of the state
 };

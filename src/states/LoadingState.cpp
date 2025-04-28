@@ -24,6 +24,8 @@ LoadingState::LoadingState(GameContext& context)
     m_errorMessage     = "";
     m_showErrorDialog  = false;
     m_closeApplication = false;
+
+    SetName("Loading State");
 }
 
 void LoadingState::Init()
@@ -209,7 +211,7 @@ void LoadingState::LoadResources()
     }
 }
 
-State::StateChange LoadingState::HandleInput(const sf::Event& event, const sf::Window& window)
+State::StateChange LoadingState::ProcessEvent(const sf::Event& event)
 {
     return StateChange {};
 }

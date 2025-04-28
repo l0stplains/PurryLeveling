@@ -5,9 +5,10 @@
 #include "core/ResourceManager.hpp"
 
 #include "imgui.h"
+#include "states/ChooseCharacterState.hpp"
 
 // Constructor
-MainMenuState::MainMenuState(const GameContext& context)
+MainMenuState::MainMenuState(GameContext& context)
     : State(context),
       m_backsound(GetContext().GetResourceManager()->GetSoundBuffer("menu_backsound")),
       m_buttonHoverSound(GetContext().GetResourceManager()->GetSoundBuffer("button_hover")),
@@ -35,7 +36,9 @@ MainMenuState::MainMenuState(const GameContext& context)
           {90.f + m_buttonTexture.getSize().x / 2.f,
            200.f + 3 * (m_buttonTexture.getSize().y + 32.f) + m_buttonTexture.getSize().y / 2.f}),
       m_pendingStateChange({StateAction::NONE})
-{}
+{
+    SetName("Main Menu State");
+}
 
 void MainMenuState::Init()
 {
@@ -90,6 +93,10 @@ void MainMenuState::Init()
 
     m_newGameButton.setOnClickCallback([this]() {
         std::cout << "New Game button clicked" << std::endl;
+        // change this state to not rendered
+
+        m_pendingStateChange =
+            StateChange {StateAction::PUSH, std::make_unique<ChooseCharacterState>(GetContext())};
         // m_pendingStateChange = StateChange{StateAction::PUSH, nullptr};
     });
 
@@ -122,7 +129,7 @@ void MainMenuState::Init()
     m_startButton.setActive(hasSaveGame);
 }
 
-State::StateChange MainMenuState::HandleInput(const sf::Event& event, const sf::Window& window)
+State::StateChange MainMenuState::ProcessEvent(const sf::Event& event)
 {
     // Reset pending state change if it was handled
     if (m_pendingStateChange.GetAction() != StateAction::NONE)
@@ -145,10 +152,13 @@ State::StateChange MainMenuState::Update(const sf::Time& dt)
     sf::RenderWindow* window = GetContext().GetWindow();
 
     // Update all buttons
-    m_startButton.update(*window);
-    m_newGameButton.update(*window);
-    m_loadButton.update(*window);
-    m_exitButton.update(*window);
+    if (!m_showFileDialog && !m_showErrorPopup && !m_showExitPopup)
+    {
+        m_startButton.update(*window);
+        m_newGameButton.update(*window);
+        m_loadButton.update(*window);
+        m_exitButton.update(*window);
+    }
 
     // Check if we have a pending state change from a button callback
     if (m_pendingStateChange.GetAction() != StateAction::NONE)
@@ -313,6 +323,16 @@ void MainMenuState::showError(const std::string& message)
 {
     m_showErrorPopup = true;
     m_errorMessage   = message;
+}
+
+void MainMenuState::Pause()
+{
+    m_backsound.pause();
+}
+
+void MainMenuState::Resume()
+{
+    m_backsound.play();
 }
 
 void MainMenuState::Exit()

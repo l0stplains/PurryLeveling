@@ -1,4 +1,4 @@
-#include "core/State.hpp"
+#include "states/State.hpp"
 
 // StateChange implementation
 State::StateChange::StateChange() : m_action(StateAction::NONE), m_nextState(nullptr) {}
@@ -23,7 +23,7 @@ std::unique_ptr<State> State::StateChange::TakeNextState()
 }
 
 // State implementation
-State::State(const GameContext& context) : m_context(context) {}
+State::State(GameContext& context) : m_context(context) {}
 
 void State::Pause()
 {
@@ -40,7 +40,7 @@ void State::RenderUI()
     // Default implementation does nothing
 }
 
-const GameContext& State::GetContext() const
+GameContext& State::GetContext()
 {
     return m_context;
 }

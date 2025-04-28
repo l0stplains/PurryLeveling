@@ -3,9 +3,7 @@
 #include <stack>
 #include <vector>
 
-#include "core/State.hpp"
-
-class GameContext;  // Forward declaration of GameContext
+#include "states/State.hpp"
 
 /**
  * @class StateManager
@@ -24,7 +22,7 @@ public:
      *
      * @param context Reference to the game context
      */
-    StateManager(const GameContext& context);
+    StateManager();
 
     // State stack operations
 
@@ -60,7 +58,7 @@ public:
      * @param event The SFML event to process
      * @param window The SFML window
      */
-    void ProcessEvent(const sf::Event& event, const sf::Window& window);
+    void ProcessEvent(const sf::Event& event);
 
     /**
      * @brief Update the current state
@@ -124,7 +122,6 @@ private:
     std::vector<std::unique_ptr<State>> m_states;  ///< Vector of unique pointers to states (stack
                                                    ///< as a vector)
     std::vector<State::StateChange> m_pendingChanges;  ///< Vector of pending state changes
-    const GameContext&              m_context;         ///< Reference to the game context
 
     /**
      * @brief Apply a state change to the state stack

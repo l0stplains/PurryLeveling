@@ -43,7 +43,7 @@ bool Button::update(const sf::RenderWindow& window)
 
     if (m_isHovered && !m_wasHovered)
     {
-        m_hoverSound.play();
+        // m_hoverSound.play();
     }
 
     updateVisualState();

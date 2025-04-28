@@ -8,7 +8,7 @@
 Game::Game()
     : m_window(sf::VideoMode({1280, 720}), "Purry Leveling", sf::Style::None),  // Non-resizable
       m_context {},
-      m_stateManager(m_context)
+      m_stateManager()
 {
     // Get the desktop resolution to center the window
     sf::VideoMode desktopMode  = sf::VideoMode::getDesktopMode();
@@ -71,7 +71,8 @@ void Game::ProcessEvents()
 {
     while (const std::optional event = m_window.pollEvent())
     {
-        m_stateManager.ProcessEvent(*event, m_window);
+        m_stateManager.ProcessEvent(*event);
+        m_unitManager.ProcessEvent(*event);
         m_gui.ProcessEvent(*event, m_window);
 
         // Close window: exit
@@ -86,6 +87,7 @@ void Game::Update(const sf::Time& dt)
 {
     m_gui.NewFrame();
     m_stateManager.Update(dt);
+    m_unitManager.Update(dt);
 }
 
 void Game::Render()
@@ -94,9 +96,16 @@ void Game::Render()
 
     // Draw game states
     m_stateManager.Draw(m_window);
+    m_unitManager.Draw(m_window);
+
+    if (m_context.debugWorld)
+    {
+        // do manually draw the debug world, like it shows a grid, and if its
+    }
 
     // Render ImGui UI
     m_stateManager.RenderUI();
+    m_unitManager.DrawUI(m_window);
     m_gui.Render(m_window);
 
     m_window.display();

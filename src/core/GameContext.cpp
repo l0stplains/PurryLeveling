@@ -1,7 +1,10 @@
 #include "core/GameContext.hpp"
 
 GameContext::GameContext()
-    : m_resourceManager(nullptr), m_unitManager(nullptr), m_stateManager(nullptr)
+    : m_resourceManager(nullptr),
+      m_unitManager(nullptr),
+      m_stateManager(nullptr),
+      m_navigationGrid(1280, 720, 32, 32)
 {}
 
 GameContext::~GameContext()
@@ -44,6 +47,16 @@ sf::Time GameContext::GetFPSTimer() const
     return m_fpsTimer;
 }
 
+unsigned int GameContext::GetCharacterId() const
+{
+    return m_characterId;
+}
+
+NavigationGrid& GameContext::GetNavigationGrid()
+{
+    return m_navigationGrid;
+}
+
 void GameContext::SetResourceManager(ResourceManager* resourceManager)
 {
     m_resourceManager = resourceManager;
@@ -76,6 +89,16 @@ void GameContext::SetVSyncEnabled(bool enabled)
     {
         m_window->setFramerateLimit(60);  // Set to 60 FPS
     }
+}
+
+void GameContext::SetCharacterId(unsigned int characterId)
+{
+    m_characterId = characterId;
+}
+
+void GameContext::SetNavigationGrid(NavigationGrid navGrid)
+{
+    m_navigationGrid = navGrid;
 }
 
 void GameContext::UpdateFPS(const sf::Time& dt)

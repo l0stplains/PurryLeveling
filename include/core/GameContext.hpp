@@ -5,6 +5,8 @@
 #include "core/ResourceManager.hpp"
 #include "core/UnitManager.hpp"
 
+#include "units/NavigationGrid.hpp"
+
 class StateManager;  // forward declaration
 // class UnitManager;  // forward declaration
 
@@ -81,6 +83,10 @@ public:
      */
     sf::Time GetFPSTimer() const;
 
+    unsigned int GetCharacterId() const;
+
+    NavigationGrid& GetNavigationGrid();
+
     // Setters
 
     /**
@@ -118,6 +124,10 @@ public:
      */
     void SetVSyncEnabled(bool enabled);
 
+    void SetCharacterId(unsigned int characterId);
+
+    void SetNavigationGrid(NavigationGrid navGrid);
+
     // FPS tracking
 
     /**
@@ -132,12 +142,15 @@ public:
      */
     void ToggleVSync();
 
+    bool debugWorld = false;
+
 private:
     ResourceManager* m_resourceManager;  ///< Pointer to the resource manager
     UnitManager*     m_unitManager;      ///< Pointer to the unit manager
     StateManager*    m_stateManager;     ///< Pointer to the state manager
 
-    sf::RenderWindow* m_window;  ///< Pointer to the SFML render window
+    sf::RenderWindow* m_window;          ///< Pointer to the SFML render window
+    NavigationGrid    m_navigationGrid;  ///< Navigation grid for movement restrictions
 
     // FPS tracking
     unsigned int m_frameCounter = 0;  ///< Frame counter
@@ -145,4 +158,8 @@ private:
     float        m_currentFPS = 0.f;  ///< Current FPS
 
     bool m_vsyncEnabled = false;  ///< Flag for VSync enabled state
+
+    unsigned int m_characterId;  ///< selected character ID
+
+    // more later, blum implement jir
 };
