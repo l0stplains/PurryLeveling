@@ -53,8 +53,11 @@ public:
 private:
     sf::Texture m_backgroundTexture;  ///< Background texture
     sf::Sprite  m_backgroundSprite;   ///< Background sprite
+    sf::Sprite  m_doorEnterArea;      ///< Door enter area sprite
 
     bool m_showPortalEnterModal = false;  ///< Flag for showing portal enter modal
+    bool m_showShopEnterModal   = false;  ///< Flag for showing shop enter modal
+    bool m_wasInShop            = false;  ///< Flag for showing shop enter modal
     bool m_wasInPortal          = false;
 
     unsigned int m_currentPortalId = -1;  ///< ID of the current portal

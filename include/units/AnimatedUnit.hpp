@@ -102,6 +102,7 @@ public:
     void SetMoveSpeed(float speed);
 
     virtual void SetPosition(const sf::Vector2f& position);
+    void         SetDirection(Direction dir);
 
     void SetControlledByPlayer(bool controlled);
     void SetShowUI(bool show);

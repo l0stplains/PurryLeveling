@@ -13,9 +13,14 @@ WorldState::WorldState(GameContext& context)
     : State(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
+      m_doorEnterArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_pendingStateChange({StateAction::NONE})
 {
     SetName("Main Menu State");
+
+    // setup door enter area
+    m_doorEnterArea.setOrigin({0, 0});
+    m_doorEnterArea.setPosition({628.f, 350.f});
 
     // TODO: setup portal spawn
 
@@ -93,6 +98,7 @@ State::StateChange WorldState::Update(const sf::Time& dt)
         GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
 
     bool isInAnyPortal = false;
+    bool isInFrontDoor = false;
     if (character)
     {
         auto pos = character->GetPosition();
@@ -103,6 +109,19 @@ State::StateChange WorldState::Update(const sf::Time& dt)
                 isInAnyPortal     = true;
                 break;
             }
+
+        sf::FloatRect doorBounds = m_doorEnterArea.getGlobalBounds();
+        if (doorBounds.contains(pos))
+        {
+            isInFrontDoor = true;
+        }
+    }
+
+    if (isInFrontDoor && !m_wasInShop)
+    {
+        m_showShopEnterModal = true;
+        if (character)
+            character->SetControlledByPlayer(false);  // ← lock movement
     }
 
     // only on the frame we enter:
@@ -114,6 +133,7 @@ State::StateChange WorldState::Update(const sf::Time& dt)
     }
 
     m_wasInPortal = isInAnyPortal;
+    m_wasInShop   = isInFrontDoor;
 
     // handle any pending state-change (from your buttons, etc)
     if (m_pendingStateChange.GetAction() != StateAction::NONE)
@@ -132,6 +152,8 @@ void WorldState::Draw(sf::RenderWindow& window)
     {
         portal->Draw(window);
     }
+    window.draw(m_doorEnterArea);
+
 }
 
 void WorldState::RenderUI()
@@ -163,6 +185,35 @@ void WorldState::RenderUI()
                 character->SetControlledByPlayer(true);
             m_showPortalEnterModal = false;
             m_currentPortalId      = -1;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
+    if (m_showShopEnterModal)
+        ImGui::OpenPopup("Do you want to enter the shop?");
+
+    ImGui::SetNextWindowPos(
+        ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal(
+            "Do you want to enter the shop?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Spacing();
+        if (ImGui::Button("Yes", ImVec2(100, 0)))
+        {
+            if (character)
+                character->SetControlledByPlayer(true);
+            m_showPortalEnterModal = false;
+            m_currentPortalId      = -1;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(100, 0)))
+        {
+            if (character)
+                character->SetControlledByPlayer(true);
+            m_showShopEnterModal = false;
             ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();

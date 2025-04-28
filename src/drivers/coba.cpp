@@ -22,6 +22,26 @@ int main()
     const unsigned int WINDOW_WIDTH  = 1280;  // Use consistent window size
     const unsigned int WINDOW_HEIGHT = 720;
     sf::RenderWindow   window(sf::VideoMode({WINDOW_WIDTH, WINDOW_HEIGHT}), "Coba coba character");
+
+    sf::VideoMode desktopMode = sf::VideoMode::getDesktopMode();
+
+    // Calculate the position to center the window
+    int x = (desktopMode.size.x - WINDOW_WIDTH) / 2;
+    int y = (desktopMode.size.y - WINDOW_HEIGHT) / 2;
+
+    // Set the window position to the calculated position (centered)
+    window.setPosition(sf::Vector2i(x, y));
+
+    sf::Texture bgTexture;
+    bgTexture.loadFromFile("resources/textures/ui/crystal_boss.jpg");
+
+    sf::Sprite bgSprite(bgTexture);
+
+    bgSprite.setOrigin({0, 0});
+    sf::Vector2u windowSize = window.getSize();
+    bgSprite.setScale({static_cast<float>(windowSize.x) / bgTexture.getSize().x,
+                       static_cast<float>(windowSize.y) / bgTexture.getSize().y});
+    bgSprite.setPosition({0, 0});
     window.setFramerateLimit(60);
 
     GameContext context;
@@ -142,11 +162,13 @@ int main()
     // --- Create Hero ---
     auto fighter =
         std::make_unique<Fighter>("Hero",
-                                  sf::Vector2f(WINDOW_WIDTH * 0.3f, WINDOW_HEIGHT * 0.5f),  // Position
-                                  navGrid,  // Pass navigation grid
-                                  true,     // Set as player controlled
+                                  sf::Vector2f(WINDOW_WIDTH / 2 - 400 * WINDOW_WIDTH / 1820,
+                                               780 * WINDOW_HEIGHT / 1024),  // Position
+                                  navGrid,                                   // Pass navigation grid
+                                  true,  // Set as player controlled
                                   context);
     fighter->SetShowUI(true);
+    fighter->SetMoveSpeed(200);
     // Load hero animations using the new method
     if (!fighter->LoadAnimations(elfTexturePaths,
                                  elfFrameSize,
@@ -163,7 +185,7 @@ int main()
     // fighter->SetControlledByPlayer(true); // No longer needed - done in constructor
 
     // Scale the hero slightly larger (Example)
-    fighter->SetScale(6.f, 6.f);
+    fighter->SetScale(8.f, 8.f);
 
     // Store the fighter ID for reference
     unsigned int heroId = fighter->GetId();
@@ -173,12 +195,16 @@ int main()
 
     // --- Create an Enemy ---
     auto enemy = std::make_unique<Fighter>("Enemy",
-                                           sf::Vector2f(WINDOW_WIDTH * 0.7f, WINDOW_HEIGHT * 0.5f),
+                                           sf::Vector2f(WINDOW_WIDTH / 2 + 400 * WINDOW_WIDTH / 1820,
+                                                        780 * WINDOW_HEIGHT / 1024),  // Position
+                                                                                      // etc.)
                                            navGrid,  // Pass navigation grid
                                            false,    // Not player controlled
                                            context);
 
+    enemy->SetDirection(Direction::WEST);
     enemy->SetShowUI(true);
+    enemy->SetMoveSpeed(150);
     // Load enemy animations (using the same elf data for this example)
     if (!enemy->LoadAnimations(elfTexturePaths,
                                elfFrameSize,
@@ -195,7 +221,7 @@ int main()
 
     // Store the enemy ID for reference
     unsigned int enemyId = enemy->GetId();
-    enemy->SetScale(6.f, 6.f);
+    enemy->SetScale(8.f, 8.f);
 
     // Add enemy to manager
     unitManager.AddUnit(std::move(enemy));
@@ -311,6 +337,7 @@ int main()
 
         // --- Draw ---
         window.clear(sf::Color(200, 200, 200));  // Clear with dark grey
+        window.draw(bgSprite);
 
         // Draw units (Assuming UnitManager draws them in correct order - e.g., sorted by Z)
         unitManager.Draw(window);

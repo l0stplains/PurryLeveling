@@ -304,11 +304,22 @@ void AnimatedUnit::Update(const sf::Time& dt)
                 Move(target, []() { /* on-finish callback */ });
             }
         }
-        // Check if its hovered
-        sf::Vector2f mousePos =
+        sf::Vector2f mouseWorld =
             static_cast<sf::Vector2f>(sf::Mouse::getPosition(*m_gameContext.GetWindow()));
 
-        m_isHovered = m_sprite->getGlobalBounds().contains(mousePos);
+        sf::Vector2f mouseLocal = m_sprite->getInverseTransform().transformPoint(mouseWorld);
+
+        sf::FloatRect localBounds = m_sprite->getLocalBounds();
+
+        // Compute the inset (25% on each side → central 50%)
+        sf::Vector2f inset {localBounds.size.x * 0.15f, localBounds.size.y * 0.15f};
+
+        // Build the “central” rectangle
+        sf::Vector2f  centerPos  = localBounds.position + inset;
+        sf::Vector2f  centerSize = localBounds.size * 0.5f;
+        sf::FloatRect centralRect(centerPos, centerSize);
+
+        m_isHovered = centralRect.contains(mouseLocal);
     }
 }
 
@@ -755,6 +766,15 @@ int AnimatedUnit::GetAnimationRowForDirection(Direction dir) const
 bool AnimatedUnit::IsPlayerControlled() const
 {
     return m_controlledByPlayer;
+}
+
+void AnimatedUnit::SetDirection(Direction dir)
+{
+    m_direction = dir;
+    if (m_currentAnimation)
+    {
+        m_currentAnimation->SetRow(GetAnimationRowForDirection(m_direction));
+    }
 }
 
 void AnimatedUnit::SetControlledByPlayer(bool controlled)
