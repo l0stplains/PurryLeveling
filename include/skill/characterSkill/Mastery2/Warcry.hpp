@@ -2,6 +2,7 @@
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/Howl.hpp"
 #include "effects/useEffects/FighterMight.hpp"
+#include <memory>
 
 // Fighter Mastery 2
 class WarCry : public Skill
@@ -18,10 +19,10 @@ public:
         thirdSkill.push_back(howl);
         this->setChildren(thirdSkill);
 
-        // Add FighterMight effect
-        vector<Effect> effectVec;
-        effectVec.push_back(FighterMight(15, 0.5f, 0.0f, 5, 0, 0, 3));
-        this->setEffects(effectVec);
+        // Add FighterMight effect using unique_ptr
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<FighterMight>(15, 0.5f, 0.0f, 5, 0, 0, 3));
+        this->setEffects(std::move(effectVec));
     };
     
     float getStrengthMultiplier() const { return strengthMultiplier; }

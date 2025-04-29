@@ -11,7 +11,6 @@ private:
 public:
     // -- 4 Sekawan
     SkillTree(Skill* rootNode);
-    SkillTree(const SkillTree& other);
     ~SkillTree();
 
     // - Getter

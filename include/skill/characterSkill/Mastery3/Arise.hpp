@@ -2,6 +2,7 @@
 #include "effects/useEffects/Shadowstep.hpp"
 #include "effects/useEffects/TimeWarp.hpp"
 #include "skill/Skill.hpp"
+#include <memory>
 
 // Skill Mastery3 Necromancer
 class Arise : public Skill
@@ -15,9 +16,9 @@ public:
     Arise(bool isLearned = false, bool isActive = false) 
         : Skill("Arise", 13, 6, 0, 0, {}, {}, isLearned, isActive)
     {
-        vector<Effect> effectVec;
-        effectVec.push_back(TimeWarp(0.25f, 0.15f, 3));
-        this->setEffects(effectVec);
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<TimeWarp>(0.25f, 0.15f, 3));
+        this->setEffects(std::move(effectVec));
     }
     
     // Getters

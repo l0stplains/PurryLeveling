@@ -1,6 +1,7 @@
 #pragma once
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery2/ShadowArtistry.hpp"
+#include <memory>
 
 // Root Skill untuk Assassin
 class Stealth : public Skill
@@ -18,6 +19,9 @@ public:
 
         secondSkill.push_back(shadowArtistry);
         this->setChildren(secondSkill);
+        
+        // No effects currently added, but would use the following pattern if needed:
+        // this->addEffect(std::make_unique<EffectType>(parameters));
     };
     // Getters
     float getAgilityMultiplier() const { return agilityMultiplier; }

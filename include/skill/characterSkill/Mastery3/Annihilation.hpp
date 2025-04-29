@@ -3,6 +3,7 @@
 #include "effects/useEffects/Overclock.hpp"
 #include "effects/useEffects/HarmoniousEmpowerment.hpp"
 #include "skill/Skill.hpp"
+#include <memory>
 
 // Berserkser Master3 Skill
 class Annihilation : public Skill
@@ -18,11 +19,11 @@ public:
         : Skill("Annihilation", 15, 6, 25, 1.0f, {}, {}, isLearned, isActive)
     {
         // Combine two powerful effects
-        vector<Effect> effectVec;
-        effectVec.push_back(GladiatorMight(10, 5, 1.2f, 3));  // +10 Str, +5 PhysDef, 120% resource
-        effectVec.push_back(Overclock(1.5f, 1.3f, 10, 2)); 
-        effectVec.push_back(HarmoniousEmpowerment(10, 5, rageMultiplier, 3));
-        this->setEffects(effectVec);
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<GladiatorMight>(10, 5, 1.2f, 3));  // +10 Str, +5 PhysDef, 120% resource
+        effectVec.push_back(make_unique<Overclock>(1.5f, 1.3f, 10, 2)); 
+        effectVec.push_back(make_unique<HarmoniousEmpowerment>(10, 5, rageMultiplier, 3));
+        this->setEffects(std::move(effectVec));
     }
 
     // Getters

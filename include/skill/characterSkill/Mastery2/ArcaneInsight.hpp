@@ -2,6 +2,7 @@
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/ArchmageWisdom.hpp"
 #include "effects/useEffects/Chronoflux.hpp"
+#include <memory>
 
 // Mage Skill Mastery 2
 class ArcaneInsight : public Skill
@@ -20,9 +21,9 @@ public:
         thirdSkill.push_back(archmageWisdom);
         this->setChildren(thirdSkill);
 
-        vector<Effect> effectVec;
-        effectVec.push_back(Chronoflux(0, 0, 3));
-        this->setEffects(effectVec);
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<Chronoflux>(0, 0, 3));
+        this->setEffects(std::move(effectVec));
     }
     
     float getIntelligenceMultiplier() const { return intelligenceMultiplier; }

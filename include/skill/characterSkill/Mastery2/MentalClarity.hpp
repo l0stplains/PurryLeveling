@@ -2,6 +2,7 @@
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/ManaMastery.hpp"
 #include "effects/useEffects/Chronoflux.hpp"
+#include <memory>
 
 // Mage Master 2
 class MentalClarity : public Skill
@@ -20,9 +21,9 @@ public:
         thirdSkill.push_back(manaMastery);
         this->setChildren(thirdSkill);
 
-        vector<Effect> effectVec;
-        effectVec.push_back(Chronoflux(0.2, 0, 3));
-        this->setEffects(effectVec);
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<Chronoflux>(0.2, 0, 3));
+        this->setEffects(std::move(effectVec));
     }
     
     float getIntelligenceMultiplier() const { return intelligenceMultiplier; }

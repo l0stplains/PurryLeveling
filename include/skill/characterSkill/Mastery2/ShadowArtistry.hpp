@@ -4,6 +4,7 @@
 #include "skill/characterSkill/Mastery3/SwiftStrikes.hpp"
 #include "skill/characterSkill/Mastery3/Vanish.hpp"
 #include "effects/useEffects/BattleFocus.hpp"
+#include <memory>
 
 // Assassin Mastery 2
 class ShadowArtistry : public Skill
@@ -29,9 +30,9 @@ public:
 
         this->setChildren(childSkills);
 
-        vector<Effect> effectVec;
-        effectVec.push_back(BattleFocus(0.25f, 0.35f, 0.1f, 3)); 
-        this->setEffects(effectVec);
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<BattleFocus>(0.25f, 0.35f, 0.1f, 3));
+        this->setEffects(std::move(effectVec));
     }
     
     float getAgilityMultiplier() const { return agilityMultiplier; }

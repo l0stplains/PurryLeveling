@@ -11,7 +11,7 @@ private:
 
 public:
     BloodRitual(bool isLearned = false, bool isActivated = false) 
-        : Skill("Blood Ritual", 8, 2, 0, 0, {}, {}, isLearned, isActivated)
+        : Skill("Blood Ritual", 8, 3, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 

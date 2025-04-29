@@ -11,7 +11,7 @@ private:
 
 public:
     UndeadLegion(bool isLearned = false, bool isActivated = false) 
-        : Skill("Undead Legion", 10, 3, 0, 0, {}, {}, isLearned, isActivated)
+        : Skill("Undead Legion", 10, 4, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 

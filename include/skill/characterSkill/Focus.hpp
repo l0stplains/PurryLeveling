@@ -3,6 +3,7 @@
 #include "skill/characterSkill/Mastery2/ArcaneInsight.hpp"
 #include "skill/characterSkill/Mastery2/MentalClarity.hpp"
 #include "skill/characterSkill/Mastery2/SpiritualConnection.hpp"
+#include <memory>
 
 // Root Skill Untuk Mage
 class Focus : public Skill
@@ -26,6 +27,9 @@ public:
         secondSkill.push_back(spiritualConnection);
         secondSkill.push_back(mentalClarity);
         this->setChildren(secondSkill);
+        
+        // No effects currently added, but would use the following pattern if needed:
+        // this->addEffect(std::make_unique<EffectType>(parameters));
     };
 
     // Getters

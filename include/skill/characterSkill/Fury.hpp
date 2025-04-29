@@ -3,6 +3,7 @@
 #include "skill/characterSkill/Mastery2/Bloodlust.hpp"
 #include "skill/characterSkill/Mastery2/Devastation.hpp"
 #include "effects/useEffects/HarmoniousEmpowerment.hpp"
+#include <memory>
 
 // Root Skill untuk Berserker
 class Fury : public Skill
@@ -26,9 +27,9 @@ class Fury : public Skill
             secondSkill.push_back(devastation);
             this->setChildren(secondSkill);
 
-            vector<Effect> effectVec;
-            effectVec.push_back(HarmoniousEmpowerment(5, 2, 0.2f, 3));
-            this->setEffects(effectVec);
+            // Add effect using unique_ptr
+            vector<unique_ptr<Effect>> effectVec;
+            effectVec.push_back(make_unique<HarmoniousEmpowerment>(0, 0, FuryMultiplier, 3)); // Base effect
         };
         
         // Getters

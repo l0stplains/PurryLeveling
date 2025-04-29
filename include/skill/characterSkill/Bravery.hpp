@@ -2,6 +2,7 @@
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery2/IronWill.hpp"
 #include "skill/characterSkill/Mastery2/Warcry.hpp"
+#include <memory>
 
 // Root Skill Untuk Fighter
 class Bravery : public Skill
@@ -19,6 +20,9 @@ public:
         secondSkill.push_back(warCry);
         secondSkill.push_back(ironWill);
         this->setChildren(secondSkill);
+        
+        // No effects currently added, but would use the following pattern if needed:
+        // this->addEffect(std::make_unique<EffectType>(parameters));
     };
 
     float getStrengthMultiplier() const { return strengthMultiplier; }

@@ -2,6 +2,7 @@
 #include "effects/useEffects/GladiatorMight.hpp"
 #include "effects/useEffects/Bloodthirst.hpp"
 #include "skill/Skill.hpp"
+#include <memory>
 
 // Skill Mastery3 Assassin
 class SwiftStrikes : public Skill
@@ -14,10 +15,10 @@ public:
     SwiftStrikes(bool isLearned = false, bool isActive = false) 
         : Skill("Swift Strikes", 12, 5, 8, 1.0f, {}, {}, isLearned, isActive)
     {
-        vector<Effect> effectVec;
-        effectVec.push_back(GladiatorMight(40, 13, 0.091f, 4));  // 2 extra attacks at 70% damage
-        effectVec.push_back(Bloodthirst(20, 0.4, 0.1, 2));      // 25% chance to heal for 15% of damage dealt
-        this->setEffects(effectVec);
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<GladiatorMight>(40, 13, 0.091f, 4));  // 2 extra attacks at 70% damage
+        effectVec.push_back(make_unique<Bloodthirst>(20, 0.4, 0.1, 2));      // 25% chance to heal for 15% of damage dealt
+        this->setEffects(std::move(effectVec));
     }
     
     // Getter
