@@ -4,6 +4,11 @@
 #include "units/characters/Character.hpp"
 #include "inventory/Equipment.hpp"
 #include "inventory/Backpack.hpp"
+#include "units/characters/Fighter.hpp"
+#include "units/characters/Mage.hpp"
+#include "units/characters/Assassin.hpp"
+#include "units/characters/Berseker.hpp"
+#include "units/characters/Necromancer.hpp"
 
 /**
  * @class PlayerConfigSaver

@@ -7,30 +7,38 @@
 #include "parser/ConfigParserUtils.hpp"
 #include "items/Item.hpp"
 #include "items/ItemManager.hpp"
+#include "effects/Stats.hpp"
 
-/**
- * @class PlayerConfigParser
- * @brief Parses both the equipment (5 rows of 2 cols) and backpack (n rows of 4 cols) configs.
- */
 class PlayerConfigParser : public ConfigParser
 {
 public:
-    /**
-     * @param basePath  Directory containing “equipment.txt” and “backpack.txt”
-     */
+    // no more default‐ctor: you must supply an ItemManager
+    explicit PlayerConfigParser(ItemManager mgr)
+        : m_itemManager(std::move(mgr))
+      {}
     bool ParseFromFile(const std::string& basePath) override;
 
-    void setItemManager(ItemManager& itemManager) { m_itemManager = itemManager; }
     /// [ SlotName, ItemID ] × 5
-    const std::vector<std::vector<std::string>>& GetEquipmentData() const { return m_equipmentData; }
+    const std::vector<std::vector<std::string>>&
+        GetEquipmentData() const { return m_equipmentData; }
     /// [ RowIdx, ColIdx, ItemID, TotalStack ]
-    const std::vector<std::vector<std::pair<Item, int>>>& GetBackpackData()  const { return m_backpackData; }
-    const std::map<std::string,std::string>&    GetStats()       const { return m_stats; }
+    const std::vector<std::vector<std::pair<Item, int>>>&
+        GetBackpackData()  const { return m_backpackData; }
+
+    // line 1–4
+    const std::map<std::string,std::string>& GetCharStats() const { return m_charstats; }
+    // line 5–20
+    const std::map<std::string,std::string>& GetUnitStats() const { return m_unitstats; }
+    // line 21–end
+    const std::map<std::string,std::string>& GetTypeStats() const { return m_typestats; }
+
     std::string GetLastError() const override { return m_lastError; }
 
 private:
-    std::vector<std::vector<std::string>> m_equipmentData;
-    std::vector<std::vector<std::pair<Item, int>>> m_backpackData;
-    std::map<std::string, std::string> m_stats;
-    ItemManager& m_itemManager; // Item database for backpack items
+    std::vector<std::vector<std::string>>             m_equipmentData;
+    std::vector<std::vector<std::pair<Item, int>>>    m_backpackData;
+    std::map<std::string,std::string>                 m_charstats;
+    std::map<std::string,std::string>                 m_unitstats;
+    std::map<std::string,std::string>                 m_typestats;
+    ItemManager                                       m_itemManager;  // Item database for backpack items
 };
