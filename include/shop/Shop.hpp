@@ -56,6 +56,5 @@ private:
     std::vector<StockEntry> pendantStock;
 
     // Helper to pick the right stock vector
-    std::vector<StockEntry>* getStock(const std::string& category);
     const std::vector<StockEntry>* getStock(const std::string& category) const;
 };

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "parser/ConfigParser.hpp"
+#include "ConfigParser.hpp"
 
 /**
  * @class ResourceConfigParser
