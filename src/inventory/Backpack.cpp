@@ -1,8 +1,4 @@
-#include "../include/inventory/Backpack.hpp"
-
-#include <utility>  // for std::pair
-
-#include "../include/exception/Exception.hpp"
+#include "inventory/Backpack.hpp"
 
 Backpack::Backpack(const std::vector<std::pair<Item, int>>& initial, int rows, int cols)
     : backpackRows(rows), backpackCols(cols)
@@ -59,26 +55,29 @@ int Backpack::getQuantityAtTile(int x, int y) const
     return cell.second;
 }
 
-// Helper method to find a tile with the same item that can accept more quantity
-std::pair<bool, std::pair<int, int>> Backpack::findItemTile(const Item& item) const
+std::vector<std::pair<int, int>> Backpack::findItemTile(const Item& item) const
 {
+    std::vector<std::pair<int, int>> result;
+
     for (int i = 0; i < backpackRows; ++i)
     {
         for (int j = 0; j < backpackCols; ++j)
         {
             const auto& cell = backpack[i][j];
-            if (!cell.first.isNull() && cell.first == item && cell.second < maxStackSize)
+            if (!cell.first.isNull() && cell.first == item)
             {
-                return {true, {i, j}};
+                result.push_back({i, j});
             }
         }
     }
-    return {false, {-1, -1}};  // Not found
+
+    return result;  // Return all found tiles
 }
 
-// Helper method to find an empty tile
-std::pair<bool, std::pair<int, int>> Backpack::findEmptyTile() const
+std::vector<std::pair<int, int>> Backpack::findEmptyTile() const
 {
+    std::vector<std::pair<int, int>> result;
+
     for (int i = 0; i < backpackRows; ++i)
     {
         for (int j = 0; j < backpackCols; ++j)
@@ -86,14 +85,14 @@ std::pair<bool, std::pair<int, int>> Backpack::findEmptyTile() const
             const auto& cell = backpack[i][j];
             if (cell.first.isNull())
             {
-                return {true, {i, j}};
+                result.push_back({i, j});
             }
         }
     }
-    return {false, {-1, -1}};  // Not found
+
+    return result;  // Return all found empty tiles
 }
 
-// Fixed implementation for addItemAtTile to prevent replacing different items
 void Backpack::addItemAtTile(int x, int y, const Item& item, int quantity)
 {
     validateCoordinates(x, y);
@@ -113,11 +112,19 @@ void Backpack::addItemAtTile(int x, int y, const Item& item, int quantity)
         throw InvalidQuantityException();
     }
 
-    try
+    // Check if there's already an item
+    Item currentItem;
+    int  currentQuantity = 0;
+    bool isEmpty         = false;
+
+    // Use direct check for empty cell instead of try-catch
+    const auto& cell = backpack[x][y];
+    isEmpty          = cell.first.isNull();
+
+    if (!isEmpty)
     {
-        // Check if there's already an item
-        Item currentItem     = getItemAtTile(x, y);
-        int  currentQuantity = getQuantityAtTile(x, y);
+        currentItem     = cell.first;
+        currentQuantity = cell.second;
 
         if (currentItem == item)
         {
@@ -137,14 +144,13 @@ void Backpack::addItemAtTile(int x, int y, const Item& item, int quantity)
             throw ItemSlotOccupiedException("Cannot add a different item to an occupied slot");
         }
     }
-    catch (const EmptyCellException&)
+    else
     {
         // Empty slot - add the new item
         backpack[x][y] = std::make_pair(item, quantity);
     }
 }
 
-// Implementation for addItem with desired flow
 void Backpack::addItem(const Item& item, int quantity)
 {
     if (quantity <= 0)
@@ -157,54 +163,61 @@ void Backpack::addItem(const Item& item, int quantity)
         throw QuantityRequiresValidItemException();
     }
 
-    int remainingQuantity = quantity;
+    // Pre-calculate available space
+    int availableSpace = 0;
 
-    // First, try to fill existing stacks of the same item
-    while (remainingQuantity > 0)
+    // Find existing tiles with the same item
+    std::vector<std::pair<int, int>> itemTiles = findItemTile(item);
+    for (const auto& [x, y] : itemTiles)
     {
-        auto [found, location] = findItemTile(item);
-        if (!found)
+        int currentQuantity = backpack[x][y].second;
+        if (currentQuantity < maxStackSize)
         {
-            break;  // No existing stacks with space left
-        }
-
-        int x = location.first;
-        int y = location.second;
-
-        try
-        {
-            int currentQuantity = getQuantityAtTile(x, y);
-            int canAdd          = std::min(maxStackSize - currentQuantity, remainingQuantity);
-
-            addItemAtTile(x, y, item, canAdd);
-            remainingQuantity -= canAdd;
-        }
-        catch (const std::exception&)
-        {
-            // If there's any error, try the next stack
-            continue;
+            availableSpace += (maxStackSize - currentQuantity);
         }
     }
 
-    // If we still have items left, use empty slots
-    while (remainingQuantity > 0)
-    {
-        auto [found, location] = findEmptyTile();
-        if (!found)
-        {
-            throw BackpackOvercapacityException();
-        }
+    // Find empty tiles
+    std::vector<std::pair<int, int>> emptyTiles = findEmptyTile();
+    availableSpace += emptyTiles.size() * maxStackSize;
 
-        int x      = location.first;
-        int y      = location.second;
+    // Check if we have enough space
+    if (availableSpace < quantity)
+    {
+        throw BackpackOvercapacityException();
+    }
+
+    // Now proceed with adding items
+    int remainingQuantity = quantity;
+
+    // First, try to fill existing stacks of the same item
+    for (const auto& [x, y] : itemTiles)
+    {
+        if (remainingQuantity <= 0)
+            break;
+
+        int currentQuantity = backpack[x][y].second;
+        int canAdd          = std::min(maxStackSize - currentQuantity, remainingQuantity);
+
+        // Update the quantity at this tile
+        backpack[x][y].second += canAdd;
+        remainingQuantity -= canAdd;
+    }
+
+    // If we still have items left, use empty slots
+    for (const auto& [x, y] : emptyTiles)
+    {
+        if (remainingQuantity <= 0)
+            break;
+
         int canAdd = std::min(maxStackSize, remainingQuantity);
 
-        addItemAtTile(x, y, item, canAdd);
+        // Add new item at this empty tile
+        backpack[x][y] = std::make_pair(item, canAdd);
         remainingQuantity -= canAdd;
     }
 }
 
-// Updated takeItemAtTile with quantity parameter
 Item Backpack::takeItemAtTile(int x, int y, int quantity)
 {
     validateCoordinates(x, y);
@@ -236,7 +249,6 @@ Item Backpack::takeItemAtTile(int x, int y, int quantity)
     return item;
 }
 
-// Implementation for takeItem with desired flow
 Item Backpack::takeItem(const Item& item, int quantity)
 {
     if (quantity <= 0)
@@ -244,28 +256,17 @@ Item Backpack::takeItem(const Item& item, int quantity)
         throw InvalidQuantityException();
     }
 
+    // Get all tiles containing the item using findItemTile
+    std::vector<std::pair<int, int>> itemTileCoords = findItemTile(item);
+
     // Count total available items
     int totalAvailable = 0;
-    for (int i = 0; i < backpackRows; ++i)
+    for (const auto& [x, y] : itemTileCoords)
     {
-        for (int j = 0; j < backpackCols; ++j)
-        {
-            try
-            {
-                Item currentItem = getItemAtTile(i, j);
-                if (currentItem == item)
-                {
-                    totalAvailable += getQuantityAtTile(i, j);
-                }
-            }
-            catch (const EmptyCellException&)
-            {
-                // Skip empty cells
-                continue;
-            }
-        }
+        totalAvailable += backpack[x][y].second;
     }
 
+    // Check if we have enough items
     if (totalAvailable < quantity)
     {
         throw InsufficientQuantityException();
@@ -274,117 +275,127 @@ Item Backpack::takeItem(const Item& item, int quantity)
     Item takenItem       = item;  // Store the item type to return
     int  remainingToTake = quantity;
 
-    // First take from non-full stacks to minimize fragmentation
-    for (int i = 0; i < backpackRows && remainingToTake > 0; ++i)
+    // First take from partially filled stacks to minimize fragmentation
+    // Filter for partially filled stacks
+    std::vector<std::pair<int, int>> partiallyFilledTiles;
+    for (const auto& [x, y] : itemTileCoords)
     {
-        for (int j = 0; j < backpackCols && remainingToTake > 0; ++j)
+        if (backpack[x][y].second < maxStackSize)
         {
-            try
-            {
-                Item currentItem = getItemAtTile(i, j);
-                if (currentItem == item)
-                {
-                    int currentQuantity = getQuantityAtTile(i, j);
-                    if (currentQuantity < maxStackSize)
-                    {
-                        // Take from this stack
-                        int toTake = std::min(remainingToTake, currentQuantity);
-                        takeItemAtTile(i, j, toTake);
-                        remainingToTake -= toTake;
-                    }
-                }
-            }
-            catch (const std::exception&)
-            {
-                // Skip problematic cells
-                continue;
-            }
+            partiallyFilledTiles.push_back({x, y});
         }
     }
 
-    // If we still need items, take from any stack
-    for (int i = 0; i < backpackRows && remainingToTake > 0; ++i)
+    // Take from partially filled stacks first
+    for (const auto& [x, y] : partiallyFilledTiles)
     {
-        for (int j = 0; j < backpackCols && remainingToTake > 0; ++j)
+        if (remainingToTake <= 0)
+            break;
+
+        int currentQuantity = backpack[x][y].second;
+        int toTake          = std::min(remainingToTake, currentQuantity);
+
+        // Update this tile
+        if (toTake == currentQuantity)
         {
-            try
-            {
-                Item currentItem = getItemAtTile(i, j);
-                if (currentItem == item)
-                {
-                    int currentQuantity = getQuantityAtTile(i, j);
-                    int toTake          = std::min(remainingToTake, currentQuantity);
-                    takeItemAtTile(i, j, toTake);
-                    remainingToTake -= toTake;
-                }
-            }
-            catch (const std::exception&)
-            {
-                // Skip problematic cells
-                continue;
-            }
+            // Taking all items
+            backpack[x][y] = std::make_pair(Item(), 0);
         }
+        else
+        {
+            // Taking some items
+            backpack[x][y].second = currentQuantity - toTake;
+        }
+
+        remainingToTake -= toTake;
+    }
+
+    // If we still need items, take from any remaining stacks
+    for (const auto& [x, y] : itemTileCoords)
+    {
+        if (remainingToTake <= 0)
+            break;
+
+        // Skip if this was a partially filled tile we already processed
+        // or if it's now empty
+        if (backpack[x][y].first.isNull())
+            continue;
+
+        int currentQuantity = backpack[x][y].second;
+        int toTake          = std::min(remainingToTake, currentQuantity);
+
+        // Update this tile
+        if (toTake == currentQuantity)
+        {
+            // Taking all items
+            backpack[x][y] = std::make_pair(Item(), 0);
+        }
+        else
+        {
+            // Taking some items
+            backpack[x][y].second = currentQuantity - toTake;
+        }
+
+        remainingToTake -= toTake;
     }
 
     return takenItem;
 }
 
-// Implementation for moveItem
 void Backpack::moveItem(int fromX, int fromY, int toX, int toY)
 {
     validateCoordinates(fromX, fromY);
     validateCoordinates(toX, toY);
 
     // Check if source has an item
-    try
+    Item sourceItem     = getItemAtTile(fromX, fromY);
+    int  sourceQuantity = getQuantityAtTile(fromX, fromY);
+
+    bool destIsEmpty = false;
+
+    // Check if destination is empty (without try-catch)
+    const auto& destCell = backpack[toX][toY];
+    destIsEmpty          = destCell.first.isNull();
+
+    if (!destIsEmpty)
     {
-        Item sourceItem     = getItemAtTile(fromX, fromY);
-        int  sourceQuantity = getQuantityAtTile(fromX, fromY);
+        // Destination has an item
+        Item destItem     = destCell.first;
+        int  destQuantity = destCell.second;
 
-        try
+        if (sourceItem == destItem)
         {
-            // Try to get destination item
-            Item destItem     = getItemAtTile(toX, toY);
-            int  destQuantity = getQuantityAtTile(toX, toY);
-
-            if (sourceItem == destItem)
+            // Same items, stack them
+            int total = sourceQuantity + destQuantity;
+            if (total > maxStackSize)
             {
-                // Same items, stack them
-                int total = sourceQuantity + destQuantity;
-                if (total > maxStackSize)
-                {
-                    int canMove = maxStackSize - destQuantity;
-                    // Update destination
-                    backpack[toX][toY].second = maxStackSize;
-                    // Update source
-                    backpack[fromX][fromY].second = sourceQuantity - canMove;
-                }
-                else
-                {
-                    // Update destination
-                    backpack[toX][toY].second = total;
-                    // Clear source
-                    backpack[fromX][fromY] = std::make_pair(Item(), 0);
-                }
+                int canMove = maxStackSize - destQuantity;
+                // Update destination
+                backpack[toX][toY].second = maxStackSize;
+                // Update source
+                backpack[fromX][fromY].second = sourceQuantity - canMove;
             }
             else
             {
-                // Different items, swap them
-                std::swap(backpack[fromX][fromY], backpack[toX][toY]);
+                // Update destination
+                backpack[toX][toY].second = total;
+                // Clear source
+                backpack[fromX][fromY] = std::make_pair(Item(), 0);
             }
         }
-        catch (const EmptyCellException&)
+        else
         {
-            // Destination is empty
-            // Move item to empty destination
-            backpack[toX][toY] = std::make_pair(sourceItem, sourceQuantity);
-            // Clear source
-            backpack[fromX][fromY] = std::make_pair(Item(), 0);
+            // Different items, swap them
+            std::swap(backpack[fromX][fromY], backpack[toX][toY]);
         }
     }
-    catch (const EmptyCellException&)
+    else
     {
-        throw;  // Rethrow if source is empty
+        // Destination is empty
+        // Move item to empty destination
+        backpack[toX][toY] = std::make_pair(sourceItem, sourceQuantity);
+        // Clear source
+        backpack[fromX][fromY] = std::make_pair(Item(), 0);
     }
 }
 
@@ -400,7 +411,6 @@ std::vector<std::pair<Item, int>> Backpack::filterItemsByType(const std::string&
             const Item& item     = slot.first;
             int         quantity = slot.second;
 
-            // Assume Item has a method getType() returning its type string
             if (quantity > 0 && item.getType() == type)
             {
                 result.push_back(slot);

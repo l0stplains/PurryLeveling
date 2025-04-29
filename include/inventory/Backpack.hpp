@@ -1,8 +1,7 @@
 #pragma once
 
-#include <utility>  // for std::pair
-
-#include "../include/items/Item.hpp"
+#include "exception/Exception.hpp"
+#include "items/Item.hpp"
 
 class Backpack
 {
@@ -82,6 +81,19 @@ public:
      */
     std::vector<std::pair<Item, int>> filterItemsByType(const std::string& type) const;
 
+    /**
+     * @brief Find item tile
+     * @param item item to find
+     * @return Vector of found tile coordinates
+     */
+    std::vector<std::pair<int, int>> findItemTile(const Item& item) const;
+
+    /**
+     * @brief Find empty tile
+     * @return Vector of empty tile coordinates
+     */
+    std::vector<std::pair<int, int>> findEmptyTile() const;
+
 protected:
     const int                                      backpackRows;
     const int                                      backpackCols;
@@ -102,17 +114,4 @@ protected:
      * @return item with quantity at tile
      */
     std::pair<Item, int> rawAt(int x, int y) const;
-
-    /**
-     * @brief Find item tile
-     * @param item item to find
-     * @return tile coordinates
-     */
-    std::pair<bool, std::pair<int, int>> findItemTile(const Item& item) const;
-
-    /**
-     * @brief Find empty tile
-     * @return tile coordinates
-     */
-    std::pair<bool, std::pair<int, int>> findEmptyTile() const;
 };
