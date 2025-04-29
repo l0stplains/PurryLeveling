@@ -11,7 +11,8 @@ private:
     int   manaRegenBonus         = 0;
 
 public:
-    ArcaneInsight() : Skill("Arcane Insight", 9, 3, 6, 1.0f, {}, {}, false, false)
+    ArcaneInsight(bool isLearned = false, bool isActivated = false) 
+        : Skill("Arcane Insight", 9, 3, 6, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 

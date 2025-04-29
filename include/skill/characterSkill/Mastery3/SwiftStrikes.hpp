@@ -11,7 +11,8 @@ private:
     float agilityMultiplier = 0.25f;  // Good agility boost
 
 public:
-    SwiftStrikes() : Skill("Swift Strikes", 12, 5, 8, 1.0f, {}, {}, false, false)
+    SwiftStrikes(bool isLearned = false, bool isActive = false) 
+        : Skill("Swift Strikes", 12, 5, 8, 1.0f, {}, {}, isLearned, isActive)
     {
         vector<Effect> effectVec;
         effectVec.push_back(GladiatorMight(40, 13, 0.091f, 4));  // 2 extra attacks at 70% damage

@@ -11,7 +11,8 @@ private:
     int   manaRegenBonus         = 0;
 
 public:
-    MentalClarity() : Skill("Mental Clarity", 7, 2, 0, 1.0f, {}, {}, false, false)
+    MentalClarity(bool isLearned = false, bool isActivated = false) 
+        : Skill("Mental Clarity", 7, 2, 0, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 

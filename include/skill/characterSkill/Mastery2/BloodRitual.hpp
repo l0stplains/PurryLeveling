@@ -10,7 +10,8 @@ private:
     int   summonedUnit     = 0;
 
 public:
-    BloodRitual() : Skill("Blood Ritual", 8, 2, 0, 0, {}, {}, true, true)
+    BloodRitual(bool isLearned = false, bool isActivated = false) 
+        : Skill("Blood Ritual", 8, 2, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 

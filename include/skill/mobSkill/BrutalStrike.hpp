@@ -9,7 +9,8 @@ private:
     float stunChance       = 0.5f; // 50%
 
 public:
-    BrutalStrike() : Skill("Brutal Strike", 0, 0, 0, 0.0f, {}, {}, false, false) {};
+    BrutalStrike(bool isLearned = false, bool isActivated = false) 
+        : Skill("Brutal Strike", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated) {};
 
     float getDamageMultiplier() const { return damageMultiplier; }
     float getStunChance() const { return stunChance; }

@@ -10,7 +10,8 @@ private:
     float strengthMultiplier = 0.15f;  // Modest strength boost
 
 public:
-    IronWill() : Skill("Iron Will", 7, 3, 0, 0.6f, {}, {}, false, false)
+    IronWill(bool isLearned = false, bool isActivated = false) 
+        : Skill("Iron Will", 7, 3, 0, 0.6f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
         Guardian* guardian = new Guardian();

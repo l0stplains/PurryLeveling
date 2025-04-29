@@ -13,7 +13,8 @@ private:
     float agilityMultiplier = 0.17f;
 
 public:
-    ShadowArtistry() : Skill("Shadow Artistry", 6, 3, 0, 0.5f, {}, {}, false, true)
+    ShadowArtistry(bool isLearned = false, bool isActivated = false) 
+        : Skill("Shadow Artistry", 6, 3, 0, 0.5f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> childSkills;
 

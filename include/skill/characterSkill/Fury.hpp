@@ -14,7 +14,7 @@ class Fury : public Skill
         float selfDamage       = 0.0f;    // No self damage initially
 
     public:
-        Fury() : Skill("Fury", 5, 0, 0, 0, {}, {}, true, true)
+        Fury(bool isLearned = true, bool isActivated = true) : Skill("Fury", 5, 0, 0, 0, {}, {}, isLearned, isActivated)
         {
             // Create second layer skills
             vector<Skill*> secondSkill;

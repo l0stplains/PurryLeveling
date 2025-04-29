@@ -13,7 +13,8 @@ private:
     float selfDamage       = 0.0f;   // No self damage
 
 public:
-    Bloodlust() : Skill("Bloodlust", 7, 2, 6, 1.0f, {}, {}, false, false)
+    Bloodlust(bool isLearned = false, bool isActivated = false) 
+        : Skill("Bloodlust", 7, 2, 6, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Effect> effectVec;
         effectVec.push_back(Bloodthirst(5, 0.10f, 0.05f, 3));  // +5 Str, +10% crit, 5% skip chance,

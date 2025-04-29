@@ -10,7 +10,8 @@ private:
     float strengthMultiplier = 0.35f;  // Major strength boost
 
 public:
-    Howl() : Skill("Howl", 12, 5, 15, 1.0f, {}, {}, false, false)
+    Howl(bool isLearned = false, bool isActive = false) 
+        : Skill("Howl", 12, 5, 15, 1.0f, {}, {}, isLearned, isActive)
     {
         vector<Effect> effectVec;
         effectVec.push_back(IronCurtain(30.0f, 25.0f, 0.20f, 5));

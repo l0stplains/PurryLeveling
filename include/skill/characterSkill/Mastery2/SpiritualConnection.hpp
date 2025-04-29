@@ -11,7 +11,8 @@ private:
     int   manaRegenBonus         = 30;     // Mana regeneration
 
 public:
-    SpiritualConnection() : Skill("Spiritual Connection", 8, 3, 0, 1.0f, {}, {}, false, false)
+    SpiritualConnection(bool isLearned = false, bool isActivated = false) 
+        : Skill("Spiritual Connection", 8, 3, 0, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 

@@ -12,7 +12,8 @@ private:
 
 public:
     // Cuma iniialize stats untuk multiplier
-    SoulHarvest() : Skill("Soul Harvest", 12, 5, 0, 0, {}, {}, true, true)
+    SoulHarvest(bool isLearned = true, bool isActive = true) 
+        : Skill("Soul Harvest", 12, 5, 0, 0, {}, {}, isLearned, isActive)
     {
         vector<Effect> effectVec;
         effectVec.push_back(Shadowstep(20.0f, 0.25f, 0.15f, 3));

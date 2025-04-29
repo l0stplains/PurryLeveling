@@ -10,7 +10,8 @@ private:
     float strengthMultiplier = 0.20f;  // Enhanced strength boost
 
 public:
-    WarCry() : Skill("War Cry", 8, 2, 5, 1.0f, {}, {}, false, false)
+    WarCry(bool isLearned = false, bool isActivated = false) 
+        : Skill("War Cry", 8, 2, 5, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
         Howl* howl = new Howl();

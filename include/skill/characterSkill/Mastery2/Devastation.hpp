@@ -13,7 +13,8 @@ private:
     float selfDamage       = 0.0f;   // No self damage
 
 public:
-    Devastation() : Skill("Devastation", 9, 4, 12, 1.0f, {}, {}, false, false)
+    Devastation(bool isLearned = false, bool isActivated = false) 
+        : Skill("Devastation", 9, 4, 12, 1.0f, {}, {}, isLearned, isActivated)
     {
         // Add BattleFocus effect
         vector<Effect> effectVec;

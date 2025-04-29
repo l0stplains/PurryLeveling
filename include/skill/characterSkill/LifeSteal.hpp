@@ -13,7 +13,7 @@ private:
 public:
 
 // Cuma iniialize stats untuk multiplier
-    LifeSteal() : Skill("LifeSteal", 6, 2, 0, 0, {}, {}, true, true)
+    LifeSteal(bool isLearned = true, bool isActivated = true) : Skill("LifeSteal", 6, 2, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> secondSkill;
         

@@ -10,7 +10,8 @@ private:
     float agilityMultiplier = 0.30f;
 
 public:
-    Vanish() : Skill("Vanish", 10, 5, 0, 1.0f, {}, {}, false, false)
+    Vanish(bool isLearned = false, bool isActive = false) 
+        : Skill("Vanish", 10, 5, 0, 1.0f, {}, {}, isLearned, isActive)
     {
         vector<Effect> effectVec;
         effectVec.push_back(Shadowstep(78, 0.45f, 0.38f, 4));

@@ -10,7 +10,7 @@ private:
     float agilityMultiplier = 0.17f;  // Base agility boost
 
 public:
-    Stealth() : Skill("Stealth", 3, 1, 0, 0, {}, {}, true, true)
+    Stealth(bool isLearned = true, bool isActivated = true) : Skill("Stealth", 3, 1, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> secondSkill;
 

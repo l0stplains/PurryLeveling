@@ -14,7 +14,8 @@ private:
     float selfDamage       = 0.10f;  // Costs 10% of own health to use
 
 public:
-    Annihilation() : Skill("Annihilation", 15, 6, 25, 1.0f, {}, {}, false, false)
+    Annihilation(bool isLearned = false, bool isActive = false) 
+        : Skill("Annihilation", 15, 6, 25, 1.0f, {}, {}, isLearned, isActive)
     {
         // Combine two powerful effects
         vector<Effect> effectVec;

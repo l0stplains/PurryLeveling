@@ -10,7 +10,8 @@ private:
     int   manaRegenBonus         = 50;
 
 public:
-    EtherealBond() : Skill("Ethereal Bond", 15, 6, 0, 1.0f, {}, {}, false, false) 
+    EtherealBond(bool isLearned = false, bool isActive = false) 
+        : Skill("Ethereal Bond", 15, 6, 0, 1.0f, {}, {}, isLearned, isActive) 
     {
         vector<Effect> effectVec;
         effectVec.push_back(Chronoflux(-10, 0.1, 3)); // Cooldown reduction 10%, mana cost reduction 10

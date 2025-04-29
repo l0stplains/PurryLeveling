@@ -10,7 +10,7 @@ private:
     float strengthMultiplier = 0.12f;  // Untuk heal
 
 public:
-    Bravery() : Skill("Bravery", 4, 0, 0, 0, {}, {}, true, true)
+    Bravery(bool isLearned = true, bool isActivated = true) : Skill("Bravery", 4, 0, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> secondSkill;
 

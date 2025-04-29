@@ -11,7 +11,8 @@ private:
     int   manaRegenBonus         = 20;
 
 public:
-    CosmicMastery() : Skill("Cosmic Mastery", 25, 8, 15, 1.0f, {}, {}, false, false)
+    CosmicMastery(bool isLearned = false, bool isActive = false) 
+        : Skill("Cosmic Mastery", 25, 8, 15, 1.0f, {}, {}, isLearned, isActive)
     {
         vector<Effect> effectVec;
         effectVec.push_back(TimeWarp(0.40f, 0.25f, 5));

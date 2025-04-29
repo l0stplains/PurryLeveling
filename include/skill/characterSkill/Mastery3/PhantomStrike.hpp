@@ -11,7 +11,8 @@ private:
     float agilityMultiplier = 0.25f;  // Good agility boost
 
 public:
-    PhantomStrike() : Skill("Phantom Strike", 14, 6, 25, 1.0f, {}, {}, false, false)
+    PhantomStrike(bool isLearned = false, bool isActive = false) 
+        : Skill("Phantom Strike", 14, 6, 25, 1.0f, {}, {}, isLearned, isActive)
     {
         vector<Effect> effectVec;
         effectVec.push_back(TimeWarp(0.40f, 0.131f, 3));  // 20% enemy skip turn, 50% damage boost

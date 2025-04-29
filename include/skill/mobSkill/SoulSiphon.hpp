@@ -9,7 +9,8 @@ private:
     float lifeStealMultiplier = 0.3f;
 
 public:
-    SoulSiphon() : Skill("Soul Siphon", 0, 0, 0, 0.0f, {}, {}, false, false) {};
+    SoulSiphon(bool isLearned = false, bool isActivated = false) 
+        : Skill("Soul Siphon", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated) {};
 
     float getIntMultiplier() const { return intMultiplier; }
     float getLifestealPercentage() const { return lifestealPercentage; }

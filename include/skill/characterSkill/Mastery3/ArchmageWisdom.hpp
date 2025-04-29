@@ -11,7 +11,8 @@ private:
     int   manaRegenBonus         = 0;
 
 public:
-    ArchmageWisdom() : Skill("Archmage's Wisdom", 14, 6, 12, 1.0f, {}, {}, false, false)
+    ArchmageWisdom(bool isLearned = false, bool isActive = false) 
+        : Skill("Archmage's Wisdom", 14, 6, 12, 1.0f, {}, {}, isLearned, isActive)
     {
         vector<Effect> effectVec;
         effectVec.push_back(FortunesCall(20, 0.15f, 6));

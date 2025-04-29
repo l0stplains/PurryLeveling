@@ -13,10 +13,8 @@ private:
     int   manaRegenBonus         = 0;
 
 public:
-
-
     // Cuma iniialize stats untuk multiplier
-    Focus() : Skill("Focus", 5, 3, 0, 0, {}, {}, true, true)
+    Focus(bool isLearned = true, bool isActivated = true) : Skill("Focus", 5, 3, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> secondSkill;
 
