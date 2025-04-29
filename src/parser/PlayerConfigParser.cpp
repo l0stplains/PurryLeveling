@@ -4,12 +4,11 @@
 
 bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
 {
-    // 1) equipment: exactly 5×2
     if (!ConfigParserUtils::ReadTokensFile(
             basePath + "/equipment.txt",
             m_equipmentData,
-            /*expectedCols=*/2,
-            /*expectedRows=*/5,
+            2,
+            5,
             m_lastError
         )) return false;
 
@@ -18,7 +17,7 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
     if (!ConfigParserUtils::ReadTokensFile(
             basePath + "/backpack.txt",
             backpackRecs,
-            /*expectedCols=*/4,
+            4,
             m_lastError
         )) return false;
 
@@ -50,9 +49,27 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
             m_lastError
         )) return false;
 
-    m_stats.clear();
-    for (auto &rec : statsRecs) {
-        m_stats[rec[0]] = rec[1];
+    m_charstats.clear();
+    m_unitstats.clear();
+    m_typestats.clear();
+
+    for (size_t i = 0; i < statsRecs.size(); ++i) {
+        const auto& rec = statsRecs[i];
+        const auto& key = rec[0];
+        const auto& val = rec[1];
+
+        if (i < 4) {
+            // LEVEL, EXP, GOLD, MASTERY
+            m_charstats[key] = val;
+        }
+        else if (i < 20) {
+            // NAME + core stats
+            m_unitstats[key] = val;
+        }
+        else {
+            // TYPE, ATTACK_RANGE, BLOCK_CHANCE, etc.
+            m_typestats[key] = val;
+        }
     }
 
     return true;

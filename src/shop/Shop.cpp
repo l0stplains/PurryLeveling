@@ -1,4 +1,4 @@
-#include "Shop.hpp"
+#include "shop/Shop.hpp"
 
 Shop::Shop(const std::string& configFile, const std::vector<Item>& masterItems)
   : m_masterItems(masterItems)
@@ -19,16 +19,15 @@ void Shop::restock() {
     for (auto const& row : m_configData) {
         // row = { Name, Rarity, BasePrice, Stock }
         int qty   = std::stoi(row[3]);
-        if (qty <= 0) 
-            continue;               // skip zero-stock
+        if (qty <= 0) continue;
 
-        const std::string& name  = row[0];
-        int price               = std::stoi(row[2]);
+        const std::string& name = row[0];
+        int price              = std::stoi(row[2]);
 
-        // find in master list
+        // find in master list by name
         auto it = std::find_if(
             m_masterItems.begin(), m_masterItems.end(),
-            [&](auto const& itm){ return itm.GetName() == name; }
+            [&](const Item& itm){ return itm.getName() == name; }
         );
         if (it == m_masterItems.end()) {
             std::cerr << "Shop::restock: unknown item '" << name << "'\n";
@@ -37,7 +36,7 @@ void Shop::restock() {
 
         Item item = *it;
         StockEntry entry{ item, price, qty };
-        const auto& type = item.GetType();
+        const auto& type = item.getType();
 
         if      (type == "Potion")  potionStock.push_back(entry);
         else if (type == "Weapon")  weaponStock.push_back(entry);
@@ -47,51 +46,60 @@ void Shop::restock() {
     }
 }
 
-bool Shop::buy(Player& player, const std::string& category, int index) {
+bool Shop::buy(Character& player, const std::string& category, int index) {
     auto stock = getStock(category);
-    if (!stock || index < 0 || index >= (int)stock->size()) return false;
+    if (!stock || index < 0 || index >= static_cast<int>(stock->size()))
+        return false;
 
-    auto& [item, price, qty] = (*stock)[index];
-    if (qty <= 0)        return false;
-    if (!player.SpendGold(price)) return false;
+    auto& entry = (*stock)[index];
+    auto& item  = std::get<0>(entry);
+    auto& price = std::get<1>(entry);
+    auto& qty   = std::get<2>(entry);
 
-    player.AddItem(item);
+    // ensure enough gold
+    if (player.GetGold() < price) return false;
+    player.AddGold(-price);
+
+    // TODO: add 'item' to player's inventory/backpack
+
     --qty;
     return true;
 }
 
-bool Shop::sell(Player& player, const Item& item) {
-    // look up config price
+bool Shop::sell(Character& player, const Item& item) {
     int configPrice = -1;
     for (auto const& row : m_configData) {
-        if (row[0] == item.GetName()) {
+        if (row[0] == item.getName()) {
             configPrice = std::stoi(row[2]);
             break;
         }
     }
     if (configPrice < 0) {
-        std::cerr << "Shop::sell: unknown item '" << item.GetName() << "'\n";
+        std::cerr << "Shop::sell: unknown item '" << item.getName() << "'\n";
         return false;
     }
 
     int sellPrice = configPrice / 2;
-    if (!player.RemoveItem(item)) return false;
+    // TODO: remove 'item' from player's inventory/backpack
     player.AddGold(sellPrice);
 
-    // add one back into stock at full config price
-    auto stock = getStock(item.GetType());
+    // restock one at full price
+    auto stock = getStock(item.getType());
     if (stock) stock->emplace_back(item, configPrice, 1);
 
     return true;
 }
 
 void Shop::getShopCatalogue() const {
-    auto printCat = [&](const char* title, auto const& vec){
+    auto printCat = [&](const char* title, const std::vector<StockEntry>& vec){
         std::cout << "-- " << title << " --\n";
         for (size_t i = 0; i < vec.size(); ++i) {
-            const auto& [item, price, qty] = vec[i];
+            const auto& entry = vec[i];
+            const auto& item  = std::get<0>(entry);
+            int price         = std::get<1>(entry);
+            int qty           = std::get<2>(entry);
             std::cout << i << ": "
-                      << item.GetName()
+                      << item.getName()
                       << " (Price: " << price
                       << ", Stock: " << qty << ")\n";
         }
@@ -103,13 +111,14 @@ void Shop::getShopCatalogue() const {
 }
 
 std::vector<Shop::StockEntry>* Shop::getStock(const std::string& category) {
-    if      (category == "Potion")  return &potionStock;
-    else if (category == "Weapon")  return &weaponStock;
-    else if (category == "Armor")   return &armorStock;
-    else if (category == "Pendant") return &pendantStock;
-    else return nullptr;
+    if (category == "Potion")  return &potionStock;
+    if (category == "Weapon")  return &weaponStock;
+    if (category == "Armor")   return &armorStock;
+    if (category == "Pendant") return &pendantStock;
+    return nullptr;
 }
 
 const std::vector<Shop::StockEntry>* Shop::getStock(const std::string& category) const {
+    // call non‑const overload to avoid code duplication
     return const_cast<Shop*>(this)->getStock(category);
 }

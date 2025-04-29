@@ -6,7 +6,7 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename) {
     if (!ConfigParserUtils::ReadTokensFile(
             filename,
             raw,
-            /* expectedCols = */ 8,
+            8,
             m_lastError
         )) {
         return false;
