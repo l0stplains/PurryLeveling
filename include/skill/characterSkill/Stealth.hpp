@@ -8,7 +8,6 @@ class Stealth : public Skill
 private:
     // Base attributes for all stealth skills
     float agilityMultiplier = 0.17f;  // Base agility boost
-    float chanceNewTurn     = 0.0f;   // No initial extra turn chance
 
 public:
     Stealth() : Skill("Stealth", 3, 1, 0, 0, {}, {}, true, true)
@@ -20,4 +19,6 @@ public:
         secondSkill.push_back(shadowArtistry);
         this->setChildren(secondSkill);
     };
+    // Getters
+    float getAgilityMultiplier() const { return agilityMultiplier; }
 };

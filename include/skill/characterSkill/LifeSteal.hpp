@@ -11,15 +11,19 @@ private:
     int   summonedUnit        = 0;
 
 public:
-    // Cuma iniialize stats untuk multiplier
+
+// Cuma iniialize stats untuk multiplier
     LifeSteal() : Skill("LifeSteal", 6, 2, 0, 0, {}, {}, true, true)
     {
         vector<Skill*> secondSkill;
-
+        
         BloodRitual*  bloodRitual  = new BloodRitual();
         UndeadLegion* undeadLegion = new UndeadLegion();
         secondSkill.push_back(bloodRitual);
         secondSkill.push_back(undeadLegion);
         this->setChildren(secondSkill);
     };
+    // Getters
+    float getLifestealPercentage() const { return lifestealPercentage; }
+    int getSummonedUnit() const { return summonedUnit; }
 };

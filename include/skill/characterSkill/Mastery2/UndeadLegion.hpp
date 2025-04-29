@@ -2,6 +2,7 @@
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/Arise.hpp"
 
+// Necromancer Matery 2
 class UndeadLegion : public Skill
 {
 private:
@@ -17,4 +18,7 @@ public:
         thirdSkill.push_back(arise);
         this->setChildren(thirdSkill);
     }
+    
+    float getDamageMultiplier() const { return damageMultiplier; }
+    int getSummonedUnit() const { return summonedUnit; }
 };

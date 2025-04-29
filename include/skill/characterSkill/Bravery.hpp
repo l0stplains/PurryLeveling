@@ -7,11 +7,7 @@
 class Bravery : public Skill
 {
 private:
-    float strengthMultiplier = 0.12f;
-    float damageBoost        = 0.0f;
-    float damageReduction    = 0.0f;
-    float critChanceBonus    = 0.0f;
-    float reflectDamage      = 0.0f;
+    float strengthMultiplier = 0.12f;  // Untuk heal
 
 public:
     Bravery() : Skill("Bravery", 4, 0, 0, 0, {}, {}, true, true)
@@ -24,4 +20,6 @@ public:
         secondSkill.push_back(ironWill);
         this->setChildren(secondSkill);
     };
+
+    float getStrengthMultiplier() const { return strengthMultiplier; }
 };

@@ -2,6 +2,7 @@
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/SoulHarvest.hpp"
 
+// Necromancer Mster 2
 class BloodRitual : public Skill
 {
 private:
@@ -17,4 +18,7 @@ public:
         thirdSkill.push_back(soulHarvest);
         this->setChildren(thirdSkill);
     }
+    
+    float getDamageMultiplier() const { return damageMultiplier; }
+    int getSummonedUnit() const { return summonedUnit; }
 };

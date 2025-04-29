@@ -3,6 +3,7 @@
 #include "effects/useEffects/TimeWarp.hpp"
 #include "skill/Skill.hpp"
 
+// Skill Mastery3 Necromancer
 class Arise : public Skill
 {
 private:
@@ -17,4 +18,8 @@ public:
         effectVec.push_back(TimeWarp(0.25f, 0.15f, 3));
         this->setEffects(effectVec);
     }
+    
+    // Getters
+    float getIntelligenceMultiplier() const { return intelligenceMultiplier; }
+    int getSummonedUnit() const { return summonedUnit; }
 };
