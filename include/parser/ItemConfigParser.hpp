@@ -4,6 +4,7 @@
 #include <vector>
 #include "parser/ConfigParser.hpp"
 #include "parser/ConfigParserUtils.hpp"
+#include "items/Item.hpp"
 
 /**
  * @class ItemConfigParser
@@ -16,10 +17,10 @@ public:
     /**
      * @brief Retrieved data as rows of tokens: {ID, Name, Type, Rarity, BaseAtk, Effect1, Effect2, Effect3}
      */
-    const std::vector<std::vector<std::string>>& GetData() const { return m_data; }
+    const std::vector<Item>& GetData() const { return m_data; }
 
     std::string GetLastError() const override { return m_lastError; }
 
 private:
-    std::vector<std::vector<std::string>> m_data;
+    std::vector<Item> m_data;
 };
