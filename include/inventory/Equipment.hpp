@@ -1,12 +1,7 @@
 #pragma once
 
-#include <string>
-
-#include "../include/items/Item.hpp"
-
-// Forward declarations
-class Backpack;
-class ItemManager;
+#include "inventory/Backpack.hpp"
+#include "items/ItemManager.hpp"
 
 class Equipment
 {
@@ -52,9 +47,8 @@ public:
      * @param x x coordinate in the backpack
      * @param y y coordinate in the backpack
      * @param slotType Type of the equipment slot (e.g., "Weapon", "HeadArmor", etc.)
-     * @return true if the operation was successful, false otherwise
      */
-    bool equipItemFromBackpack(Backpack& backpack, int x, int y, const std::string& slotType);
+    void equipItemFromBackpack(Backpack& backpack, int x, int y, const std::string& slotType);
 
     /**
      * @brief Unequip an item from the equipment to the backpack
@@ -62,9 +56,8 @@ public:
      * @param x x coordinate in the backpack
      * @param y y coordinate in the backpack
      * @param slotType Type of the equipment slot (e.g., "Weapon", "HeadArmor", etc.)
-     * @return true if the operation was successful, false otherwise
      */
-    bool unequipItemToBackpack(Backpack& backpack, int x, int y, const std::string& slotType);
+    void unequipItemToBackpack(Backpack& backpack, int x, int y, const std::string& slotType);
 
 private:
     Item weapon;
