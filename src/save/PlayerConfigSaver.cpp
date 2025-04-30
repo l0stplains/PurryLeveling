@@ -43,7 +43,7 @@ bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
             lastError = "Failed to open backpack.txt";
             return false;
         }
-        const int rows = 8, cols = 4;
+        const int rows = 4, cols = 8;
         for (int r = 0; r < rows; ++r)
         {
             for (int c = 0; c < cols; ++c)

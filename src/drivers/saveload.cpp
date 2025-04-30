@@ -53,7 +53,7 @@ int main()
     }
 
     // 3) build backpack
-    Backpack bp(parser.GetBackpackData());
+    Backpack bp(parser.GetBackpackData(), 4, 8);
 
     // 4) instantiate a Fighter with parsed base stats
     NavigationGrid nav(100, 100, 100, 100);  // stub: create or load your nav‐grid
@@ -64,6 +64,7 @@ int main()
     character.AddGold(std::stoi(parser.GetCharStats().at("GOLD")));
     character.AddMastery(std::stoi(parser.GetCharStats().at("MASTERY")));
 
+    /*
     // 5) modify something
     character.AddGold(50);
     // bump the (0,0) slot to 5 items:
@@ -81,6 +82,7 @@ int main()
     {
         std::cout << "Quantity at tile (0, 0) is already 5.\n";
     }
+    */
 
     // 6) save out
     if (!PlayerConfigSaver::SaveToFolder(outBase, character, eq, bp, err))

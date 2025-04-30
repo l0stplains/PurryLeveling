@@ -23,10 +23,7 @@ public:
         return m_equipmentData;
     }
     /// [ RowIdx, ColIdx, ItemID, TotalStack ]
-    const std::vector<std::vector<std::pair<Item, int>>>& GetBackpackData() const
-    {
-        return m_backpackData;
-    }
+    const std::vector<std::pair<Item, int>>& GetBackpackData() const { return m_backpackData; }
 
     // line 1–4
     const std::map<std::string, std::string>& GetCharStats() const { return m_charstats; }
@@ -38,10 +35,10 @@ public:
     std::string GetLastError() const override { return m_lastError; }
 
 private:
-    std::vector<std::vector<std::string>>          m_equipmentData;
-    std::vector<std::vector<std::pair<Item, int>>> m_backpackData;
-    std::map<std::string, std::string>             m_charstats;
-    std::map<std::string, std::string>             m_unitstats;
-    std::map<std::string, std::string>             m_typestats;
-    ItemManager m_itemManager;  // Item database for backpack items
+    std::vector<std::vector<std::string>> m_equipmentData;
+    std::vector<std::pair<Item, int>>     m_backpackData;
+    std::map<std::string, std::string>    m_charstats;
+    std::map<std::string, std::string>    m_unitstats;
+    std::map<std::string, std::string>    m_typestats;
+    ItemManager                           m_itemManager;  // Item database for backpack items
 };

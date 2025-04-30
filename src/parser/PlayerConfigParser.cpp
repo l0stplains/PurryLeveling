@@ -16,21 +16,11 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
 
     // convert to grid of <Item, count>
     m_backpackData.clear();
-    size_t maxR = 0, maxC = 0;
-    for (auto& rec : backpackRecs)
+    for (const auto& rec: backpackRecs)
     {
-        size_t r = std::stoul(rec[0]), c = std::stoul(rec[1]);
-        maxR = std::max(maxR, r);
-        maxC = std::max(maxC, c);
-    }
-    m_backpackData.assign(maxR + 1, std::vector<std::pair<Item, int>>(maxC + 1, {Item(), 0}));
-    for (auto& rec : backpackRecs)
-    {
-        size_t r = std::stoul(rec[0]), c = std::stoul(rec[1]);
-        // lookup full Item by ID
-        Item itm             = m_itemManager.getItem(rec[2]);
-        int  cnt             = std::stoi(rec[3]);
-        m_backpackData[r][c] = {std::move(itm), cnt};
+        Item itm = m_itemManager.getItem(rec[2]);
+        int cnt = std::stoi(rec[3]);
+        m_backpackData.emplace_back(std::move(itm), cnt);
     }
 
     // 3) stats: key/value per line
