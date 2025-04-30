@@ -21,12 +21,6 @@ public:
     const char* what() const noexcept override { return "Invalid item quantity"; }
 };
 
-class QuantityRequiresNullItemException : public std::exception
-{
-public:
-    const char* what() const noexcept override { return "Quantity 0 requires a null item"; }
-};
-
 class QuantityRequiresValidItemException : public std::exception
 {
 public:
@@ -40,7 +34,6 @@ private:
 
 public:
     InvalidEquipmentTypeException(const std::string& msg) : message(msg) {}
-
     const char* what() const noexcept override { return message.c_str(); }
 };
 
@@ -59,19 +52,11 @@ public:
     }
 };
 
-class ItemNotFoundException : public std::exception
-{
-public:
-    const char* what() const noexcept override { return "Item not found in backpack"; }
-};
-
 class ItemSlotOccupiedException : public std::exception
 {
-private:
-    std::string message;
-
 public:
-    ItemSlotOccupiedException(const std::string& msg) : message(msg) {}
-
-    const char* what() const noexcept override { return message.c_str(); }
+    const char* what() const noexcept override
+    {
+        return "Cannot add a different item to an occupied slot";
+    }
 };
