@@ -60,3 +60,12 @@ public:
         return "Cannot add a different item to an occupied slot";
     }
 };
+
+class InsufficientGoldException : public std::exception
+{
+public:
+    const char* what() const noexcept override
+    {
+        return "Not enough money to buy the item";
+    }
+};

@@ -14,6 +14,7 @@ void Shop::restock()
     armorStock.clear();
     pendantStock.clear();
 
+    // Checks each row of the config data and populates the stock maps
     for (auto const& row : m_configData)
     {
         const std::string& id    = row[0];
@@ -21,6 +22,7 @@ void Shop::restock()
         int                qty   = std::stoi(row[3]);
         if (qty <= 0) continue;
 
+        // Find the item in the master list with assumption that itemID is unique
         auto it = std::find_if(
             m_masterItems.begin(), m_masterItems.end(),
             [&](auto const& itm) { return itm.getItemID() == id; });
@@ -30,9 +32,13 @@ void Shop::restock()
             continue;
         }
 
+        // Create a stock entry
+        // Note: std::get<0>(entry) is the item, std::get<1>(entry) is price,
+        //       std::get<2>(entry) is quantity
         StockEntry entry{*it, price, qty};
         const auto& type = it->getType();
 
+        // Add the entry to the appropriate stock map
         if (type == "Potion")
             potionStock[id] = entry;
         else if (type == "Weapon")
@@ -55,43 +61,40 @@ void Shop::buy(Character& player,
     const std::string& category,
     const std::string& itemID)
 {
-    // 1) find the correct stock map
     auto stock = getStock(category);
-    if (!stock)
-        throw std::invalid_argument("Shop::buy: unknown category '" + category + "'");
 
-    // 2) find the item entry
+    // Finds item entry
     auto it = stock->find(itemID);
     if (it == stock->end())
         throw std::out_of_range("Shop::buy: '" + itemID + "' not in stock");
 
-    // 3) unpack the tuple
+    // Unpacks the tuple
     auto& [itm, price, qty] = it->second;
 
-    // 4) check funds
+    // Check the funds
     if (player.GetGold() < price)
-        throw std::runtime_error("Shop::buy: insufficient gold");
+        throw InsufficientGoldException();
 
-    // 5) deduct immediately
+    // Deduct balance from player immediately
     player.AddGold(-price);
 
-    // 6) try to give the item, refund on failure
+    // Try to give the item, but refund on failure
     try {
         backpack.addItem(itm, 1);
     }
     catch (const std::exception&) {
         player.AddGold(price);
-        throw;  // rethrow original
+        throw;  
     }
 
-    // 7) decrement stock, erase if empty
+    // Decrement stock, erase if empty
     if (--qty <= 0)
     stock->erase(it);
 }
 
 void Shop::sell(Character& player, Backpack& backpack, const Item& item)
 {
-    // lookup config price
+    // Lookup config price
     int configPrice = -1;
     for (auto const& row : m_configData)
     {
@@ -108,18 +111,18 @@ void Shop::sell(Character& player, Backpack& backpack, const Item& item)
 
     int sellPrice = configPrice / 2;
 
-   // 1) remove the item from player; refund on failure
+    // Remove the item from player; refund on failure
     try {
         backpack.takeItem(item, 1);
     }
-    catch (const std::exception& e) {
-        throw std::runtime_error("Shop::sell: failed to remove item: " + std::string(e.what()));
+    catch (const std::exception&) {
+        throw;
     }
 
-    // 2) give gold
+    // Give gold
     player.AddGold(sellPrice);
 
-    // 3) restock one unit at full config price
+    // Restock one unit at full config price
     auto stock = getStock(item.getType());
     if (stock)
     {
