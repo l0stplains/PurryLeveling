@@ -2,6 +2,7 @@
 #define DUNGEON_FACTORY_HPP
 
 // Include
+#include <algorithm>
 #include <string>
 
 #include "dungeon/Chamber.hpp"
@@ -57,6 +58,24 @@ private:
      * @return True if the chamber should be a boss room, false otherwise
      */
     bool isBossRoom(const string& rank, int chamberIndex, int totalChambers) const;
+
+    /**
+     * @brief Converts a string to lowercase
+     * @param str The input string to convert
+     * @return The lowercase version of the input string
+     */
+    string toLowercase(string str) const;
+
+    /**
+     * @brief Normalizes a rank string to the standard format
+     *
+     * Converts inputs like "a", "A", "S", "s", "special", "SPECIAL" to proper
+     * formats used internally by the Dungeon class (e.g., "A", "S", "SPECIAL")
+     *
+     * @param rank The input rank string
+     * @return The normalized rank string
+     */
+    string normalizeRank(string rank) const;
 
 public:
     /**
