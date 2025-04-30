@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include "items/Item.hpp"
 
 class ItemManager
@@ -14,5 +16,5 @@ public:
     std::vector<Item> getItemsByRarity(char rarity) const;
 
 private:
-    std::vector<Item> itemDatabase;
+    std::map<std::string, Item> itemDatabase;
 };
