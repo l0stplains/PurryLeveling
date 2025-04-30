@@ -6,6 +6,7 @@
 
 #include "imgui.h"
 #include "states/ChooseCharacterState.hpp"
+#include "states/InventoryMenuState.hpp"
 #include "units/AnimatedUnit.hpp"  // Include AnimatedUnit header
 
 // Constructor
@@ -18,6 +19,8 @@ WorldState::WorldState(GameContext& context)
       m_buttonTexture(GetContext().GetResourceManager()->GetTexture("main_menu_button")),
       m_squareButtonTexture(GetContext().GetResourceManager()->GetTexture("square_button")),
       m_exitButton(m_squareButtonTexture, {32.f, 32.f}, {0.5f, 0.5f}),
+      m_inventoryButton(m_buttonTexture, {112.f, 32.f}, {0.5f, 0.5f}),
+      m_skillTreeButton(m_buttonTexture, {236.f, 32.f}, {0.5f, 0.5f}),
       m_font(GetContext().GetResourceManager()->GetFont("main_font")),
       m_boldFont(GetContext().GetResourceManager()->GetFont("main_bold_font")),
       m_doorEnterArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
@@ -69,8 +72,20 @@ void WorldState::Init()
     m_exitButton.setHoverSound(m_buttonHoverSound);
     m_exitButton.setClickSound(m_buttonClickSound);
 
+    m_inventoryButton.setText("Inventory", m_font, 24);
+    m_inventoryButton.setHoverSound(m_buttonHoverSound);
+    m_inventoryButton.setClickSound(m_buttonClickSound);
+
+    m_skillTreeButton.setText("Skill Tree", m_font, 24);
+    m_skillTreeButton.setHoverSound(m_buttonHoverSound);
+    m_skillTreeButton.setClickSound(m_buttonClickSound);
     // Set button callbacks
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
+    m_inventoryButton.setOnClickCallback([this]() {
+        GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId())->SetActive(false);
+        m_pendingStateChange =
+            StateChange {StateAction::PUSH, std::make_unique<InventoryMenuState>(GetContext())};
+    });
 
     unsigned int characterId = GetContext().GetCharacterId();
     AnimatedUnit* character = GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(characterId);
@@ -153,6 +168,8 @@ State::StateChange WorldState::Update(const sf::Time& dt)
           m_showShopEnterModal))
     {
         m_exitButton.update(*GetContext().GetWindow());
+        m_inventoryButton.update(*GetContext().GetWindow());
+        m_skillTreeButton.update(*GetContext().GetWindow());
     }
 
     // handle any pending state-change (from your buttons, etc)
@@ -174,6 +191,8 @@ void WorldState::Draw(sf::RenderWindow& window)
     }
     window.draw(m_doorEnterArea);
     m_exitButton.draw(window);
+    m_inventoryButton.draw(window);
+    m_skillTreeButton.draw(window);
 }
 
 void WorldState::RenderUI()

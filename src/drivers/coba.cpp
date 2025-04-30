@@ -15,6 +15,7 @@
 
 #include "units/Enums.hpp"  // Include Enums for UnitAnimationType
 #include "units/characters/Fighter.hpp"
+#include "units/characters/Mage.hpp"
 
 int main()
 {
@@ -99,89 +100,15 @@ int main()
     // --- Unit Manager ---
     UnitManager unitManager;  // Assuming UnitManager handles std::unique_ptr<Unit>
 
-    // --- Prepare Animation Data (Example for Centaur) ---
-    // You'll need to adjust frame counts, durations, and frame size based on your actual assets
-    sf::Vector2i elfFrameSize(32, 32);  // Example frame size
-
-    std::unordered_map<UnitAnimationType, std::string> elfTexturePaths = {
-        {UnitAnimationType::IDLE, "character_centaur_idle"},
-        {UnitAnimationType::WALK, "character_centaur_jump"},
-        {UnitAnimationType::ATTACK, "character_centaur_attack"},
-        {UnitAnimationType::JUMP, "character_centaur_jump"},  // Assuming Jump exists
-        {UnitAnimationType::DAMAGE, "character_centaur_dmg"},
-        {UnitAnimationType::DIE, "character_centaur_die"}  // Add SKILL if you have a specific
-                                                           // texture
-    };
-    std::unordered_map<UnitAnimationType, std::string> elfShadowTexturePaths = {
-        {UnitAnimationType::IDLE, "character_centaur_idle_shadow"},
-        {UnitAnimationType::WALK, "character_centaur_jump_shadow"},
-        {UnitAnimationType::ATTACK, "character_centaur_attack_shadow"},
-        {UnitAnimationType::JUMP, "character_centaur_jump_shadow"},  // Assuming Jump exists
-        {UnitAnimationType::DAMAGE, "character_centaur_dmg_shadow"},
-        {UnitAnimationType::DIE, "character_centaur_die_shadow"}  // Add SKILL if you have a
-                                                                  // specific texture
-    };
-    // Example frame counts (adjust these!)
-    std::unordered_map<UnitAnimationType, int> elfFramesPerAnim = {
-        {UnitAnimationType::IDLE, 16},
-        {UnitAnimationType::WALK, 4},
-        {UnitAnimationType::ATTACK, 4},
-        {UnitAnimationType::JUMP, 4},  // Jump might be single frame or need more logic
-        {UnitAnimationType::DAMAGE, 4},
-        {UnitAnimationType::DIE, 12}};
-
-    // Example durations (in seconds, adjust these!)
-    std::unordered_map<UnitAnimationType, float> elfDurationPerAnim = {
-        {UnitAnimationType::IDLE, 3.2f},  // Longer idle loop
-        {UnitAnimationType::WALK, 0.8f},
-        {UnitAnimationType::ATTACK, 0.4f},
-        {UnitAnimationType::JUMP, 0.4f},
-        {UnitAnimationType::DAMAGE, 0.4f},
-        {UnitAnimationType::DIE, 1.2f}};
-
-    // Example looping status (Idle/Walk usually loop)
-    std::unordered_map<UnitAnimationType, bool> elfLoopingAnims = {
-        {UnitAnimationType::IDLE, true},
-        {UnitAnimationType::WALK, true},
-        {UnitAnimationType::ATTACK, false},  // Attack usually plays once
-        {UnitAnimationType::JUMP, false},
-        {UnitAnimationType::DAMAGE, false},
-        {UnitAnimationType::DIE, false}  // Die plays once
-    };
-
-    std::unordered_map<UnitAnimationType, bool> elfDirectionalAnims = {
-        {UnitAnimationType::IDLE, true},
-        {UnitAnimationType::WALK, true},
-        {UnitAnimationType::ATTACK, true},
-        {UnitAnimationType::JUMP, true},
-        {UnitAnimationType::DAMAGE, true},
-        {UnitAnimationType::DIE, false}};
-
-    std::unordered_map<UnitAnimationType, int> elfDefaultRows = {{UnitAnimationType::DIE, 0}};
-
     // --- Create Hero ---
-    auto fighter =
-        std::make_unique<Fighter>("Hero",
-                                  sf::Vector2f(WINDOW_WIDTH / 2 - 400 * WINDOW_WIDTH / 1820,
-                                               780 * WINDOW_HEIGHT / 1024),  // Position
-                                  navGrid,                                   // Pass navigation grid
-                                  true,  // Set as player controlled
-                                  context);
+    auto fighter = std::make_unique<Mage>("Hero",
+                                          sf::Vector2f(WINDOW_WIDTH / 2 - 400 * WINDOW_WIDTH / 1820,
+                                                       780 * WINDOW_HEIGHT / 1024),  // Position
+                                          navGrid,  // Pass navigation grid
+                                          true,     // Set as player controlled
+                                          context);
     fighter->SetShowUI(true);
     fighter->SetMoveSpeed(200);
-    // Load hero animations using the new method
-    if (!fighter->LoadAnimations(elfTexturePaths,
-                                 elfFrameSize,
-                                 elfFramesPerAnim,
-                                 elfDurationPerAnim,
-                                 elfLoopingAnims,
-                                 elfDirectionalAnims,
-                                 elfDefaultRows,
-                                 elfShadowTexturePaths))
-    {
-        std::cerr << "Error loading Hero animations!" << std::endl;
-        return 1;  // Exit if loading failed
-    }
     // fighter->SetControlledByPlayer(true); // No longer needed - done in constructor
 
     // Scale the hero slightly larger (Example)
@@ -194,30 +121,18 @@ int main()
     unitManager.AddUnit(std::move(fighter));
 
     // --- Create an Enemy ---
-    auto enemy = std::make_unique<Fighter>("Enemy",
-                                           sf::Vector2f(WINDOW_WIDTH / 2 + 400 * WINDOW_WIDTH / 1820,
-                                                        780 * WINDOW_HEIGHT / 1024),  // Position
-                                                                                      // etc.)
-                                           navGrid,  // Pass navigation grid
-                                           false,    // Not player controlled
-                                           context);
+    auto enemy = std::make_unique<Mage>("Enemy",
+                                        sf::Vector2f(WINDOW_WIDTH / 2 + 400 * WINDOW_WIDTH / 1820,
+                                                     780 * WINDOW_HEIGHT / 1024),  // Position
+                                                                                   // etc.)
+                                        navGrid,  // Pass navigation grid
+                                        false,    // Not player controlled
+                                        context);
 
     enemy->SetDirection(Direction::WEST);
     enemy->SetShowUI(true);
     enemy->SetMoveSpeed(150);
     // Load enemy animations (using the same elf data for this example)
-    if (!enemy->LoadAnimations(elfTexturePaths,
-                               elfFrameSize,
-                               elfFramesPerAnim,
-                               elfDurationPerAnim,
-                               elfLoopingAnims,
-                               elfDirectionalAnims,
-                               elfDefaultRows,
-                               elfShadowTexturePaths))
-    {
-        std::cerr << "Error loading Enemy animations!" << std::endl;
-        return 1;  // Exit if loading failed
-    }
 
     // Store the enemy ID for reference
     unsigned int enemyId = enemy->GetId();
@@ -270,7 +185,7 @@ int main()
                 {
                     // Make hero attack the enemy
                     // GetUnitOfType might be safer if you *know* they are Fighters
-                    Fighter*      heroAttackPtr = unitManager.GetUnitOfType<Fighter>(heroId);
+                    Mage*         heroAttackPtr = unitManager.GetUnitOfType<Mage>(heroId);
                     AnimatedUnit* enemyTargetPtr =
                         unitManager.GetUnitOfType<AnimatedUnit>(enemyId);  // Target can be base
                                                                            // Unit

@@ -14,16 +14,16 @@ using namespace std;
 class Dungeon
 {
 private:
-    string              rank;                // The rank of the dungeon (S, A, B, C, D, E, SPECIAL)
-    vector<Chamber>     chambers;           // Chambers in the dungeon
-    bool                isDoubleDungeon;    // Whether this is a double dungeon
-    int                 entranceFee;        // Gold cost to enter the dungeon
-    int                 minPlayerLevel;     // Minimum player level required to enter
-    int                 playerLevel;        // Current player level
-    bool                isCleared;          // Whether the dungeon has been cleared
-    vector<string>      dungeonLoot;        // Items obtained from the dungeon
-    double              expMultiplier;      // Experience multiplier for this dungeon
-    double              goldMultiplier;     // Gold multiplier for this dungeon
+    string          rank;             // The rank of the dungeon (S, A, B, C, D, E, SPECIAL)
+    vector<Chamber> chambers;         // Chambers in the dungeon
+    bool            isDoubleDungeon;  // Whether this is a double dungeon
+    int             entranceFee;      // Gold cost to enter the dungeon
+    int             minPlayerLevel;   // Minimum player level required to enter
+    int             playerLevel;      // Current player level
+    bool            isCleared;        // Whether the dungeon has been cleared
+    vector<string>  dungeonLoot;      // Items obtained from the dungeon
+    double          expMultiplier;    // Experience multiplier for this dungeon
+    double          goldMultiplier;   // Gold multiplier for this dungeon
 
 public:
     // Constants for dungeon ranks

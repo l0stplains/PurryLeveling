@@ -9,7 +9,7 @@ Necromancer::Necromancer(const std::string&  name,
                          bool                isPlayerControlled,
                          const GameContext&  gameContext)
     : Unit(name),  // ← must initialize the virtual base
-      Character(name, position),
+      Character(name),
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
     // Fighter-specific stat overrides
@@ -22,6 +22,69 @@ Necromancer::Necromancer(const std::string&  name,
     m_manaRegen    = 3;
     m_moveSpeed    = 180.f;
     m_attackRange  = 48.f;
+
+    sf::Vector2i                                       necromancerFrameSize(32, 32);
+    std::unordered_map<UnitAnimationType, std::string> necromancerTexturePaths = {
+        {UnitAnimationType::IDLE, "character_cyclop_idle"},
+        {UnitAnimationType::WALK, "character_cyclop_jump"},
+        {UnitAnimationType::ATTACK, "character_cyclop_attack"},
+        {UnitAnimationType::JUMP, "character_cyclop_jump"},
+        {UnitAnimationType::DAMAGE, "character_cyclop_dmg"},
+        {UnitAnimationType::DIE, "character_cyclop_die"}
+
+    };
+    std::unordered_map<UnitAnimationType, std::string> necromancerShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "character_cyclop_idle_shadow"},
+        {UnitAnimationType::WALK, "character_cyclop_jump_shadow"},
+        {UnitAnimationType::ATTACK, "character_cyclop_attack_shadow"},
+        {UnitAnimationType::JUMP, "character_cyclop_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "character_cyclop_dmg_shadow"},
+        {UnitAnimationType::DIE, "character_cyclop_die_shadow"}
+
+    };
+
+    std::unordered_map<UnitAnimationType, int> necromancerFramesPerAnim = {
+        {UnitAnimationType::IDLE, 16},
+        {UnitAnimationType::WALK, 4},
+        {UnitAnimationType::ATTACK, 4},
+        {UnitAnimationType::JUMP, 4},
+        {UnitAnimationType::DAMAGE, 4},
+        {UnitAnimationType::DIE, 12}};
+
+    std::unordered_map<UnitAnimationType, float> necromancerDurationPerAnim = {
+        {UnitAnimationType::IDLE, 6.4f},
+        {UnitAnimationType::WALK, 1.6f},
+        {UnitAnimationType::ATTACK, 0.8f},
+        {UnitAnimationType::JUMP, 0.8f},
+        {UnitAnimationType::DAMAGE, 0.8f},
+        {UnitAnimationType::DIE, 2.4f}};
+
+    std::unordered_map<UnitAnimationType, bool> necromancerLoopingAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, false},
+        {UnitAnimationType::JUMP, false},
+        {UnitAnimationType::DAMAGE, false},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, bool> necromancerDirectionalAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, true},
+        {UnitAnimationType::JUMP, true},
+        {UnitAnimationType::DAMAGE, true},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, int> necromancerDefaultRows = {{UnitAnimationType::DIE, 0}};
+
+    LoadAnimations(necromancerTexturePaths,
+                   necromancerFrameSize,
+                   necromancerFramesPerAnim,
+                   necromancerDurationPerAnim,
+                   necromancerLoopingAnims,
+                   necromancerDirectionalAnims,
+                   necromancerDefaultRows,
+                   necromancerShadowTexturePaths);
 }
 
 void Necromancer::Attack(Unit& target, ActionCompletionCallback callback)

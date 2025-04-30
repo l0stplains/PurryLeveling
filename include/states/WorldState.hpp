@@ -61,7 +61,9 @@ private:
     sf::Texture m_squareButtonTexture;
     sf::Texture m_buttonTexture;  ///< Button texture
 
-    Button m_exitButton;  ///< Start button
+    Button m_exitButton;       ///< Start button
+    Button m_inventoryButton;  ///< Start button
+    Button m_skillTreeButton;  ///< Start button
 
     sf::Font m_font;      ///< Font for UI text
     sf::Font m_boldFont;  ///< Font for UI text

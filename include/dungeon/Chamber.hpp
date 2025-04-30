@@ -1,9 +1,9 @@
 #ifndef CHAMBER_HPP
 #define CHAMBER_HPP
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "rng/rng.hpp"
 
@@ -16,18 +16,18 @@ using namespace std;
 class Chamber
 {
 private:
-    int                 chamberNumber;         // The sequence number of this chamber in the dungeon
-    bool                isBossRoom;            // Whether this chamber contains a boss
-    vector<int>         mobs;                  // IDs of mobs in this chamber
-    vector<string>      loot;                  // Items obtained in this chamber
-    map<int, string>    mobLoot;               // Map of mob ID to loot item
-    double              difficultyMultiplier;  // Multiplier for chamber difficulty
-    int                 mobLevelMin;           // Minimum level for mobs in this chamber
-    int                 mobLevelMax;           // Maximum level for mobs in this chamber
-    bool                isCleared;             // Whether this chamber has been cleared
-    int                 goldReward;            // Gold reward for clearing this chamber
-    int                 expReward;             // Experience reward for clearing this chamber
-    RNG                 rng;                   // Random number generator
+    int              chamberNumber;         // The sequence number of this chamber in the dungeon
+    bool             isBossRoom;            // Whether this chamber contains a boss
+    vector<int>      mobs;                  // IDs of mobs in this chamber
+    vector<string>   loot;                  // Items obtained in this chamber
+    map<int, string> mobLoot;               // Map of mob ID to loot item
+    double           difficultyMultiplier;  // Multiplier for chamber difficulty
+    int              mobLevelMin;           // Minimum level for mobs in this chamber
+    int              mobLevelMax;           // Maximum level for mobs in this chamber
+    bool             isCleared;             // Whether this chamber has been cleared
+    int              goldReward;            // Gold reward for clearing this chamber
+    int              expReward;             // Experience reward for clearing this chamber
+    RNG              rng;                   // Random number generator
 
 public:
     /**
@@ -73,7 +73,7 @@ public:
 
     /**
      * @brief Add mob loot mapping
-     * 
+     *
      * @param mobId ID of the mob
      * @param lootItem Loot item from this mob
      */
@@ -102,7 +102,7 @@ public:
 
     /**
      * @brief Get the mob loot mappings
-     * 
+     *
      * @return map<int, string> Map of mob ID to loot item
      */
     map<int, string> getMobLoot() const;

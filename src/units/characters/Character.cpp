@@ -5,8 +5,7 @@
 
 #include <iostream>  // For debug
 
-Character::Character(const std::string& name, const sf::Vector2f& position)
-    : Unit(name)  // Call base constructor
+Character::Character(const std::string& name) : Unit(name)  // Call base constructor
 {
     // Character specific stat initialization (can override AnimatedUnit defaults)
     m_maxHealth = 120;  // Example: Characters slightly tougher

@@ -12,7 +12,7 @@
 class Character : virtual public Unit
 {
 public:
-    Character(const std::string& name, const sf::Vector2f& position);
+    Character(const std::string& name);
 
     ~Character() override = default;
 

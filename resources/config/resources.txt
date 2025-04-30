@@ -12,6 +12,10 @@ main_logo_shadow = resources/textures/ui/main_logo_shadow.png
 main_menu_button = resources/textures/ui/main_menu_button.png
 square_button = resources/textures/ui/square_button.png
 world_background = resources/textures/ui/world_background.jpg
+inventory_background = resources/textures/ui/inventory_background.jpg
+
+# Items
+ice_potion = resources/textures/items/ice_potion.png
 
 # Dungeons Background
 normal_base = resources/textures/ui/normal_base.jpg

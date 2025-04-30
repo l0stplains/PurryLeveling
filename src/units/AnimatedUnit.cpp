@@ -144,11 +144,11 @@ void AnimatedUnit::Update(const sf::Time& dt)
             }
 
             // Execute callback if movement finished
-            if (m_currentActionCallback)
+            if (m_currentMovingCallback)
             {
-                auto callback = std::move(m_currentActionCallback);  // Move callback out before
+                auto callback = std::move(m_currentMovingCallback);  // Move callback out before
                                                                      // executing
-                m_currentActionCallback = nullptr;                   // Clear it
+                m_currentMovingCallback = nullptr;                   // Clear it
                 callback();
             }
         }
@@ -177,11 +177,11 @@ void AnimatedUnit::Update(const sf::Time& dt)
                     PlayAnimation(UnitAnimationType::IDLE);
                 }
                 // Optionally call callback here if stopping constitutes completion?
-                if (m_currentActionCallback)
+                if (m_currentMovingCallback)
                 {
                     // std::cout << GetName() << " movement blocked." << std::endl; // Debug
-                    auto callback           = std::move(m_currentActionCallback);
-                    m_currentActionCallback = nullptr;
+                    auto callback           = std::move(m_currentMovingCallback);
+                    m_currentMovingCallback = nullptr;
                     callback();  // Indicate movement ended (blocked)
                 }
             }
@@ -554,24 +554,23 @@ void AnimatedUnit::Move(const sf::Vector2f& targetPosition, ActionCompletionCall
             if (m_navGrid.IsWalkable(worldCandidate))
             {
                 // Found the nearest along the line
-                m_targetPosition = worldCandidate;
-                m_isMoving       = true;
+                m_targetPosition        = worldCandidate;
+                m_isMoving              = true;
+                m_currentMovingCallback = std::move(callback);
                 UpdateDirection(m_targetPosition - m_position);
-                PlayAnimation(UnitAnimationType::WALK, std::move(callback));
+                PlayAnimation(UnitAnimationType::WALK, nullptr);
                 return;
             }
         }
-        // No valid tile found along that direction
-        if (callback)
-            callback();
         return;
     }
 
     // 3) Direct move if clear
-    m_targetPosition = targetPosition;
-    m_isMoving       = true;
+    m_targetPosition        = targetPosition;
+    m_isMoving              = true;
+    m_currentMovingCallback = std::move(callback);
     UpdateDirection(delta);
-    PlayAnimation(UnitAnimationType::WALK, std::move(callback));
+    PlayAnimation(UnitAnimationType::WALK, nullptr);
 }
 
 // --- TakeDamage Override ---
@@ -601,13 +600,16 @@ void AnimatedUnit::TakeDamage(int damage, ActionCompletionCallback callback)
         m_velocity = {0.f, 0.f};
         // Play death animation. Chain the original callback after death anim.
         std::cout << GetName() << " (Animated) just died." << std::endl;  // Debug
-        PlayAnimation(UnitAnimationType::DIE, [this, cb = std::move(finalCallback)]() {
-            std::cout << GetName() << " (Animated) has died." << std::endl;  // Debug
-            m_isAnimating = false;
-            m_active      = false;  // Set inactive
-            if (cb)
-                cb();
-        });
+        PlayAnimation(
+            UnitAnimationType::DIE,
+            [this, cb = std::move(finalCallback)]() {
+                std::cout << GetName() << " (Animated) has died." << std::endl;  // Debug
+                m_isAnimating = false;
+                m_active      = false;  // Set inactive
+                if (cb)
+                    cb();
+            },
+            true);
     }
     else if (m_active)  // Still alive, play damage animation
     {

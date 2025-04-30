@@ -4,6 +4,8 @@ GameContext::GameContext()
     : m_resourceManager(nullptr),
       m_unitManager(nullptr),
       m_stateManager(nullptr),
+      m_backpack(nullptr),
+      m_equipment(nullptr),
       m_navigationGrid(1280, 720, 32, 32)
 {}
 
@@ -25,6 +27,16 @@ UnitManager* GameContext::GetUnitManager() const
 StateManager* GameContext::GetStateManager() const
 {
     return m_stateManager;
+}
+
+Backpack* GameContext::GetBackpack() const
+{
+    return m_backpack;
+}
+
+Equipment* GameContext::GetEquipment() const
+{
+    return m_equipment;
 }
 
 sf::RenderWindow* GameContext::GetWindow() const
@@ -70,6 +82,16 @@ void GameContext::SetUnitManager(UnitManager* unitManager)
 void GameContext::SetStateManager(StateManager* stateManager)
 {
     m_stateManager = stateManager;
+}
+
+void GameContext::SetBackpack(Backpack* backpack)
+{
+    m_backpack = backpack;
+}
+
+void GameContext::SetEquipment(Equipment* equipment)
+{
+    m_equipment = equipment;
 }
 
 void GameContext::SetWindow(sf::RenderWindow* window)
