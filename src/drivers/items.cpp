@@ -847,6 +847,9 @@ int main()
             printBackpack(backpack);
             std::cout << std::endl;
 
+            int count;
+            count = 0;
+
             // Find and equip weapon
             for (int i = 0; i < 4; ++i)
             {
@@ -861,6 +864,9 @@ int main()
                                       << (char)('A' + j) << ")..." << std::endl;
                             equipment.equipItemFromBackpack(backpack, i, j, "Weapon");
                             std::cout << "Weapon equipped" << std::endl;
+                            count++;
+                            printEquippedItems(equipment);
+                            printBackpack(backpack);
                             break;
                         }
                     }
@@ -869,8 +875,10 @@ int main()
                         // Skip exceptions
                     }
                 }
+                if (count == 2) break;
             }
 
+            count = 0;
             // Find and equip head armor
             for (int i = 0; i < 4; ++i)
             {
@@ -885,6 +893,9 @@ int main()
                                       << (char)('A' + j) << ")..." << std::endl;
                             equipment.equipItemFromBackpack(backpack, i, j, "HeadArmor");
                             std::cout << "Head armor equipped" << std::endl;
+                            count++;
+                            printEquippedItems(equipment);
+                            printBackpack(backpack);
                             break;
                         }
                     }
@@ -893,10 +904,12 @@ int main()
                         // Skip exceptions
                     }
                 }
+                if (count == 2) break;
             }
 
+            count = 0;
             // Find and equip body armor
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < 2; ++i)
             {
                 for (int j = 0; j < 8; ++j)
                 {
@@ -909,6 +922,9 @@ int main()
                                       << (char)('A' + j) << ")..." << std::endl;
                             equipment.equipItemFromBackpack(backpack, i, j, "BodyArmor");
                             std::cout << "Body armor equipped" << std::endl;
+                            count++;
+                            printEquippedItems(equipment);
+                            printBackpack(backpack);
                             break;
                         }
                     }
@@ -917,8 +933,10 @@ int main()
                         // Skip exceptions
                     }
                 }
+                if (count == 2) break;
             }
 
+            count = 0;
             // Find and equip foot armor
             for (int i = 0; i < 4; ++i)
             {
@@ -933,6 +951,9 @@ int main()
                                       << (char)('A' + j) << ")..." << std::endl;
                             equipment.equipItemFromBackpack(backpack, i, j, "FootArmor");
                             std::cout << "Foot armor equipped" << std::endl;
+                            count++;
+                            printEquippedItems(equipment);
+                            printBackpack(backpack);
                             break;
                         }
                     }
@@ -941,10 +962,12 @@ int main()
                         // Skip exceptions
                     }
                 }
+                if (count == 2) break;
             }
 
+            count = 0;
             // Find and equip pendant
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < 2; ++i)
             {
                 for (int j = 0; j < 8; ++j)
                 {
@@ -957,6 +980,9 @@ int main()
                                       << (char)('A' + j) << ")..." << std::endl;
                             equipment.equipItemFromBackpack(backpack, i, j, "Pendant");
                             std::cout << "Pendant equipped" << std::endl;
+                            count++;
+                            printEquippedItems(equipment);
+                            printBackpack(backpack);
                             break;
                         }
                     }
@@ -965,6 +991,7 @@ int main()
                         // Skip exceptions
                     }
                 }
+                if (count == 2) break;
             }
 
             // Print equipment after equipping

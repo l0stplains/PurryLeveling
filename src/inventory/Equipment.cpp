@@ -184,10 +184,51 @@ void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const st
         throw InvalidEquipmentTypeException("Invalid equipment slot type");
     }
 
-    // If there was a previous item, return it to backpack
+    // If there was a previous item
     if (!currentlyEquipped.isNull())
     {
-        backpack.addItemAtTile(x, y, currentlyEquipped, 1);
+        // Different item type at target position
+        // First, try to find a non-full stack of the same item type to add to
+        std::vector<std::pair<int, int>> itemTiles = backpack.findItemTile(currentlyEquipped);
+        bool                             addedToExistingStack = false;
+
+        // Loop through all tiles containing this item type with available space
+        for (const auto& [itemX, itemY] : itemTiles)
+        {
+            // Skip the target tile we already checked (it has a different item)
+            if (itemX == x && itemY == y)
+            {
+                continue;
+            }
+
+            // Since findItemTile returns tiles with this item type that have space available,
+            // we can directly add to this tile without additional checks
+            backpack.addItemAtTile(itemX, itemY, currentlyEquipped, 1);
+            addedToExistingStack = true;
+
+            // Successfully added to existing stack, exit the loop
+            break;
+        }
+
+        // If we couldn't add to an existing stack, use an empty tile
+        if (!addedToExistingStack)
+        {
+            // Different item type - find an empty tile to place the unequipped item
+            std::vector<std::pair<int, int>> emptyTiles = backpack.findEmptyTile();
+
+            if (emptyTiles.empty())
+            {
+                // No empty tile available
+                throw BackpackOvercapacityException();
+            }
+
+            // Use the first empty tile
+            int emptyX = emptyTiles[0].first;
+            int emptyY = emptyTiles[0].second;
+
+            // Add the unequipped item to the empty slot
+            backpack.addItemAtTile(emptyX, emptyY, currentlyEquipped, 1);
+        }
     }
 }
 
