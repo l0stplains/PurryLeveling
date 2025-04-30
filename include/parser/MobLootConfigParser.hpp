@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+
 #include "parser/ConfigParser.hpp"
 #include "parser/ConfigParserUtils.hpp"
 
@@ -9,7 +10,8 @@
  * @class MobLootConfigParser
  * @brief Parses mob loot tables with fixed 3 columns per row.
  */
-class MobLootConfigParser : public ConfigParser {
+class MobLootConfigParser : public ConfigParser
+{
 public:
     bool ParseFromFile(const std::string& filename) override;
 

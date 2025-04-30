@@ -1,14 +1,14 @@
 #include "skill/Skill.hpp"
 
-Skill::Skill(string         name,
-             float          manaCost,
-             int            masteryCost,
-             float          damage,
-             float          effectChance,
+Skill::Skill(string                     name,
+             float                      manaCost,
+             int                        masteryCost,
+             float                      damage,
+             float                      effectChance,
              vector<unique_ptr<Effect>> effectVec,
-             vector<Skill*> treeNodeVec,
-             bool           learn,
-             bool           activate)
+             vector<Skill*>             treeNodeVec,
+             bool                       learn,
+             bool                       activate)
 {
     this->name         = name;
     this->manaCost     = manaCost;
@@ -32,12 +32,13 @@ Skill::~Skill()
 bool Skill::learn(int* masteryPoint)
 {
     // If there are no children, nothing to learn
-    if (children.empty()) {
+    if (children.empty())
+    {
         return false;
     }
 
     bool allChildrenLearned = true;
-    bool anySkillLearned = false;
+    bool anySkillLearned    = false;
 
     for (Skill* child : children)
     {
@@ -60,7 +61,8 @@ bool Skill::learn(int* masteryPoint)
         else
         {
             // Try to learn child's children
-            if (child->learn(masteryPoint)) {
+            if (child->learn(masteryPoint))
+            {
                 anySkillLearned = true;
             }
         }
@@ -70,6 +72,6 @@ bool Skill::learn(int* masteryPoint)
     {
         this->activated = false;
     }
-    
+
     return anySkillLearned;
 }

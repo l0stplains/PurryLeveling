@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 #include <string>
+
 #include "effects/Stats.hpp"
 
 /**
@@ -89,7 +90,7 @@ protected:
     // --- Skills & Effects (Placeholders) ---
     std::vector<int> m_skills;  // Consider dedicated Skill/Effect classes later
     std::vector<int> m_activeEffects;
-    Stats m_stats;  // Core stats (health, mana, etc.)
+    Stats            m_stats;  // Core stats (health, mana, etc.)
 
 private:
     static unsigned int s_nextId;

@@ -8,7 +8,7 @@ private:
     float rageMultiplier = 1.5f;
 
 public:
-    Rage(bool isLearned = true, bool isActivated = true) 
+    Rage(bool isLearned = true, bool isActivated = true)
         : Skill("Rage", 0, 0, 0, 0, {}, {}, isLearned, isActivated) {};
 
     float getRageMultiplier() const { return rageMultiplier; }

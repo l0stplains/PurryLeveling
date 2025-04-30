@@ -145,6 +145,8 @@ public:
     bool debugWorld = false;
 
 private:
+    // IMPORTANT NOTE: Clear everything related to the user loaded thing on WorldState::Exit();
+
     ResourceManager* m_resourceManager;  ///< Pointer to the resource manager
     UnitManager*     m_unitManager;      ///< Pointer to the unit manager
     StateManager*    m_stateManager;     ///< Pointer to the state manager

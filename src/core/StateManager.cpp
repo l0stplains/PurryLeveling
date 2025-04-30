@@ -59,21 +59,40 @@ void StateManager::ApplyStateChange(State::StateChange& change)
     switch (change.GetAction())
     {
         case State::StateAction::PUSH:
+#ifdef DEBUG_MODE
+            PrintStateStack();
+#endif
             if (change.GetNextState())
             {
                 PushState(change.TakeNextState());
             }
+#ifdef DEBUG_MODE
+            PrintStateStack();
+#endif
             break;
 
         case State::StateAction::POP:
+#ifdef DEBUG_MODE
+            PrintStateStack();
+#endif
+
             PopState();
+#ifdef DEBUG_MODE
+            PrintStateStack();
+#endif
             break;
 
         case State::StateAction::REPLACE:
+#ifdef DEBUG_MODE
+            PrintStateStack();
+#endif
             if (change.GetNextState())
             {
                 ChangeState(change.TakeNextState());
             }
+#ifdef DEBUG_MODE
+            PrintStateStack();
+#endif
             break;
 
         case State::StateAction::NONE:

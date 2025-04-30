@@ -19,7 +19,7 @@ ChooseCharacterState::ChooseCharacterState(GameContext& context)
       m_buttonClickSound(GetContext().GetResourceManager()->GetSoundBuffer("button_click")),
       m_buttonTexture(GetContext().GetResourceManager()->GetTexture("main_menu_button")),
       m_squareButtonTexture(GetContext().GetResourceManager()->GetTexture("square_button")),
-      m_exitButton(m_squareButtonTexture, {64.f, 64.f}, {0.75f, 0.75f}),
+      m_exitButton(m_squareButtonTexture, {32.f, 32.f}, {0.5f, 0.5f}),
       m_confirmButton(m_buttonTexture,  // at the center of screen
                       {0.f, 0.f}),      // set later
       m_font(GetContext().GetResourceManager()->GetFont("main_font")),
@@ -51,7 +51,7 @@ void ChooseCharacterState::Init()
     m_menuTitle.setOrigin(textBounds.getCenter());
     m_menuTitle.setPosition({windowSize.x / 2.f, windowSize.y * 0.28f});
 
-    m_exitButton.setText("X", m_font, 42);
+    m_exitButton.setText("X", m_font, 24);
     m_exitButton.setHoverSound(m_buttonHoverSound);
     m_exitButton.setClickSound(m_buttonClickSound);
 
