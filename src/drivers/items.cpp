@@ -238,107 +238,94 @@ int main()
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Caught exception: " << e.what() << std::endl;
         }
 
         // 2. Test adding item to a specific tile
         std::cout << "! ===== 2. Test Adding Item to Specific Tile ===== !" << std::endl;
         std::cout << std::endl;
 
-        try
+        std::cout << std::endl;
+        std::cout << "! ===== 2a. Empty Slot Addition ===== !" << std::endl;
+        std::cout << std::endl;
+
+        // Find an empty slot for the longbow using findEmptyTile
+        std::vector<std::pair<int, int>> emptyTiles = backpack.findEmptyTile();
+
+        if (!emptyTiles.empty())
         {
+            int emptyRow = emptyTiles[0].first;
+            int emptyCol = emptyTiles[0].second;
+
+            std::cout << "Adding 1 Longbow to position (" << emptyRow << ","
+                      << (char)('A' + emptyCol) << ")..." << std::endl;
+            backpack.addItemAtTile(emptyRow, emptyCol, itemManager.getItem("BOW"), 1);
+
+            // Print updated backpack
+            std::cout << "=== Updated Backpack State ===" << std::endl;
+            printBackpack(backpack);
             std::cout << std::endl;
-            std::cout << "! ===== 2a. Empty Slot Addition ===== !" << std::endl;
+        }
+        else
+        {
+            std::cout << "No empty slot found for Longbow" << std::endl;
+        }
+
+        std::cout << std::endl;
+        std::cout << "! ===== 2b. Same Item Slot Addition ===== !" << std::endl;
+        std::cout << std::endl;
+
+        bool foundBow = false;
+        int  bowRow = -1, bowCol = -1;
+
+        // Find all tiles containing the Longbow item
+        std::vector<std::pair<int, int>> bowTiles = backpack.findItemTile(itemManager.getItem("BO"
+                                                                                              "W"));
+
+        if (!bowTiles.empty())
+        {
+            bowRow   = bowTiles[0].first;
+            bowCol   = bowTiles[0].second;
+            foundBow = true;
+        }
+
+        if (foundBow)
+        {
+            std::cout << "Adding another Longbow to position (" << bowRow << ","
+                      << (char)('A' + bowCol) << ")..." << std::endl;
+            backpack.addItemAtTile(bowRow, bowCol, itemManager.getItem("BOW"), 1);
+
+            // Print updated backpack
+            std::cout << "=== Updated Backpack State After Adding to Same Item ===" << std::endl;
+            printBackpack(backpack);
             std::cout << std::endl;
+        }
 
-            // Find an empty slot for the longbow using findEmptyTile
-            std::vector<std::pair<int, int>> emptyTiles = backpack.findEmptyTile();
+        std::cout << std::endl;
+        std::cout << "! ===== 2c. Different Item Slot Addition (Failure) ===== !" << std::endl;
+        std::cout << "Attempting to add a Sword to a slot with a different item..." << std::endl;
 
-            if (!emptyTiles.empty())
+        // Find a non-sword item
+        for (int i = 0; i < 1; ++i)
+        {
+            for (int j = 0; j < 8; ++j)
             {
-                int emptyRow = emptyTiles[0].first;
-                int emptyCol = emptyTiles[0].second;
-
-                std::cout << "Adding 1 Longbow to position (" << emptyRow << ","
-                          << (char)('A' + emptyCol) << ")..." << std::endl;
-                backpack.addItemAtTile(emptyRow, emptyCol, itemManager.getItem("BOW"), 1);
-
-                // Print updated backpack
-                std::cout << "=== Updated Backpack State ===" << std::endl;
-                printBackpack(backpack);
-                std::cout << std::endl;
-            }
-            else
-            {
-                std::cout << "No empty slot found for Longbow" << std::endl;
-            }
-
-            std::cout << std::endl;
-            std::cout << "! ===== 2b. Same Item Slot Addition ===== !" << std::endl;
-            std::cout << std::endl;
-
-            bool foundBow = false;
-            int  bowRow = -1, bowCol = -1;
-
-            // Find all tiles containing the Longbow item
-            std::vector<std::pair<int, int>> bowTiles =
-                backpack.findItemTile(itemManager.getItem("BOW"));
-
-            if (!bowTiles.empty())
-            {
-                bowRow   = bowTiles[0].first;
-                bowCol   = bowTiles[0].second;
-                foundBow = true;
-            }
-
-            if (foundBow)
-            {
-                std::cout << "Adding another Longbow to position (" << bowRow << ","
-                          << (char)('A' + bowCol) << ")..." << std::endl;
-                backpack.addItemAtTile(bowRow, bowCol, itemManager.getItem("BOW"), 1);
-
-                // Print updated backpack
-                std::cout << "=== Updated Backpack State After Adding to Same Item ===" << std::endl;
-                printBackpack(backpack);
-                std::cout << std::endl;
-            }
-
-            std::cout << std::endl;
-            std::cout << "! ===== 2c. Different Item Slot Addition (Failure) ===== !" << std::endl;
-            std::cout << "Attempting to add a Sword to a slot with a different item..." << std::endl;
-            try
-            {
-                // Find a non-sword item
-                for (int i = 0; i < 4; ++i)
+                try
                 {
-                    for (int j = 0; j < 8; ++j)
+                    Item item = backpack.getItemAtTile(i, j);
+                    if (item.getItemID() != "SWD" && item.getItemID() != "BOW")
                     {
-                        try
-                        {
-                            Item item = backpack.getItemAtTile(i, j);
-                            if (item.getItemID() != "SWD" && item.getItemID() != "BOW")
-                            {
-                                std::cout << "Trying to add a Sword to position (" << i << ","
-                                          << (char)('A' + j) << ")..." << std::endl;
-                                backpack.addItemAtTile(i, j, itemManager.getItem("SWD"), 1);
-                                break;
-                            }
-                        }
-                        catch (...)
-                        {
-                            // Skip exceptions
-                        }
+                        std::cout << "Trying to add a Sword to position (" << i << ","
+                                  << (char)('A' + j) << ")..." << std::endl;
+                        backpack.addItemAtTile(i, j, itemManager.getItem("SWD"), 1);
+                        break;
                     }
                 }
+                catch (const ItemSlotOccupiedException& e)
+                {
+                    std::cout << "Correctly caught exception: " << e.what() << std::endl;
+                }
             }
-            catch (const ItemSlotOccupiedException& e)
-            {
-                std::cout << "Correctly caught exception: " << e.what() << std::endl;
-            }
-        }
-        catch (const std::exception& e)
-        {
-            std::cout << "Error: " << e.what() << std::endl;
         }
 
         // 3. Test taking items from backpack
@@ -374,7 +361,7 @@ int main()
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Caught exception: " << e.what() << std::endl;
         }
 
         // 4. Test taking item from a specific tiles
@@ -385,367 +372,218 @@ int main()
         try
         {
             // Find a slot with a HeadArmor item
-            bool foundHelmet = false;
-            int  helmetRow = -1, helmetCol = -1;
+            std::vector<std::pair<Item, int>> headArmorItems = backpack.filterItemsByType("HeadArmo"
+                                                                                          "r");
 
-            for (int i = 0; i < 4; ++i)
+            int                              helmetRow = -1, helmetCol = -1;
+            std::vector<std::pair<int, int>> headArmorTiles =
+                backpack.findItemTile(headArmorItems[0].first);
+
+            if (!headArmorTiles.empty())
             {
-                for (int j = 0; j < 8; ++j)
-                {
-                    try
-                    {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "HeadArmor")
-                        {
-                            helmetRow   = i;
-                            helmetCol   = j;
-                            foundHelmet = true;
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
-                    }
-                }
-                if (foundHelmet)
-                    break;
+                helmetRow = headArmorTiles[0].first;
+                helmetCol = headArmorTiles[0].second;
             }
 
-            if (foundHelmet)
-            {
-                std::cout << "Taking 1 item from position (" << helmetRow << ","
-                          << (char)('A' + helmetCol) << ")..." << std::endl;
-                Item takenItem = backpack.takeItemAtTile(helmetRow, helmetCol, 1);
-                std::cout << "Taken item: ";
-                printItemDetails(takenItem);
+            std::cout << "Taking 1 item from position (" << helmetRow << ","
+                      << (char)('A' + helmetCol) << ")..." << std::endl;
+            Item takenItem = backpack.takeItemAtTile(helmetRow, helmetCol, 1);
+            std::cout << "Taken item: ";
+            printItemDetails(takenItem);
 
-                // Print updated backpack
-                std::cout << "=== Updated Backpack State ===" << std::endl;
-                printBackpack(backpack);
-                std::cout << std::endl;
-            }
-            else
-            {
-                std::cout << "Could not find a helmet to take" << std::endl;
-            }
+            // Print updated backpack
+            std::cout << "=== Updated Backpack State ===" << std::endl;
+            printBackpack(backpack);
+            std::cout << std::endl;
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Caught exception: " << e.what() << std::endl;
         }
 
         // 5. Test moving items within backpack
         std::cout << std::endl;
         std::cout << "! ===== 5. Test Moving Items in Backpack ===== !" << std::endl;
-        try
+
+        // Test 1: Move Battle Armor to empty slot
+        std::cout << std::endl;
+        std::cout << "! ===== 5a. Move Battle Armor to empty slot ===== !" << std::endl;
+        std::cout << std::endl;
+
+        int  armorRow = -1, armorCol = -1;
+        bool foundArmor = false;
+
+        // Find Battle Armor
+        std::vector<std::pair<int, int>> armorTiles = backpack.findItemTile(itemManager.getItem("BA"
+                                                                                                "C"));
+
+        if (!armorTiles.empty())
         {
-            // Test 1: Move Battle Armor to empty slot
-            std::cout << std::endl;
-            std::cout << "! ===== 5a. Move Battle Armor to empty slot ===== !" << std::endl;
-            std::cout << std::endl;
+            armorRow   = armorTiles[0].first;
+            armorCol   = armorTiles[0].second;
+            foundArmor = true;
+        }
 
-            int  armorRow = -1, armorCol = -1;
-            bool foundArmor = false;
+        // Find an empty slot
+        emptyTiles   = backpack.findEmptyTile();
+        int emptyRow = -1, emptyCol = -1;
 
-            // Find Battle Armor
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 8; ++j)
-                {
-                    try
-                    {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getItemID() == "BAC")
-                        {
-                            armorRow   = i;
-                            armorCol   = j;
-                            foundArmor = true;
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
-                    }
-                }
-                if (foundArmor)
-                    break;
-            }
+        if (!emptyTiles.empty())
+        {
+            emptyRow = emptyTiles[0].first;
+            emptyCol = emptyTiles[0].second;
+        }
 
-            // Find an empty slot
-            std::vector<std::pair<int, int>> emptyTiles = backpack.findEmptyTile();
-            int                              emptyRow = -1, emptyCol = -1;
-
-            if (!emptyTiles.empty())
-            {
-                emptyRow = emptyTiles[0].first;
-                emptyCol = emptyTiles[0].second;
-            }
-
-            if (foundArmor && !emptyTiles.empty())
-            {
-                std::cout << "Moving Battle Armor from (" << armorRow << ","
-                          << (char)('A' + armorCol) << ") to (" << emptyRow << ","
-                          << (char)('A' + emptyCol) << ")..." << std::endl;
-                backpack.moveItem(armorRow, armorCol, emptyRow, emptyCol);
-
-                // Print updated backpack
-                std::cout << "=== Updated Backpack State ===" << std::endl;
-                printBackpack(backpack);
-                std::cout << std::endl;
-            }
-            else
-            {
-                std::cout << "Could not find Battle Armor or empty slot for move test" << std::endl;
-            }
-
-            // Test 2: Move different armor type to another slot
-            // First, add a different armor type if needed
-            std::cout << std::endl;
-            std::cout << "! ===== 5b. Move different armor type to another slot ===== !" << std::endl;
-            std::cout << std::endl;
-
-            bool hasBreastplate = false;
-            int  breastplateRow = -1, breastplateCol = -1;
-
-            // Find a Breastplate item
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 8; ++j)
-                {
-                    try
-                    {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getItemID() == "BPA")
-                        {
-                            breastplateRow = i;
-                            breastplateCol = j;
-                            hasBreastplate = true;
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
-                    }
-                }
-                if (hasBreastplate)
-                    break;
-            }
-
-            if (!hasBreastplate)
-            {
-                // Find an empty slot for adding a breastplate
-                emptyTiles = backpack.findEmptyTile();
-                if (!emptyTiles.empty())
-                {
-                    breastplateRow = emptyTiles[0].first;
-                    breastplateCol = emptyTiles[0].second;
-
-                    std::cout << "Adding Breastplate to position (" << breastplateRow << ","
-                              << (char)('A' + breastplateCol) << ")..." << std::endl;
-                    backpack.addItemAtTile(
-                        breastplateRow, breastplateCol, itemManager.getItem("BPA"), 1);
-
-                    // Print updated backpack
-                    std::cout << "=== Backpack After Adding Breastplate ===" << std::endl;
-                    printBackpack(backpack);
-                    std::cout << std::endl;
-
-                    hasBreastplate = true;
-                }
-            }
-
-            // Find another empty slot for moving the breastplate
-            emptyTiles    = backpack.findEmptyTile();
-            int emptyRow2 = -1, emptyCol2 = -1;
-
-            if (!emptyTiles.empty())
-            {
-                emptyRow2 = emptyTiles[0].first;
-                emptyCol2 = emptyTiles[0].second;
-            }
-
-            if (hasBreastplate && !emptyTiles.empty())
-            {
-                std::cout << "Moving Breastplate from (" << breastplateRow << ","
-                          << (char)('A' + breastplateCol) << ") to (" << emptyRow2 << ","
-                          << (char)('A' + emptyCol2) << ")..." << std::endl;
-                backpack.moveItem(breastplateRow, breastplateCol, emptyRow2, emptyCol2);
-
-                // Print updated backpack
-                std::cout << "=== Backpack After Moving Breastplate ===" << std::endl;
-                printBackpack(backpack);
-                std::cout << std::endl;
-            }
-
-            // Test 3: Move an item to a slot with a different item (swap)
-            std::cout << std::endl;
-            std::cout << "! ===== 5c. Move an item to a slot with a different item (swap) ===== !"
+        if (foundArmor && !emptyTiles.empty())
+        {
+            std::cout << "Moving Battle Armor from (" << armorRow << "," << (char)('A' + armorCol)
+                      << ") to (" << emptyRow << "," << (char)('A' + emptyCol) << ")..."
                       << std::endl;
+            backpack.moveItem(armorRow, armorCol, emptyRow, emptyCol);
+
+            // Print updated backpack
+            std::cout << "=== Updated Backpack State ===" << std::endl;
+            printBackpack(backpack);
             std::cout << std::endl;
+        }
+        else
+        {
+            std::cout << "Could not find Battle Armor or empty slot for move test" << std::endl;
+        }
 
-            bool hasChainMail = false;
-            int  chainMailRow = -1, chainMailCol = -1;
+        // Test 2: Move an item to a slot with a different item (swap)
+        std::cout << std::endl;
+        std::cout << "! ===== 5b. Move an item to a slot with a different item (swap) ===== !"
+                  << std::endl;
+        std::cout << std::endl;
 
-            // Find a Chain Mail item
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 8; ++j)
-                {
-                    try
-                    {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getItemID() == "CHN")
-                        {
-                            chainMailRow = i;
-                            chainMailCol = j;
-                            hasChainMail = true;
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
-                    }
-                }
-                if (hasChainMail)
-                    break;
-            }
+        bool hasChainMail = false;
+        int  chainMailRow = -1, chainMailCol = -1;
 
-            if (!hasChainMail)
-            {
-                // Find an empty slot for adding chain mail
-                emptyTiles = backpack.findEmptyTile();
-                if (!emptyTiles.empty())
-                {
-                    chainMailRow = emptyTiles[0].first;
-                    chainMailCol = emptyTiles[0].second;
+        // Find a Chain Mail item
+        std::vector<std::pair<int, int>> chainMailTiles =
+            backpack.findItemTile(itemManager.getItem("CHN"));
 
-                    std::cout << "Adding Chain Mail to position (" << chainMailRow << ","
-                              << (char)('A' + chainMailCol) << ")..." << std::endl;
-                    backpack.addItemAtTile(chainMailRow, chainMailCol, itemManager.getItem("CHN"), 1);
+        if (!chainMailTiles.empty())
+        {
+            chainMailRow = chainMailTiles[0].first;
+            chainMailCol = chainMailTiles[0].second;
+            hasChainMail = true;
+        }
 
-                    // Print updated backpack
-                    std::cout << "=== Backpack After Adding Chain Mail ===" << std::endl;
-                    printBackpack(backpack);
-                    std::cout << std::endl;
-
-                    hasChainMail = true;
-                }
-            }
-
-            // Find a Leather Armor item or add one
-            bool hasLeather = false;
-            int  leatherRow = -1, leatherCol = -1;
-
-            // Find a Leather Armor item
-            for (int i = 0; i < 4; ++i)
-            {
-                for (int j = 0; j < 8; ++j)
-                {
-                    try
-                    {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getItemID() == "LTH")
-                        {
-                            leatherRow = i;
-                            leatherCol = j;
-                            hasLeather = true;
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
-                    }
-                }
-                if (hasLeather)
-                    break;
-            }
-
-            if (!hasLeather)
-            {
-                // Find an empty slot for adding leather armor
-                emptyTiles = backpack.findEmptyTile();
-                if (!emptyTiles.empty())
-                {
-                    leatherRow = emptyTiles[0].first;
-                    leatherCol = emptyTiles[0].second;
-
-                    std::cout << "Adding Leather Armor to position (" << leatherRow << ","
-                              << (char)('A' + leatherCol) << ")..." << std::endl;
-                    backpack.addItemAtTile(leatherRow, leatherCol, itemManager.getItem("LTH"), 1);
-
-                    // Print updated backpack
-                    std::cout << "=== Backpack After Adding Leather Armor ===" << std::endl;
-                    printBackpack(backpack);
-                    std::cout << std::endl;
-
-                    hasLeather = true;
-                }
-            }
-
-            if (hasChainMail && hasLeather)
-            {
-                std::cout << "Swapping Chain Mail at (" << chainMailRow << ","
-                          << (char)('A' + chainMailCol) << ") with Leather Armor at (" << leatherRow
-                          << "," << (char)('A' + leatherCol) << ")..." << std::endl;
-                backpack.moveItem(chainMailRow, chainMailCol, leatherRow, leatherCol);
-
-                // Print updated backpack
-                std::cout << "=== Backpack After Swapping Armors ===" << std::endl;
-                printBackpack(backpack);
-                std::cout << std::endl;
-            }
-
-            // Test moving items to stack with same type
-            // Add two swords to empty slots
-            std::cout << std::endl;
-            std::cout << "! ===== 5d. Test moving items to stack with same type ===== !" << std::endl;
-            std::cout << std::endl;
-
-            int sword1Row = -1, sword1Col = -1;
-            int sword2Row = -1, sword2Col = -1;
-
-            // Find empty slots for swords
+        if (!hasChainMail)
+        {
+            // Find an empty slot for adding chain mail
             emptyTiles = backpack.findEmptyTile();
-            if (emptyTiles.size() >= 2)
+            if (!emptyTiles.empty())
             {
-                sword1Row = emptyTiles[0].first;
-                sword1Col = emptyTiles[0].second;
-                sword2Row = emptyTiles[1].first;
-                sword2Col = emptyTiles[1].second;
+                chainMailRow = emptyTiles[0].first;
+                chainMailCol = emptyTiles[0].second;
 
-                backpack.addItemAtTile(sword1Row, sword1Col, itemManager.getItem("SWD"), 1);
-                std::cout << "Added 1 sword to position (" << sword1Row << ","
-                          << (char)('A' + sword1Col) << ")" << std::endl;
-
-                backpack.addItemAtTile(sword2Row, sword2Col, itemManager.getItem("SWD"), 1);
-                std::cout << "Added 1 sword to position (" << sword2Row << ","
-                          << (char)('A' + sword2Col) << ")" << std::endl;
+                std::cout << "Adding Chain Mail to position (" << chainMailRow << ","
+                          << (char)('A' + chainMailCol) << ")..." << std::endl;
+                backpack.addItemAtTile(chainMailRow, chainMailCol, itemManager.getItem("CHN"), 1);
 
                 // Print updated backpack
-                std::cout << "=== Backpack After Adding Swords ===" << std::endl;
+                std::cout << "=== Backpack After Adding Chain Mail ===" << std::endl;
                 printBackpack(backpack);
                 std::cout << std::endl;
 
-                // Move sword1 to sword2 position (should stack)
-                std::cout << "Moving sword from (" << sword1Row << "," << (char)('A' + sword1Col)
-                          << ") to (" << sword2Row << "," << (char)('A' + sword2Col) << ")..."
-                          << std::endl;
-                backpack.moveItem(sword1Row, sword1Col, sword2Row, sword2Col);
-
-                // Print updated backpack
-                std::cout << "=== Backpack After Moving Swords (Stacking) ===" << std::endl;
-                printBackpack(backpack);
-                std::cout << std::endl;
+                hasChainMail = true;
             }
         }
-        catch (const std::exception& e)
+
+        // Find a Leather Armor item or add one
+        bool hasLeather = false;
+        int  leatherRow = -1, leatherCol = -1;
+
+        // Find a Leather Armor item
+        std::vector<std::pair<int, int>> leatherTiles =
+            backpack.findItemTile(itemManager.getItem("LTH"));
+
+        if (!leatherTiles.empty())
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            leatherRow = leatherTiles[0].first;
+            leatherCol = leatherTiles[0].second;
+            hasLeather = true;
+        }
+
+        if (!hasLeather)
+        {
+            // Find an empty slot for adding leather armor
+            emptyTiles = backpack.findEmptyTile();
+            if (!emptyTiles.empty())
+            {
+                leatherRow = emptyTiles[0].first;
+                leatherCol = emptyTiles[0].second;
+
+                std::cout << "Adding Leather Armor to position (" << leatherRow << ","
+                          << (char)('A' + leatherCol) << ")..." << std::endl;
+                backpack.addItemAtTile(leatherRow, leatherCol, itemManager.getItem("LTH"), 1);
+
+                // Print updated backpack
+                std::cout << "=== Backpack After Adding Leather Armor ===" << std::endl;
+                printBackpack(backpack);
+                std::cout << std::endl;
+
+                hasLeather = true;
+            }
+        }
+
+        if (hasChainMail && hasLeather)
+        {
+            std::cout << "Swapping Chain Mail at (" << chainMailRow << ","
+                      << (char)('A' + chainMailCol) << ") with Leather Armor at (" << leatherRow
+                      << "," << (char)('A' + leatherCol) << ")..." << std::endl;
+            backpack.moveItem(chainMailRow, chainMailCol, leatherRow, leatherCol);
+
+            // Print updated backpack
+            std::cout << "=== Backpack After Swapping Armors ===" << std::endl;
+            printBackpack(backpack);
+            std::cout << std::endl;
+        }
+
+        // Test moving items to stack with same type
+        // Add two swords to empty slots
+        std::cout << std::endl;
+        std::cout << "! ===== 5c. Test moving items to stack with same type ===== !" << std::endl;
+        std::cout << std::endl;
+
+        int sword1Row = -1, sword1Col = -1;
+        int sword2Row = -1, sword2Col = -1;
+
+        // Find empty slots for swords
+        emptyTiles = backpack.findEmptyTile();
+        if (emptyTiles.size() >= 2)
+        {
+            sword1Row = emptyTiles[0].first;
+            sword1Col = emptyTiles[0].second;
+            sword2Row = emptyTiles[1].first;
+            sword2Col = emptyTiles[1].second;
+
+            backpack.addItemAtTile(sword1Row, sword1Col, itemManager.getItem("SWD"), 1);
+            std::cout << "Added 1 sword to position (" << sword1Row << ","
+                      << (char)('A' + sword1Col) << ")" << std::endl;
+
+            backpack.addItemAtTile(sword2Row, sword2Col, itemManager.getItem("SWD"), 1);
+            std::cout << "Added 1 sword to position (" << sword2Row << ","
+                      << (char)('A' + sword2Col) << ")" << std::endl;
+
+            // Print updated backpack
+            std::cout << "=== Backpack After Adding Swords ===" << std::endl;
+            printBackpack(backpack);
+            std::cout << std::endl;
+
+            // Move sword1 to sword2 position (should stack)
+            std::cout << "Moving sword from (" << sword1Row << "," << (char)('A' + sword1Col)
+                      << ") to (" << sword2Row << "," << (char)('A' + sword2Col) << ")..."
+                      << std::endl;
+            backpack.moveItem(sword1Row, sword1Col, sword2Row, sword2Col);
+
+            // Print updated backpack
+            std::cout << "=== Backpack After Moving Swords (Stacking) ===" << std::endl;
+            printBackpack(backpack);
+            std::cout << std::endl;
         }
 
         // 6. Test the filterItemsByType method
@@ -787,7 +625,7 @@ int main()
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Caught exception: " << e.what() << std::endl;
         }
 
         Equipment equipment;
@@ -847,151 +685,148 @@ int main()
             printBackpack(backpack);
             std::cout << std::endl;
 
-            int count;
-            count = 0;
+            int count = 0;
 
             // Find and equip weapon
-            for (int i = 0; i < 4; ++i)
+            std::vector<std::pair<Item, int>> weapons = backpack.filterItemsByType("Weapon");
+
+            for (const auto& pair : weapons)
             {
-                for (int j = 0; j < 8; ++j)
+                Item item = pair.first;
+
+                if (count < 2)
                 {
-                    try
+                    std::vector<std::pair<int, int>> weaponTiles = backpack.findItemTile(item);
+
+                    if (!weaponTiles.empty())
                     {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "Weapon")
-                        {
-                            std::cout << "Equipping weapon from position (" << i << ","
-                                      << (char)('A' + j) << ")..." << std::endl;
-                            equipment.equipItemFromBackpack(backpack, i, j, "Weapon");
-                            std::cout << "Weapon equipped" << std::endl;
-                            count++;
-                            printEquippedItems(equipment);
-                            printBackpack(backpack);
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
+                        int weaponRow = weaponTiles[0].first;
+                        int weaponCol = weaponTiles[0].second;
+
+                        std::cout << "Equipping weapon from position (" << weaponRow << ","
+                                  << (char)('A' + weaponCol) << ")..." << std::endl;
+                        equipment.equipItemFromBackpack(backpack, weaponRow, weaponCol, "Weapon");
+                        std::cout << "Weapon equipped" << std::endl;
+                        printEquippedItems(equipment);
+                        printBackpack(backpack);
                     }
                 }
-                if (count == 2) break;
+                count++;
             }
 
             count = 0;
             // Find and equip head armor
-            for (int i = 0; i < 4; ++i)
+            std::vector<std::pair<Item, int>> headArmors = backpack.filterItemsByType("HeadArmor");
+
+            for (const auto& pair : headArmors)
             {
-                for (int j = 0; j < 8; ++j)
+                Item item = pair.first;
+
+                if (count < 2)
                 {
-                    try
+                    std::vector<std::pair<int, int>> headArmorTiles = backpack.findItemTile(item);
+
+                    if (!headArmorTiles.empty())
                     {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "HeadArmor")
-                        {
-                            std::cout << "Equipping head armor from position (" << i << ","
-                                      << (char)('A' + j) << ")..." << std::endl;
-                            equipment.equipItemFromBackpack(backpack, i, j, "HeadArmor");
-                            std::cout << "Head armor equipped" << std::endl;
-                            count++;
-                            printEquippedItems(equipment);
-                            printBackpack(backpack);
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
+                        int headArmorRow = headArmorTiles[0].first;
+                        int headArmorCol = headArmorTiles[0].second;
+
+                        std::cout << "Equipping head armor from position (" << headArmorRow << ","
+                                  << (char)('A' + headArmorCol) << ")..." << std::endl;
+                        equipment.equipItemFromBackpack(
+                            backpack, headArmorRow, headArmorCol, "HeadArmor");
+                        std::cout << "Head armor equipped" << std::endl;
+                        printEquippedItems(equipment);
+                        printBackpack(backpack);
                     }
                 }
-                if (count == 2) break;
+                count++;
             }
 
             count = 0;
             // Find and equip body armor
-            for (int i = 0; i < 2; ++i)
+            std::vector<std::pair<Item, int>> bodyArmors = backpack.filterItemsByType("BodyArmor");
+
+            for (const auto& pair : bodyArmors)
             {
-                for (int j = 0; j < 8; ++j)
+                Item item = pair.first;
+
+                if (count < 2)
                 {
-                    try
+                    std::vector<std::pair<int, int>> bodyArmorTiles = backpack.findItemTile(item);
+
+                    if (!bodyArmorTiles.empty())
                     {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "BodyArmor")
-                        {
-                            std::cout << "Equipping body armor from position (" << i << ","
-                                      << (char)('A' + j) << ")..." << std::endl;
-                            equipment.equipItemFromBackpack(backpack, i, j, "BodyArmor");
-                            std::cout << "Body armor equipped" << std::endl;
-                            count++;
-                            printEquippedItems(equipment);
-                            printBackpack(backpack);
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
+                        int bodyArmorRow = bodyArmorTiles[0].first;
+                        int bodyArmorCol = bodyArmorTiles[0].second;
+
+                        std::cout << "Equipping body armor from position (" << bodyArmorRow << ","
+                                  << (char)('A' + bodyArmorCol) << ")..." << std::endl;
+                        equipment.equipItemFromBackpack(
+                            backpack, bodyArmorRow, bodyArmorCol, "BodyArmor");
+                        std::cout << "Body armor equipped" << std::endl;
+                        printEquippedItems(equipment);
+                        printBackpack(backpack);
                     }
                 }
-                if (count == 2) break;
+                count++;
             }
 
             count = 0;
             // Find and equip foot armor
-            for (int i = 0; i < 4; ++i)
+            std::vector<std::pair<Item, int>> footArmors = backpack.filterItemsByType("FootArmor");
+
+            for (const auto& pair : footArmors)
             {
-                for (int j = 0; j < 8; ++j)
+                Item item = pair.first;
+
+                if (count < 2)
                 {
-                    try
+                    std::vector<std::pair<int, int>> footArmorTiles = backpack.findItemTile(item);
+
+                    if (!footArmorTiles.empty())
                     {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "FootArmor")
-                        {
-                            std::cout << "Equipping foot armor from position (" << i << ","
-                                      << (char)('A' + j) << ")..." << std::endl;
-                            equipment.equipItemFromBackpack(backpack, i, j, "FootArmor");
-                            std::cout << "Foot armor equipped" << std::endl;
-                            count++;
-                            printEquippedItems(equipment);
-                            printBackpack(backpack);
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
+                        int footArmorRow = footArmorTiles[0].first;
+                        int footArmorCol = footArmorTiles[0].second;
+
+                        std::cout << "Equipping foot armor from position (" << footArmorRow << ","
+                                  << (char)('A' + footArmorCol) << ")..." << std::endl;
+                        equipment.equipItemFromBackpack(
+                            backpack, footArmorRow, footArmorCol, "FootArmor");
+                        std::cout << "Foot armor equipped" << std::endl;
+                        printEquippedItems(equipment);
+                        printBackpack(backpack);
                     }
                 }
-                if (count == 2) break;
+                count++;
             }
 
             count = 0;
             // Find and equip pendant
-            for (int i = 0; i < 2; ++i)
+            std::vector<std::pair<Item, int>> pendants = backpack.filterItemsByType("Pendant");
+
+            for (const auto& pair : pendants)
             {
-                for (int j = 0; j < 8; ++j)
+                Item item = pair.first;
+
+                if (count < 2)
                 {
-                    try
+                    std::vector<std::pair<int, int>> pendantTiles = backpack.findItemTile(item);
+
+                    if (!pendantTiles.empty())
                     {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "Pendant")
-                        {
-                            std::cout << "Equipping pendant from position (" << i << ","
-                                      << (char)('A' + j) << ")..." << std::endl;
-                            equipment.equipItemFromBackpack(backpack, i, j, "Pendant");
-                            std::cout << "Pendant equipped" << std::endl;
-                            count++;
-                            printEquippedItems(equipment);
-                            printBackpack(backpack);
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
+                        int pendantRow = pendantTiles[0].first;
+                        int pendantCol = pendantTiles[0].second;
+
+                        std::cout << "Equipping pendant from position (" << pendantRow << ","
+                                  << (char)('A' + pendantCol) << ")..." << std::endl;
+                        equipment.equipItemFromBackpack(backpack, pendantRow, pendantCol, "Pendant");
+                        std::cout << "Pendant equipped" << std::endl;
+                        printEquippedItems(equipment);
+                        printBackpack(backpack);
                     }
                 }
-                if (count == 2) break;
+                count++;
             }
 
             // Print equipment after equipping
@@ -1006,7 +841,7 @@ int main()
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Caught exception: " << e.what() << std::endl;
         }
 
         // 8. Test unequipping items to backpack
@@ -1132,27 +967,19 @@ int main()
             std::cout << std::endl;
 
             // Find a slot with a potion
-            for (int i = 0; i < 1; ++i)
+            std::vector<std::pair<Item, int>> potions = backpack.filterItemsByType("Potion");
+
+            std::vector<std::pair<int, int>> potionTiles = backpack.findItemTile(potions[0].first);
+
+            if (!potionTiles.empty())
             {
-                for (int j = 0; j < 8; ++j)
-                {
-                    try
-                    {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "Potion")
-                        {
-                            std::cout << "Trying to unequip body armor to slot with potion at ("
-                                      << i << "," << (char)('A' + j) << ")..." << std::endl;
-                            equipment.unequipItemToBackpack(backpack, i, j, "BodyArmor");
-                            std::cout << "Body armor unequipped" << std::endl;
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip exceptions
-                    }
-                }
+                int potionRow = potionTiles[0].first;
+                int potionCol = potionTiles[0].second;
+
+                std::cout << "Unequipping body armor to position with potion (" << potionRow << ","
+                          << (char)('A' + potionCol) << ")..." << std::endl;
+                equipment.unequipItemToBackpack(backpack, potionRow, potionCol, "BodyArmor");
+                std::cout << "Body armor unequipped" << std::endl;
             }
 
             printEquippedItems(equipment);
@@ -1175,7 +1002,7 @@ int main()
         }
         catch (const std::exception& e)
         {
-            std::cout << "Error: " << e.what() << std::endl;
+            std::cout << "Caught exception: " << e.what() << std::endl;
         }
 
         // 9. Test error handling
@@ -1242,35 +1069,32 @@ int main()
         std::cout << "! ===== 9d. Test item slot occupied ===== !" << std::endl;
         std::cout << std::endl;
 
+        std::cout << "Testing adding different item to occupied slot..." << std::endl;
+
         try
         {
-            std::cout << "Testing adding different item to occupied slot..." << std::endl;
             // Find a slot with a Weapon
-            for (int i = 0; i < 4; ++i)
+            std::vector<std::pair<Item, int>> weapons = backpack.filterItemsByType("Weapon");
+
+            std::vector<std::pair<int, int>> weaponTiles = backpack.findItemTile(weapons[0].first);
+
+            if (!weaponTiles.empty())
             {
-                for (int j = 0; j < 8; ++j)
-                {
-                    try
-                    {
-                        Item item = backpack.getItemAtTile(i, j);
-                        if (item.getType() == "Weapon")
-                        {
-                            std::cout << "Trying to add a Helmet to position (" << i << ","
-                                      << (char)('A' + j) << ") that has a Weapon..." << std::endl;
-                            backpack.addItemAtTile(i, j, itemManager.getItem("HLM"), 1);
-                            break;
-                        }
-                    }
-                    catch (...)
-                    {
-                        // Skip empty cells
-                    }
-                }
+                int weaponRow = weaponTiles[0].first;
+                int weaponCol = weaponTiles[0].second;
+
+                std::cout << "Trying to add a Helmet to position (" << weaponRow << ","
+                          << (char)('A' + weaponCol) << ") that has a Weapon..." << std::endl;
+                backpack.addItemAtTile(weaponRow, weaponCol, itemManager.getItem("HLM"), 1);
             }
+        }
+        catch (const ItemSlotOccupiedException& e)
+        {
+            std::cout << "Correctly caught ItemSlotOccupiedException: " << e.what() << std::endl;
         }
         catch (const std::exception& e)
         {
-            std::cout << "Caught exception: " << e.what() << std::endl;
+            std::cout << "Caught unexpected exception: " << e.what() << std::endl;
         }
 
         // Test backpack full exception
@@ -1293,9 +1117,9 @@ int main()
                     backpack.addItemAtTile(x, y, itemManager.getItem("HPP"), 1);
                     filledCount++;
                 }
-                catch (...)
+                catch (const std::exception& e)
                 {
-                    // Skip if adding fails
+                    std::cout << "Caught exception: " << e.what() << std::endl;
                 }
             }
 
@@ -1319,7 +1143,9 @@ int main()
             std::cout << "Caught unexpected exception: " << e.what() << std::endl;
         }
 
+        std::cout << std::endl;
         std::cout << "=== All Tests Completed ===" << std::endl;
+        std::cout << std::endl;
 
         return 0;
     }

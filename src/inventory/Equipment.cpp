@@ -195,12 +195,6 @@ void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const st
         // Loop through all tiles containing this item type with available space
         for (const auto& [itemX, itemY] : itemTiles)
         {
-            // Skip the target tile we already checked (it has a different item)
-            if (itemX == x && itemY == y)
-            {
-                continue;
-            }
-
             // Since findItemTile returns tiles with this item type that have space available,
             // we can directly add to this tile without additional checks
             backpack.addItemAtTile(itemX, itemY, currentlyEquipped, 1);

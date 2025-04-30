@@ -97,7 +97,7 @@ void Backpack::addItemAtTile(int x, int y, const Item& item, int quantity)
 {
     validateCoordinates(x, y);
 
-    if (quantity <= 0)
+    if (quantity <= 0 || quantity > maxStackSize)
     {
         throw InvalidQuantityException();
     }
@@ -105,11 +105,6 @@ void Backpack::addItemAtTile(int x, int y, const Item& item, int quantity)
     if (item.isNull())
     {
         throw QuantityRequiresValidItemException();
-    }
-
-    if (quantity > maxStackSize)
-    {
-        throw InvalidQuantityException();
     }
 
     // Check if there's already an item
@@ -141,7 +136,7 @@ void Backpack::addItemAtTile(int x, int y, const Item& item, int quantity)
         else
         {
             // Different item - throw an exception instead of replacing
-            throw ItemSlotOccupiedException("Cannot add a different item to an occupied slot");
+            throw ItemSlotOccupiedException();
         }
     }
     else
