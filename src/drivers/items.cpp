@@ -1143,7 +1143,9 @@ int main()
             std::cout << "Caught unexpected exception: " << e.what() << std::endl;
         }
 
+        std::cout << std::endl;
         std::cout << "=== All Tests Completed ===" << std::endl;
+        std::cout << std::endl;
 
         return 0;
     }
