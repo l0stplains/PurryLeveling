@@ -123,16 +123,15 @@ void printItemDatabase(const ItemManager& itemManager)
 }
 
 // Function to print filtered items by type
-// Updated to use reference_wrapper
-void printFilteredItems(const std::vector<std::reference_wrapper<std::pair<Item, int>>>& filteredItems)
+// Updated to use pointers instead of reference_wrapper
+void printFilteredItems(const std::vector<std::pair<Item, int>*>& filteredItems)
 {
     std::cout << "Found " << filteredItems.size() << " item(s):" << std::endl;
 
-    for (const auto& itemRef : filteredItems)
+    for (const auto* itemPtr : filteredItems)
     {
-        const auto& pair = itemRef.get();
-        std::cout << "- " << pair.first.getName() << " (ID: " << pair.first.getItemID()
-                  << ", Quantity: " << pair.second << ")" << std::endl;
+        std::cout << "- " << itemPtr->first.getName() << " (ID: " << itemPtr->first.getItemID()
+                  << ", Quantity: " << itemPtr->second << ")" << std::endl;
     }
 }
 
@@ -212,7 +211,6 @@ int main()
         std::cout << "=== Initial Backpack State ===" << std::endl;
         printBackpack(backpack);
         std::cout << std::endl;
-
         // 1. Test adding items to backpack
         std::cout << std::endl;
         std::cout << "! ===== 1. Test Adding Items to Backpack ===== !" << std::endl;
@@ -381,7 +379,7 @@ int main()
             if (!headArmorItems.empty())
             {
                 std::vector<std::pair<int, int>> headArmorTiles =
-                    backpack.findItemTile(headArmorItems[0].get().first);
+                    backpack.findItemTile(headArmorItems[0]->first);
 
                 if (!headArmorTiles.empty())
                 {
@@ -614,26 +612,25 @@ int main()
             printFilteredItems(potions);
 
             // Test modifying potions through the filtered results
-            // Test modifying potions through the filtered results
             std::cout << "\n! ===== 6a. Test Modifying Items Through Filtered Results ===== !"
                       << std::endl;
             if (!potions.empty())
             {
-                // get the first potion pair
-                auto& firstPotionPair  = potions[0].get();
-                int   originalQuantity = firstPotionPair.second;
+                // get the first potion pair using pointer
+                auto* firstPotionPair  = potions[0];
+                int   originalQuantity = firstPotionPair->second;
 
                 std::cout << "Original potion quantity: " << originalQuantity << std::endl;
-                std::cout << "Modifying quantity through filtered result reference..." << std::endl;
+                std::cout << "Modifying quantity through filtered result pointer..." << std::endl;
 
-                // Modify the quantity through the reference
-                firstPotionPair.second += 10;
+                // Modify the quantity through the pointer
+                firstPotionPair->second += 10;
 
-                std::cout << "Modified potion quantity: " << firstPotionPair.second << std::endl;
+                std::cout << "Modified potion quantity: " << firstPotionPair->second << std::endl;
 
                 // Now check if the backpack reflects the change
                 std::vector<std::pair<int, int>> potionTiles =
-                    backpack.findItemTile(firstPotionPair.first);
+                    backpack.findItemTile(firstPotionPair->first);
                 if (!potionTiles.empty())
                 {
                     int row              = potionTiles[0].first;
@@ -643,7 +640,7 @@ int main()
                     std::cout << "Quantity in backpack at position (" << row << ","
                               << (char)('A' + col) << "): " << backpackQuantity << std::endl;
 
-                    if (backpackQuantity == firstPotionPair.second)
+                    if (backpackQuantity == firstPotionPair->second)
                     {
                         std::cout << "SUCCESS: Backpack quantity matches the modified quantity!"
                                   << std::endl;
@@ -657,7 +654,7 @@ int main()
                 }
 
                 // Restore original quantity for other tests
-                firstPotionPair.second = originalQuantity;
+                firstPotionPair->second = originalQuantity;
             }
             else
             {
@@ -750,10 +747,9 @@ int main()
             // Find and equip weapon
             auto weapons = backpack.filterItemsByType("Weapon");
 
-            for (auto& weaponRef : weapons)
+            for (auto* weaponPtr : weapons)
             {
-                auto& weaponPair = weaponRef.get();
-                Item& item       = weaponPair.first;
+                Item& item = weaponPtr->first;
 
                 if (count < 2)
                 {
@@ -779,10 +775,9 @@ int main()
             // Find and equip head armor
             auto headArmors = backpack.filterItemsByType("HeadArmor");
 
-            for (auto& headArmorRef : headArmors)
+            for (auto* headArmorPtr : headArmors)
             {
-                auto& headArmorPair = headArmorRef.get();
-                Item& item          = headArmorPair.first;
+                Item& item = headArmorPtr->first;
 
                 if (count < 2)
                 {
@@ -809,10 +804,9 @@ int main()
             // Find and equip body armor
             auto bodyArmors = backpack.filterItemsByType("BodyArmor");
 
-            for (auto& bodyArmorRef : bodyArmors)
+            for (auto* bodyArmorPtr : bodyArmors)
             {
-                auto& bodyArmorPair = bodyArmorRef.get();
-                Item& item          = bodyArmorPair.first;
+                Item& item = bodyArmorPtr->first;
 
                 if (count < 2)
                 {
@@ -839,10 +833,9 @@ int main()
             // Find and equip foot armor
             auto footArmors = backpack.filterItemsByType("FootArmor");
 
-            for (auto& footArmorRef : footArmors)
+            for (auto* footArmorPtr : footArmors)
             {
-                auto& footArmorPair = footArmorRef.get();
-                Item& item          = footArmorPair.first;
+                Item& item = footArmorPtr->first;
 
                 if (count < 2)
                 {
@@ -869,10 +862,9 @@ int main()
             // Find and equip pendant
             auto pendants = backpack.filterItemsByType("Pendant");
 
-            for (auto& pendantRef : pendants)
+            for (auto* pendantPtr : pendants)
             {
-                auto& pendantPair = pendantRef.get();
-                Item& item        = pendantPair.first;
+                Item& item = pendantPtr->first;
 
                 if (count < 2)
                 {
@@ -1037,7 +1029,7 @@ int main()
             if (!potions.empty())
             {
                 std::vector<std::pair<int, int>> potionTiles =
-                    backpack.findItemTile(potions[0].get().first);
+                    backpack.findItemTile(potions[0]->first);
 
                 if (!potionTiles.empty())
                 {
@@ -1152,7 +1144,7 @@ int main()
             if (!weapons.empty())
             {
                 std::vector<std::pair<int, int>> weaponTiles =
-                    backpack.findItemTile(weapons[0].get().first);
+                    backpack.findItemTile(weapons[0]->first);
 
                 if (!weaponTiles.empty())
                 {

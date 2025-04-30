@@ -81,7 +81,7 @@ public:
      * @param type item type
      * @return vector of items with quantity of specified type
      */
-    std::vector<std::reference_wrapper<std::pair<Item, int>>> filterItemsByType(const std::string& type);
+    std::vector<std::pair<Item, int>*> filterItemsByType(const std::string& type);
 
     /**
      * @brief Find item tile
