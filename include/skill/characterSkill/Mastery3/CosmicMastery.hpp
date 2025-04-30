@@ -1,22 +1,27 @@
 #pragma once
 #include "effects/useEffects/TimeWarp.hpp"
 #include "skill/Skill.hpp"
+#include "effects/useEffects/Chronoflux.hpp"
+#include <memory>
 
+// SKill Mastery3 Mage
 class CosmicMastery : public Skill
 {
 private:
     float intelligenceMultiplier = 0.35f;  // Massive intelligence boost
-    float timeWarpChance         = 0.40f;  // Chance to reset spell cooldown
-    float spellPowerBoost        = 0.0;    // Increases spell damage
-    float manaCostReduction      = 0.0f;   // Reduces mana costs by 0%
-    int   manaRegenBonus         = 0;
+    int   manaRegenBonus         = 20;
 
 public:
-    CosmicMastery() : Skill("Cosmic Mastery", 25, 8, 15, 1.0f, {}, {}, false, false)
+    CosmicMastery(bool isLearned = false, bool isActive = false) 
+        : Skill("Cosmic Mastery", 25, 8, 15, 1.0f, {}, {}, isLearned, isActive)
     {
-        vector<Effect> effectVec;
-        effectVec.push_back(TimeWarp(0.40f, 0.25f, 5));
-        this->setEffects(effectVec);
-        // No children (leaf node)
-    };
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<TimeWarp>(0.40f, 0.25f, 5));
+        effectVec.push_back(make_unique<Chronoflux>(-10, 0.4, 3)); // 40% pengurangan cooldown
+        this->setEffects(std::move(effectVec));
+    }
+    
+    // Getters
+    float getIntelligenceMultiplier() const { return intelligenceMultiplier; }
+    int getManaRegenBonus() const { return manaRegenBonus; }
 };

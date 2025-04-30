@@ -9,7 +9,8 @@ private:
     float damageMultiplier = 0.10f;
 
 public:
-    BoneShard() : Skill("Bone Shard", 0, 0, 0, 1.0f, {}, {}, false, false)
+    BoneShard(bool isLearned = false, bool isActivated = false) 
+        : Skill("Bone Shard", 0, 0, 0, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Effect> effectVec;
         effectVec.push_back(Brittle(15 * damageMultiplier));

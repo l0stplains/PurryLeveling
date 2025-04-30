@@ -2,6 +2,7 @@
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/Arise.hpp"
 
+// Necromancer Matery 2
 class UndeadLegion : public Skill
 {
 private:
@@ -9,7 +10,8 @@ private:
     int   summonedUnit     = 1;
 
 public:
-    UndeadLegion() : Skill("Undead Legion", 10, 3, 0, 0, {}, {}, true, true)
+    UndeadLegion(bool isLearned = false, bool isActivated = false) 
+        : Skill("Undead Legion", 10, 4, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 
@@ -17,4 +19,7 @@ public:
         thirdSkill.push_back(arise);
         this->setChildren(thirdSkill);
     }
+    
+    float getDamageMultiplier() const { return damageMultiplier; }
+    int getSummonedUnit() const { return summonedUnit; }
 };

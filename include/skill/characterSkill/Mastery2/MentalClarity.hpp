@@ -1,23 +1,31 @@
 #pragma once
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/ManaMastery.hpp"
+#include "effects/useEffects/Chronoflux.hpp"
+#include <memory>
 
+// Mage Master 2
 class MentalClarity : public Skill
 {
 private:
     float intelligenceMultiplier = 0.15f;  // Enhanced intelligence
-    float manaCostReduction      = 0.20f;  // Reduces mana costs by 20%
     int   manaRegenBonus         = 0;
-    float spellPowerBoost        = 0.0f;  // nambah damage intinya
-    float timeWarpChance         = 0.0f;
 
 public:
-    MentalClarity() : Skill("Mental Clarity", 7, 2, 0, 1.0f, {}, {}, false, false)
+    MentalClarity(bool isLearned = false, bool isActivated = false) 
+        : Skill("Mental Clarity", 7, 2, 0, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
 
         ManaMastery* manaMastery = new ManaMastery();
         thirdSkill.push_back(manaMastery);
         this->setChildren(thirdSkill);
+
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<Chronoflux>(0.2, 0, 3));
+        this->setEffects(std::move(effectVec));
     }
+    
+    float getIntelligenceMultiplier() const { return intelligenceMultiplier; }
+    int getManaRegenBonus() const { return manaRegenBonus; }
 };

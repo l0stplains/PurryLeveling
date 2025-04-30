@@ -5,7 +5,7 @@ Skill::Skill(string         name,
              int            masteryCost,
              float          damage,
              float          effectChance,
-             vector<Effect> effectVec,
+             vector<unique_ptr<Effect>> effectVec,
              vector<Skill*> treeNodeVec,
              bool           learn,
              bool           activate)
@@ -15,7 +15,7 @@ Skill::Skill(string         name,
     this->masteryCost  = masteryCost;
     this->damage       = damage;
     this->effectChance = effectChance;
-    this->effects      = effectVec;
+    this->effects      = std::move(effectVec);
     this->children     = treeNodeVec;
     this->isLearned    = learn;
     this->activated    = activate;
@@ -29,9 +29,15 @@ Skill::~Skill()
     }
 }
 
-void Skill::learn(int* masteryPoint)
+bool Skill::learn(int* masteryPoint)
 {
+    // If there are no children, nothing to learn
+    if (children.empty()) {
+        return false;
+    }
+
     bool allChildrenLearned = true;
+    bool anySkillLearned = false;
 
     for (Skill* child : children)
     {
@@ -42,15 +48,21 @@ void Skill::learn(int* masteryPoint)
                 child->activated = true;
                 child->isLearned = true;
                 *masteryPoint -= child->getMasteryCost();
+                anySkillLearned = true;
             }
             else
             {
                 allChildrenLearned = false;
+                // Not enough mastery points for this skill
+                // Continue checking other skills
             }
         }
         else
         {
-            child->learn(masteryPoint);
+            // Try to learn child's children
+            if (child->learn(masteryPoint)) {
+                anySkillLearned = true;
+            }
         }
     }
 
@@ -58,4 +70,6 @@ void Skill::learn(int* masteryPoint)
     {
         this->activated = false;
     }
+    
+    return anySkillLearned;
 }

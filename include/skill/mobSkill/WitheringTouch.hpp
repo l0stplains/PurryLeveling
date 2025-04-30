@@ -9,7 +9,8 @@ private:
     int   duration      = 4;  // turn
 
 public:
-    WitheringTouch() : Skill("Withering Touch", 0, 0, 0, 0.0f, {}, {}, false, false) {};
+    WitheringTouch(bool isLearned = false, bool isActivated = false) 
+        : Skill("Withering Touch", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated) {};
 
     float getIntMultiplier() const { return intMultiplier; }
     float getManaReduction() const { return manaReduction; }
