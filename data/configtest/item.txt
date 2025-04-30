@@ -1,0 +1,7 @@
+#<Item ID> <Item Name> <Item Type> <Rarity> <Base Atk> <Effect1> <Effect2> <Effect3>
+EXC Excalibur Weapon S 500 Critical_Strike - -
+HEA Helmet HeadArmor S 500 Damage_Reduction Reflect -
+BOD Dragon_Armor BodyArmor A 200 Damage_Reduction Reflect -
+FOT Foot_Armor FootArmor A 200 Damage_Reduction Reflect -
+MNP Mana_Potion Potion C 0 Mana_Regeneration - -
+PHP Phoenix_Pendant Pendant B 0 Health_Regeneration - -

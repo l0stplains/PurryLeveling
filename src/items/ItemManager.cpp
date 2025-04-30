@@ -4,9 +4,12 @@ ItemManager::ItemManager(std::vector<Item> itemDatabase) : itemDatabase(itemData
 
 ItemManager::~ItemManager() {}
 
-Item& ItemManager::getItem(std::string itemID) {
-    for (auto& item : itemDatabase) {
-        if (item.getItemID() == itemID) {
+Item& ItemManager::getItem(std::string itemID)
+{
+    for (auto& item : itemDatabase)
+    {
+        if (item.getItemID() == itemID)
+        {
             return item;
         }
     }
@@ -14,27 +17,33 @@ Item& ItemManager::getItem(std::string itemID) {
     throw "Item not found";
 }
 
-std::vector<Item> ItemManager::getAllItems() const {
+std::vector<Item> ItemManager::getAllItems() const
+{
     return itemDatabase;
 }
 
-std::vector<Item> ItemManager::getItemsByType(const std::string& type) const {
+std::vector<Item> ItemManager::getItemsByType(const std::string& type) const
+{
     std::vector<Item> result;
-    for (const auto& item : itemDatabase) {
-        if (item.getType() == type) {
+    for (const auto& item : itemDatabase)
+    {
+        if (item.getType() == type)
+        {
             result.push_back(item);
         }
     }
     return result;
 }
 
-std::vector<Item> ItemManager::getItemsByRarity(char rarity) const {
+std::vector<Item> ItemManager::getItemsByRarity(char rarity) const
+{
     std::vector<Item> result;
-    for (const auto& item : itemDatabase) {
-        if (item.getRarity() == rarity) {
+    for (const auto& item : itemDatabase)
+    {
+        if (item.getRarity() == rarity)
+        {
             result.push_back(item);
         }
     }
     return result;
 }
-

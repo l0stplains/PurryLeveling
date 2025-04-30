@@ -1,0 +1,7 @@
+#<Item Name> <Item Rarity> <Base Price> <Stock>
+Excalibur S 5000 1
+Dragon_Armor A 3000 2
+Mana_Potion C 500 10
+Phoenix_Pendant B 2000 3
+Healing_Potion D 300 15
+Iron_Sword E 150 5
