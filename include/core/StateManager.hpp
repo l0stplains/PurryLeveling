@@ -5,6 +5,8 @@
 
 #include "states/State.hpp"
 
+// #define DEBUG_MODE
+
 /**
  * @class StateManager
  * @brief Manages the state stack and handles state transitions.

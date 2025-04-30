@@ -55,10 +55,49 @@ private:
     sf::Sprite  m_backgroundSprite;   ///< Background sprite
     sf::Sprite  m_doorEnterArea;      ///< Door enter area sprite
 
+    sf::Sound m_buttonHoverSound;  ///< Button hover sound
+    sf::Sound m_buttonClickSound;  ///< Button click sound
+
+    sf::Texture m_squareButtonTexture;
+    sf::Texture m_buttonTexture;  ///< Button texture
+
+    Button m_exitButton;  ///< Start button
+
+    sf::Font m_font;      ///< Font for UI text
+    sf::Font m_boldFont;  ///< Font for UI text
+
     bool m_showPortalEnterModal = false;  ///< Flag for showing portal enter modal
     bool m_showShopEnterModal   = false;  ///< Flag for showing shop enter modal
+    bool m_showExitPopup        = false;  ///< Flag to show exit confirmation popup
     bool m_wasInShop            = false;  ///< Flag for showing shop enter modal
     bool m_wasInPortal          = false;
+
+    // File dialog related members
+    bool        m_showFileDialog = false;  ///< Flag to show file dialog
+    std::string m_selectedFolder;          ///< Selected folder path
+    bool        m_showErrorPopup = false;  ///< Flag to show error popup
+    std::string m_errorMessage;            ///< Error message to display
+
+    const std::vector<std::string> m_requiredFiles = {
+        "item.txt", "shop.txt", "backpack.txt", "mobloot.txt", "equipment.txt"};  ///< Required
+                                                                                  ///< files for
+                                                                                  ///< save files
+                                                                                  ///< validation
+
+    /**
+     * @brief Validates if the selected folder contains all required files
+     *
+     * @param folderPath Path to the folder to check
+     * @return true if all required files exist, false otherwise
+     */
+    bool validateFolder(const std::string& folderPath);
+
+    /**
+     * @brief Shows an error message in an ImGui popup
+     *
+     * @param message The error message to display
+     */
+    void showError(const std::string& message);
 
     unsigned int m_currentPortalId = -1;  ///< ID of the current portal
 
