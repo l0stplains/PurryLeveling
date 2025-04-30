@@ -106,7 +106,7 @@ void printItemDetails(const Item& item)
     // Print effects
     for (const auto& effect : item.getEffects())
     {
-        std::cout << " " << effect;
+        std::cout << " | " << effect->GetName() << " (" << effect->GetDescription() << ")";
     }
     std::cout << std::endl;
 }
@@ -164,17 +164,17 @@ int main()
             Item("SAB", "Sabatons", "FootArmor", 'A', {"80", "Heavy_Protection"}),
 
             // Pendants
-            Item("AMU", "Amulet", "Pendant", 'B', {"Magic_Boost"}),
-            Item("NCK", "Necklace", "Pendant", 'C', {"Charm"}),
-            Item("PND", "Power_Pendant", "Pendant", 'A', {"Strength_Boost"}),
-            Item("GEM", "Magic_Gem", "Pendant", 'S', {"Special_Power"}),
+            Item("AMU", "Amulet", "Pendant", 'B', {"Magic_Boost", ""}),
+            Item("NCK", "Necklace", "Pendant", 'C', {"Charm", ""}),
+            Item("PND", "Power_Pendant", "Pendant", 'A', {"Strength_Boost", ""}),
+            Item("GEM", "Magic_Gem", "Pendant", 'S', {"Special_Power", ""}),
 
             // Potions
-            Item("HPP", "Health_Potion", "Potion", 'C', {"Heal_50"}),
-            Item("MPP", "Mana_Potion", "Potion", 'C', {"Mana_50"}),
-            Item("SPP", "Strength_Potion", "Potion", 'B', {"Strength_Boost"}),
-            Item("APP", "Agility_Potion", "Potion", 'B', {"Agility_Boost"}),
-            Item("EPP", "Elixir_Potion", "Potion", 'A', {"Full_Restore"})};
+            Item("HPP", "Health_Potion", "Potion", 'C', {"Heal_50", ""}),
+            Item("MPP", "Mana_Potion", "Potion", 'C', {"Mana_50", ""}),
+            Item("SPP", "Strength_Potion", "Potion", 'B', {"Strength_Boost", ""}),
+            Item("APP", "Agility_Potion", "Potion", 'B', {"Agility_Boost", ""}),
+            Item("EPP", "Elixir_Potion", "Potion", 'A', {"Full_Restore", ""})};
 
         ItemManager itemManager(itemDatabase);
 
