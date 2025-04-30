@@ -91,13 +91,6 @@ private:
     void addLootItem(const Item& item);
 
     /**
-     * @brief Get the list of mobs in this chamber
-     *
-     * @return vector<shared_ptr<Unit>> Vector of mobs
-     */
-    vector<shared_ptr<Unit>> getMobs() const;
-
-    /**
      * @brief Get the difficulty multiplier of the chamber
      *
      * @return double The difficulty multiplier
@@ -131,6 +124,13 @@ public:
      * @param isBossRoom Whether to generate boss mobs
      */
     void generateMobs(bool isBossRoom);
+
+    /**
+     * @brief Get the list of mobs in this chamber
+     *
+     * @return vector<shared_ptr<Unit>> Vector of mobs
+     */
+    vector<shared_ptr<Unit>> getMobs() const;
 
     /**
      * @brief Generate loot for mobs in this chamber
