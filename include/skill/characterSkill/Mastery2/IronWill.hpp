@@ -1,23 +1,29 @@
 #pragma once
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/Guardian.hpp"
+#include "effects/useEffects/FighterMight.hpp"
+#include <memory>
 
+// Fighter Master 2
 class IronWill : public Skill
 {
 private:
     float strengthMultiplier = 0.15f;  // Modest strength boost
-    float damageReduction    = 0.20f;  // Damage reduction
-    float damageBoost        = 0.0f;
-    float critChanceBonus    = 0.0f;  // Increased critical hit chance
-    float reflectDamage      = 0.0f;
 
 public:
-    IronWill() : Skill("Iron Will", 7, 3, 0, 1.0f, {}, {}, false, false)
+    IronWill(bool isLearned = false, bool isActivated = false) 
+        : Skill("Iron Will", 7, 3, 0, 0.6f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
-
         Guardian* guardian = new Guardian();
         thirdSkill.push_back(guardian);
         this->setChildren(thirdSkill);
+
+        // Add FighterMight effect
+        vector<unique_ptr<Effect>> effectVec;
+        effectVec.push_back(make_unique<FighterMight>(10, 0.05f, 0.01f, 4, 25, 15, 2));
+        this->setEffects(std::move(effectVec));
     }
+    
+    float getStrengthMultiplier() const { return strengthMultiplier; }
 };

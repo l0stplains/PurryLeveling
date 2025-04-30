@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "effects/Effect.hpp"
 #include "effects/Stats.hpp"
@@ -16,7 +17,7 @@ private:
     int            masteryCost;
     float          damage;
     float          effectChance;
-    vector<Effect> effects;
+    vector<unique_ptr<Effect>> effects;
     vector<Skill*> children;
     bool           isLearned;
     bool           activated;
@@ -36,10 +37,15 @@ public:
           int            masteryCost,
           float          damage,
           float          effectChance,
-          vector<Effect> effectVec,
+          vector<unique_ptr<Effect>> effectVec,
           vector<Skill*> treeNodeVec,
           bool           learn,
           bool           activate);
+    
+    // Delete copy constructor and copy assignment operator
+    Skill(const Skill&) = delete;
+    Skill& operator=(const Skill&) = delete;
+    
     /* @brief Destructor for Skill
      */
     ~Skill();
@@ -50,8 +56,8 @@ public:
     int            getMasteryCost() const { return masteryCost; }
     float          getDamage() const { return damage; }
     float          getEffectChance() const { return effectChance; }
-    vector<Effect> getEffects() const { return effects; }
-    void           setEffects(vector<Effect> effectVec) { effects = effectVec; }
+    const vector<unique_ptr<Effect>>& getEffects() const { return effects; }
+    void setEffects(vector<unique_ptr<Effect>>&& effectVec) { effects = std::move(effectVec); }
     vector<Skill*> getChildren() const { return children; }
     void           setChildren(vector<Skill*> treeNodeVec) { children = treeNodeVec; }
     bool           getIsLearned() const { return isLearned; }
@@ -62,5 +68,5 @@ public:
     /* @brief Learn the skill by activating the child skilTreeNode and deactivate the parent Skill
      * and change the isLearned state
      */
-    void learn(int* masteryPoint);
+    bool learn(int* masteryPoint);
 };
