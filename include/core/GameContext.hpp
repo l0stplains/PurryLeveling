@@ -5,6 +5,8 @@
 #include "core/ResourceManager.hpp"
 #include "core/UnitManager.hpp"
 
+#include "inventory/Backpack.hpp"
+#include "inventory/Equipment.hpp"
 #include "units/NavigationGrid.hpp"
 
 class StateManager;  // forward declaration
@@ -54,6 +56,20 @@ public:
      * @return StateManager* Pointer to the state manager
      */
     StateManager* GetStateManager() const;
+
+    /**
+     * @brief Get the backpack
+     *
+     * @return Backpack* Pointer to the Backpack
+     */
+    Backpack* GetBackpack() const;
+
+    /**
+     * @brief Get the equipment
+     *
+     * @return Equipment* Pointer to the Equipment
+     */
+    Equipment* GetEquipment() const;
 
     /**
      * @brief Get the window
@@ -111,6 +127,20 @@ public:
     void SetStateManager(StateManager* stateManager);
 
     /**
+     * @brief Set the backpack
+     *
+     * @param backpack Pointer to the backpack
+     */
+    void SetBackpack(Backpack* backpack);
+
+    /**
+     * @brief Set the equipment
+     *
+     * @param equipment to the backpack
+     */
+    void SetEquipment(Equipment* equipment);
+
+    /**
      * @brief Set the window
      *
      * @param window Pointer to the SFML render window
@@ -142,14 +172,15 @@ public:
      */
     void ToggleVSync();
 
-    bool debugWorld = false;
-
 private:
     // IMPORTANT NOTE: Clear everything related to the user loaded thing on WorldState::Exit();
 
     ResourceManager* m_resourceManager;  ///< Pointer to the resource manager
     UnitManager*     m_unitManager;      ///< Pointer to the unit manager
     StateManager*    m_stateManager;     ///< Pointer to the state manager
+
+    Backpack*  m_backpack;
+    Equipment* m_equipment;
 
     sf::RenderWindow* m_window;          ///< Pointer to the SFML render window
     NavigationGrid    m_navigationGrid;  ///< Navigation grid for movement restrictions

@@ -9,7 +9,7 @@ Berseker::Berseker(const std::string&  name,
                    bool                isPlayerControlled,
                    const GameContext&  gameContext)
     : Unit(name),  // ← must initialize the virtual base
-      Character(name, position),
+      Character(name),
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
     // Fighter-specific stat overrides
@@ -22,6 +22,72 @@ Berseker::Berseker(const std::string&  name,
     m_manaRegen    = 3;
     m_moveSpeed    = 180.f;
     m_attackRange  = 48.f;
+
+    sf::Vector2i bersekerFrameSize(32, 32);
+
+    std::unordered_map<UnitAnimationType, std::string> bersekerTexturePaths = {
+        {UnitAnimationType::IDLE, "character_dwarf_idle"},
+        {UnitAnimationType::WALK, "character_dwarf_jump"},
+        {UnitAnimationType::ATTACK, "character_dwarf_attack"},
+        {UnitAnimationType::CHARGED_ATTACK, "character_dwarf_charged_attack"},
+        {UnitAnimationType::JUMP, "character_dwarf_jump"},
+        {UnitAnimationType::DAMAGE, "character_dwarf_dmg"},
+        {UnitAnimationType::DIE, "character_dwarf_die"}
+
+    };
+    std::unordered_map<UnitAnimationType, std::string> bersekerShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "character_dwarf_idle_shadow"},
+        {UnitAnimationType::WALK, "character_dwarf_jump_shadow"},
+        {UnitAnimationType::ATTACK, "character_dwarf_attack_shadow"},
+        {UnitAnimationType::CHARGED_ATTACK, "character_dwarf_charged_attack_shadow"},
+        {UnitAnimationType::JUMP, "character_dwarf_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "character_dwarf_dmg_shadow"},
+        {UnitAnimationType::DIE, "character_dwarf_die_shadow"}
+
+    };
+
+    std::unordered_map<UnitAnimationType, int> bersekerFramesPerAnim = {
+        {UnitAnimationType::IDLE, 16},
+        {UnitAnimationType::WALK, 4},
+        {UnitAnimationType::ATTACK, 4},
+        {UnitAnimationType::JUMP, 4},
+        {UnitAnimationType::DAMAGE, 4},
+        {UnitAnimationType::DIE, 12}};
+
+    std::unordered_map<UnitAnimationType, float> bersekerDurationPerAnim = {
+        {UnitAnimationType::IDLE, 6.4f},
+        {UnitAnimationType::WALK, 1.6f},
+        {UnitAnimationType::ATTACK, 0.8f},
+        {UnitAnimationType::JUMP, 0.8f},
+        {UnitAnimationType::DAMAGE, 0.8f},
+        {UnitAnimationType::DIE, 2.4f}};
+
+    std::unordered_map<UnitAnimationType, bool> bersekerLoopingAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, false},
+        {UnitAnimationType::JUMP, false},
+        {UnitAnimationType::DAMAGE, false},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, bool> bersekerDirectionalAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, true},
+        {UnitAnimationType::JUMP, true},
+        {UnitAnimationType::DAMAGE, true},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, int> bersekerDefaultRows = {{UnitAnimationType::DIE, 0}};
+
+    LoadAnimations(bersekerTexturePaths,
+                   bersekerFrameSize,
+                   bersekerFramesPerAnim,
+                   bersekerDurationPerAnim,
+                   bersekerLoopingAnims,
+                   bersekerDirectionalAnims,
+                   bersekerDefaultRows,
+                   bersekerShadowTexturePaths);
 }
 
 void Berseker::Attack(Unit& target, ActionCompletionCallback callback)

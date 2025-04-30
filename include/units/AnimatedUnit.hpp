@@ -160,6 +160,7 @@ protected:
 
     // --- State & Callbacks ---
     ActionCompletionCallback m_currentActionCallback = nullptr;
+    ActionCompletionCallback m_currentMovingCallback = nullptr;
 
     std::deque<sf::Keyboard::Key> m_moveQueue;
 

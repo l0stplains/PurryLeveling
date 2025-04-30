@@ -6,6 +6,9 @@
 #include "core/StateManager.hpp"
 #include "core/UnitManager.hpp"
 
+#include "inventory/Backpack.hpp"
+#include "inventory/Equipment.hpp"
+
 /**
  * @class Game
  * @brief Main game class that initializes and runs the game loop.
@@ -46,7 +49,9 @@ private:
     ResourceManager m_resourceManager;  ///< Resource manager for loading and managing game assets
     UnitManager     m_unitManager;      ///< Unit manager for managing game units
     StateManager    m_stateManager;     ///< State manager for handling game states
-    ImGuiManager    m_gui;              ///< ImGui backend manager for rendering UI
+    Backpack        m_backpack;
+    Equipment       m_equipment;
+    ImGuiManager    m_gui;  ///< ImGui backend manager for rendering UI
 
     /**
      * @brief Processes events from the window and updates the game state.

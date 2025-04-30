@@ -10,7 +10,7 @@ Mage::Mage(const std::string&  name,
            bool                isPlayerControlled,
            const GameContext&  gameContext)
     : Unit(name),  // ← must initialize the virtual base
-      Character(name, position),
+      Character(name),
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
     // Fighter-specific stat overrides
@@ -22,7 +22,72 @@ Mage::Mage(const std::string&  name,
     m_healthRegen  = 4;
     m_manaRegen    = 4;
     m_moveSpeed    = 130.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = std::numeric_limits<float>::max();
+    m_attackRange  = 48.f;
+
+    sf::Vector2i mageFrameSize(32, 32);
+
+    std::unordered_map<UnitAnimationType, std::string> mageTexturePaths = {
+        {UnitAnimationType::IDLE, "character_centaur_idle"},
+        {UnitAnimationType::WALK, "character_centaur_jump"},
+        {UnitAnimationType::ATTACK, "character_centaur_attack"},
+        {UnitAnimationType::JUMP, "character_centaur_jump"},
+        {UnitAnimationType::DAMAGE, "character_centaur_dmg"},
+        {UnitAnimationType::DIE, "character_centaur_die"}
+
+    };
+    std::unordered_map<UnitAnimationType, std::string> mageShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "character_centaur_idle_shadow"},
+        {UnitAnimationType::WALK, "character_centaur_jump_shadow"},
+        {UnitAnimationType::ATTACK, "character_centaur_attack_shadow"},
+        {UnitAnimationType::JUMP, "character_centaur_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "character_centaur_dmg_shadow"},
+        {UnitAnimationType::DIE, "character_centaur_die_shadow"}
+
+    };
+    // Example frame counts (adjust these!)
+    std::unordered_map<UnitAnimationType, int> mageFramesPerAnim = {{UnitAnimationType::IDLE, 16},
+                                                                    {UnitAnimationType::WALK, 4},
+                                                                    {UnitAnimationType::ATTACK, 4},
+                                                                    {UnitAnimationType::JUMP, 4},
+                                                                    {UnitAnimationType::DAMAGE, 4},
+                                                                    {UnitAnimationType::DIE, 12}};
+
+    // Example durations (in seconds, adjust these!)
+    std::unordered_map<UnitAnimationType, float> mageDurationPerAnim = {
+        {UnitAnimationType::IDLE, 6.4f},
+        {UnitAnimationType::WALK, 1.6f},
+        {UnitAnimationType::ATTACK, 0.8f},
+        {UnitAnimationType::JUMP, 0.8f},
+        {UnitAnimationType::DAMAGE, 0.8f},
+        {UnitAnimationType::DIE, 2.4f}};
+
+    // Example looping status (Idle/Walk usually loop)
+    std::unordered_map<UnitAnimationType, bool> mageLoopingAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, false},
+        {UnitAnimationType::JUMP, false},
+        {UnitAnimationType::DAMAGE, false},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, bool> mageDirectionalAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, true},
+        {UnitAnimationType::JUMP, true},
+        {UnitAnimationType::DAMAGE, true},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, int> mageDefaultRows = {{UnitAnimationType::DIE, 0}};
+
+    LoadAnimations(mageTexturePaths,
+                   mageFrameSize,
+                   mageFramesPerAnim,
+                   mageDurationPerAnim,
+                   mageLoopingAnims,
+                   mageDirectionalAnims,
+                   mageDefaultRows,
+                   mageShadowTexturePaths);
 }
 
 void Mage::Attack(Unit& target, ActionCompletionCallback callback)
@@ -55,24 +120,58 @@ void Mage::Attack(Unit& target, ActionCompletionCallback callback)
         std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
 
         // Move, and chain the PerformAttack call as the callback for Move
-        Move(positionInRange, [this, animatedTarget, cb = std::move(callback)]() mutable {
-            // This lambda is called when Move() finishes (reaches destination or gets blocked)
-            sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
-            float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
-            if (dist <= m_attackRange * 1.1f)
-            {  // Check range again (allow small tolerance)
-                std::cout << GetName() << " reached target, performing attack on "
-                          << animatedTarget->GetName() << std::endl;  // Debug
-                this->PerformAttack(*animatedTarget, std::move(cb));  // Now perform the attack
-            }
-            else
-            {
-                std::cout << GetName() << " move finished but target still out of range or blocked."
-                          << std::endl;  // Debug
-                if (cb)
-                    cb();  // Call original callback if attack couldn't proceed
-            }
-        });
+        Move(positionInRange,
+             [this,
+              animatedTarget,
+              initialPosition = m_position,
+              initialDir      = m_direction,
+              cb              = std::move(callback)]() mutable {
+                 // This lambda is called when Move() finishes (reaches destination or gets blocked)
+                 sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
+                 float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
+
+                 if (dist <= m_attackRange * 1.1f)
+                 {  // Check range again (allow small tolerance)
+                     std::cout << GetName() << " reached target, performing attack on "
+                               << animatedTarget->GetName() << std::endl;  // Debug
+
+                     // Create a wrapped callback that will handle returning to position
+                     // We need to wrap this in a std::shared_ptr to avoid potential lifetime issues
+                     auto wrappedCallback = std::make_shared<ActionCompletionCallback>(
+                         [this, initialPosition, initialDir, originalCb = std::move(cb)]() mutable {
+                             std::cout << GetName()
+                                       << " attack completed, returning to initial position"
+                                       << std::endl;
+
+                             // Move back to initial position
+                             Move(initialPosition,
+                                  [this, initialDir, originalCb = std::move(originalCb)]() mutable {
+                                      // After moving back, set direction
+                                      SetDirection(initialDir);
+
+                                      // Call original callback
+                                      if (originalCb)
+                                          originalCb();
+                                  });
+                         });
+
+                     // Call the original PerformAttack with our wrapped callback
+                     // The lambda captures a shared_ptr by value to ensure it stays alive
+                     this->PerformAttack(*animatedTarget, [wrappedCb = wrappedCallback]() {
+                         // Execute our wrapped callback when PerformAttack finishes
+                         if (*wrappedCb)
+                             (*wrappedCb)();
+                     });
+                 }
+                 else
+                 {
+                     std::cout << GetName()
+                               << " move finished but target still out of range or blocked."
+                               << std::endl;  // Debug
+                     if (cb)
+                         cb();  // Call original callback if attack couldn't proceed
+                 }
+             });
     }
     else
     {

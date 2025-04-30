@@ -9,7 +9,7 @@ Fighter::Fighter(const std::string&  name,
                  bool                isPlayerControlled,
                  const GameContext&  gameContext)
     : Unit(name),  // ← must initialize the virtual base
-      Character(name, position),
+      Character(name),
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
     // Fighter-specific stat overrides
@@ -22,6 +22,73 @@ Fighter::Fighter(const std::string&  name,
     m_manaRegen    = 1;
     m_moveSpeed    = 110.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.0f;  // Slightly longer reach? ~1.5 tiles
+
+    sf::Vector2i fighterFrameSize(32, 32);
+
+    std::unordered_map<UnitAnimationType, std::string> fighterTexturePaths = {
+        {UnitAnimationType::IDLE, "character_elf_idle"},
+        {UnitAnimationType::WALK, "character_elf_walk"},
+        {UnitAnimationType::ATTACK, "character_elf_attack"},
+        {UnitAnimationType::CHARGED_ATTACK, "character_elf_charged_attack"},
+        {UnitAnimationType::JUMP, "character_elf_jump"},
+        {UnitAnimationType::DAMAGE, "character_elf_dmg"},
+        {UnitAnimationType::DIE, "character_elf_die_spin"}
+
+    };
+    std::unordered_map<UnitAnimationType, std::string> fighterShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "character_elf_idle_shadow"},
+        {UnitAnimationType::WALK, "character_elf_jump_shadow"},
+        {UnitAnimationType::ATTACK, "character_elf_attack_shadow"},
+        {UnitAnimationType::CHARGED_ATTACK, "character_elf_charged_attack_shadow"},
+        {UnitAnimationType::JUMP, "character_elf_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "character_elf_dmg_shadow"},
+        {UnitAnimationType::DIE, "character_elf_die_spin_shadow"}
+
+    };
+    // Example frame counts (adjust these!)
+    std::unordered_map<UnitAnimationType, int> fighterFramesPerAnim = {{UnitAnimationType::IDLE, 16},
+                                                                       {UnitAnimationType::WALK, 4},
+                                                                       {UnitAnimationType::ATTACK, 4},
+                                                                       {UnitAnimationType::JUMP, 4},
+                                                                       {UnitAnimationType::DAMAGE, 4},
+                                                                       {UnitAnimationType::DIE, 12}};
+
+    // Example durations (in seconds, adjust these!)
+    std::unordered_map<UnitAnimationType, float> fighterDurationPerAnim = {
+        {UnitAnimationType::IDLE, 6.4f},
+        {UnitAnimationType::WALK, 1.6f},
+        {UnitAnimationType::ATTACK, 0.8f},
+        {UnitAnimationType::JUMP, 0.8f},
+        {UnitAnimationType::DAMAGE, 0.8f},
+        {UnitAnimationType::DIE, 2.4f}};
+
+    // Example looping status (Idle/Walk usually loop)
+    std::unordered_map<UnitAnimationType, bool> fighterLoopingAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, false},
+        {UnitAnimationType::JUMP, false},
+        {UnitAnimationType::DAMAGE, false},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, bool> fighterDirectionalAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, true},
+        {UnitAnimationType::JUMP, true},
+        {UnitAnimationType::DAMAGE, true},
+        {UnitAnimationType::DIE, false}};
+
+    std::unordered_map<UnitAnimationType, int> fighterDefaultRows = {{UnitAnimationType::DIE, 0}};
+
+    LoadAnimations(fighterTexturePaths,
+                   fighterFrameSize,
+                   fighterFramesPerAnim,
+                   fighterDurationPerAnim,
+                   fighterLoopingAnims,
+                   fighterDirectionalAnims,
+                   fighterDefaultRows,
+                   fighterShadowTexturePaths);
 }
 
 void Fighter::Attack(Unit& target, ActionCompletionCallback callback)
@@ -32,10 +99,6 @@ void Fighter::Attack(Unit& target, ActionCompletionCallback callback)
             callback();  // Cannot attack, call callback immediately
         return;
     }
-
-    // TODO: Check attack cooldown
-    // if (m_currentAttackCooldown > 0) { /* Still on cooldown */ if (callback) callback(); return;
-    // }
 
     AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
 
@@ -54,24 +117,58 @@ void Fighter::Attack(Unit& target, ActionCompletionCallback callback)
         std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
 
         // Move, and chain the PerformAttack call as the callback for Move
-        Move(positionInRange, [this, animatedTarget, cb = std::move(callback)]() mutable {
-            // This lambda is called when Move() finishes (reaches destination or gets blocked)
-            sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
-            float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
-            if (dist <= m_attackRange * 1.1f)
-            {  // Check range again (allow small tolerance)
-                std::cout << GetName() << " reached target, performing attack on "
-                          << animatedTarget->GetName() << std::endl;  // Debug
-                this->PerformAttack(*animatedTarget, std::move(cb));  // Now perform the attack
-            }
-            else
-            {
-                std::cout << GetName() << " move finished but target still out of range or blocked."
-                          << std::endl;  // Debug
-                if (cb)
-                    cb();  // Call original callback if attack couldn't proceed
-            }
-        });
+        Move(positionInRange,
+             [this,
+              animatedTarget,
+              initialPosition = m_position,
+              initialDir      = m_direction,
+              cb              = std::move(callback)]() mutable {
+                 // This lambda is called when Move() finishes (reaches destination or gets blocked)
+                 sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
+                 float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
+
+                 if (dist <= m_attackRange * 1.1f)
+                 {  // Check range again (allow small tolerance)
+                     std::cout << GetName() << " reached target, performing attack on "
+                               << animatedTarget->GetName() << std::endl;  // Debug
+
+                     // Create a wrapped callback that will handle returning to position
+                     // We need to wrap this in a std::shared_ptr to avoid potential lifetime issues
+                     auto wrappedCallback = std::make_shared<ActionCompletionCallback>(
+                         [this, initialPosition, initialDir, originalCb = std::move(cb)]() mutable {
+                             std::cout << GetName()
+                                       << " attack completed, returning to initial position"
+                                       << std::endl;
+
+                             // Move back to initial position
+                             Move(initialPosition,
+                                  [this, initialDir, originalCb = std::move(originalCb)]() mutable {
+                                      // After moving back, set direction
+                                      SetDirection(initialDir);
+
+                                      // Call original callback
+                                      if (originalCb)
+                                          originalCb();
+                                  });
+                         });
+
+                     // Call the original PerformAttack with our wrapped callback
+                     // The lambda captures a shared_ptr by value to ensure it stays alive
+                     this->PerformAttack(*animatedTarget, [wrappedCb = wrappedCallback]() {
+                         // Execute our wrapped callback when PerformAttack finishes
+                         if (*wrappedCb)
+                             (*wrappedCb)();
+                     });
+                 }
+                 else
+                 {
+                     std::cout << GetName()
+                               << " move finished but target still out of range or blocked."
+                               << std::endl;  // Debug
+                     if (cb)
+                         cb();  // Call original callback if attack couldn't proceed
+                 }
+             });
     }
     else
     {
@@ -109,7 +206,7 @@ void Fighter::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callb
             // Deal damage if still in range (maybe slightly larger range check here?)
             if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
             {
-                std::cout << GetName() << " deals " << m_attackDamage << " damage to "
+                std::cout << GetName() << " dealing " << m_attackDamage << " damage to "
                           << target.GetName() << std::endl;  // Debug
                 // Cast target back to AnimatedUnit if TakeDamage is needed
                 // This is risky if target might not be AnimatedUnit, but necessary for TakeDamage
@@ -140,15 +237,17 @@ void Fighter::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callb
         // Set cooldown AFTER attack attempt
         // m_currentAttackCooldown = m_attackCooldown;
 
+        std::cout << "AFTERKENA\n";
         // Default back to idle if not moving etc.
         if (!m_isMoving)
         {
             PlayAnimation(UnitAnimationType::IDLE);
         }
-
+        std::cout << "JAJANG123\n";
         // Call the original completion callback if provided
         if (cb)
         {
+            std::cout << "JAJANG6969\n";
             cb();
         }
     });
