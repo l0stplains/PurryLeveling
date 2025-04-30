@@ -70,13 +70,10 @@ void Dungeon::addChamber(const Chamber& chamber)
 
 void Dungeon::setIsDoubleDungeon(bool isDouble)
 {
-    // Check if status is changing from false to true
     if (!isDoubleDungeon && isDouble) {
-        // Only increase rewards when double dungeon is activated
-        expMultiplier *= 3.0;   // Triple exp for double dungeons
-        goldMultiplier *= 3.0;  // Triple gold for double dungeons
+        expMultiplier *= 3.0;
+        goldMultiplier *= 3.0;
         
-        // Update rewards in all chambers
         for (Chamber& chamber : chambers) {
             chamber.calculateRewards(true);
         }
