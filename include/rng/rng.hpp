@@ -1,5 +1,4 @@
-#ifndef RNG_HPP
-#define RNG_HPP
+#pragma once
 
 #include <vector>
 using namespace std;
@@ -49,9 +48,9 @@ public:
 
     /**
      * @brief Assignment operator overloading
-     * 
+     *
      * Copies the state of another RNG object to this one
-     * 
+     *
      * @param other The RNG object to copy from
      * @return Reference to this RNG object
      */
@@ -119,5 +118,3 @@ public:
      */
     vector<double> generatePercentageVector(size_t size);
 };
-
-#endif
