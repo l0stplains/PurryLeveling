@@ -2,6 +2,9 @@
 
 #include <filesystem>
 #include <fstream>
+#include "skill/SkillTree.hpp"
+#include "skill/Skill.hpp"
+#include <functional>
 
 #include "exception/Exception.hpp"
 
@@ -9,6 +12,7 @@ bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
                                      const Character&   character,
                                      const Equipment&   equipment,
                                      const Backpack&    backpack,
+                                     const Skill&   skillTree,
                                      std::string&       lastError)
 {
     namespace fs = std::filesystem;
@@ -83,21 +87,21 @@ bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
         st << "NAME " << character.GetName() << "\n";
 
         // core Stats
-        st << "STRENGTH " << 0 << "\n";
-        st << "INTELLIGENCE " << 0 << "\n";
-        st << "AGILITY " << 0 << "\n";
-        st << "BUFF_MULTIPLIER " << 0 << "\n";
-        st << "CRITICAL_STRIKE_MULTIPLIER " << 0 << "\n";
-        st << "CRITICAL_STRIKE_CHANCE " << 0 << "\n";
-        st << "SKIPTURNCHANCE " << 0 << "\n";
-        st << "LUCK " << 0 << "\n";
-        st << "PHYSICAL_DEFENSE " << 0 << "\n";
-        st << "MAGIC_DEFENSE " << 0 << "\n";
-        st << "DODGE_CHANCE " << 0 << "\n";
-        st << "ACCURACY " << 0 << "\n";
-        st << "STATUS_RESISTANCE " << 0 << "\n";
-        st << "HASTE_MULTIPLIER " << 0 << "\n";
-        st << "RESOURCE_COST_MULTIPLIER " << 0 << "\n";
+        st << "STRENGTH " << character.GetStats().strength << "\n";
+        st << "INTELLIGENCE " << character.GetStats().intelligence << "\n";
+        st << "AGILITY " << character.GetStats().agility << "\n";
+        st << "BUFF_MULTIPLIER " << character.GetStats().buffMultiplier << "\n";
+        st << "CRITICAL_STRIKE_MULTIPLIER " << character.GetStats().criticalStrikeMultiplier << "\n";
+        st << "CRITICAL_STRIKE_CHANCE " << character.GetStats().criticalStrikeChance << "\n";
+        st << "SKIPTURNCHANCE " << character.GetStats().skipTurnChance << "\n";
+        st << "LUCK " << character.GetStats().luck << "\n";
+        st << "PHYSICAL_DEFENSE " << character.GetStats().physicalDefense << "\n";
+        st << "MAGIC_DEFENSE " << character.GetStats().magicDefense << "\n";
+        st << "DODGE_CHANCE " << character.GetStats().dodgeChance << "\n";
+        st << "ACCURACY " << character.GetStats().accuracy << "\n";
+        st << "STATUS_RESISTANCE " << character.GetStats().statusResistance << "\n";
+        st << "HASTE_MULTIPLIER " << character.GetStats().hasteMultiplier << "\n";
+        st << "RESOURCE_COST_MULTIPLIER " << character.GetStats().resourceCostMul << "\n";
 
         // runtime class + extras
         std::string type = "Character";
@@ -128,6 +132,28 @@ bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
             st << "SUMMON " << 0 << "\n";
             st << "SUMMON_CHANCE " << 0 << "\n";
         }
+    }
+
+    // 4) skills.txt : column 0 are skills that are learned, column 1 are whether the skill is activated
+    {
+        std::ofstream sk(outDir / "skills.txt");
+        if (!sk) {
+            lastError = "Failed to open skills.txt";
+            return false;
+        }
+
+        // helper to walk the tree
+        std::function<void(const Skill*)> dump =
+            [&](const Skill* s)
+        {
+            sk << (s->getName())
+               << "\n";
+            for (Skill* child : s->getChildren())
+                dump(child);
+        };
+
+        // start at the root skill
+        dump(&skillTree);
     }
 
     return true;

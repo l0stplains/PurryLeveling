@@ -30,5 +30,6 @@ public:
                              const Character&   character,
                              const Equipment&   equipment,
                              const Backpack&    backpack,
+                             const Skill&       skillTree,
                              std::string&       lastError);
 };

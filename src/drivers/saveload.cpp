@@ -14,6 +14,7 @@
 #include "save/PlayerConfigSaver.hpp"
 #include "units/NavigationGrid.hpp"
 #include "units/characters/Fighter.hpp"
+#include "skill/characterSkill/Fury.hpp"
 
 int main()
 {
@@ -64,7 +65,6 @@ int main()
     character.AddGold(std::stoi(parser.GetCharStats().at("GOLD")));
     character.AddMastery(std::stoi(parser.GetCharStats().at("MASTERY")));
 
-    /*
     // 5) modify something
     character.AddGold(50);
     // bump the (0,0) slot to 5 items:
@@ -82,10 +82,10 @@ int main()
     {
         std::cout << "Quantity at tile (0, 0) is already 5.\n";
     }
-    */
+   Fury fury;
 
     // 6) save out
-    if (!PlayerConfigSaver::SaveToFolder(outBase, character, eq, bp, err))
+    if (!PlayerConfigSaver::SaveToFolder(outBase, character, eq, bp, fury, err))
     {
         std::cerr << "Save failed: " << err << "\n";
         return 1;

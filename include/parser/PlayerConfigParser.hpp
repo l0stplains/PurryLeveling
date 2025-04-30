@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "effects/Stats.hpp"
 #include "items/Item.hpp"
@@ -31,6 +32,8 @@ public:
     const std::map<std::string, std::string>& GetUnitStats() const { return m_unitstats; }
     // line 21–end
     const std::map<std::string, std::string>& GetTypeStats() const { return m_typestats; }
+    // get set of skills
+    const std::set<std::string>&              GetSkillTree() const { return m_skilltree; }
 
     std::string GetLastError() const override { return m_lastError; }
 
@@ -40,5 +43,6 @@ private:
     std::map<std::string, std::string>    m_charstats;
     std::map<std::string, std::string>    m_unitstats;
     std::map<std::string, std::string>    m_typestats;
+    std::set<std::string>                 m_skilltree;
     ItemManager                           m_itemManager;  // Item database for backpack items
 };
