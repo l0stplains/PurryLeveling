@@ -1,11 +1,15 @@
-#ifndef CHAMBER_HPP
-#define CHAMBER_HPP
+#pragma once
 
+#include <map>
+#include <memory>  // For shared_ptr
 #include <string>
 #include <vector>
-#include <map>
 
+#include "items/Item.hpp"
+#include "items/ItemManager.hpp"
+#include "parser/MobLootConfigParser.hpp"
 #include "rng/rng.hpp"
+#include "units/Unit.hpp"
 
 using namespace std;
 
@@ -16,18 +20,89 @@ using namespace std;
 class Chamber
 {
 private:
-    int                 chamberNumber;         // The sequence number of this chamber in the dungeon
-    bool                isBossRoom;            // Whether this chamber contains a boss
-    vector<int>         mobs;                  // IDs of mobs in this chamber
-    vector<string>      loot;                  // Items obtained in this chamber
-    map<int, string>    mobLoot;               // Map of mob ID to loot item
-    double              difficultyMultiplier;  // Multiplier for chamber difficulty
-    int                 mobLevelMin;           // Minimum level for mobs in this chamber
-    int                 mobLevelMax;           // Maximum level for mobs in this chamber
-    bool                isCleared;             // Whether this chamber has been cleared
-    int                 goldReward;            // Gold reward for clearing this chamber
-    int                 expReward;             // Experience reward for clearing this chamber
-    RNG                 rng;                   // Random number generator
+    int  chamberNumber;    // The sequence number of this chamber in the dungeon [1 indexed]
+    bool isBossRoom;       // Whether this chamber contains a boss
+    bool isDoubleChamber;  // Whether this is a double chamber (increased difficulty and rewards)
+    vector<shared_ptr<Unit>> mobs;     // Mobs in this chamber (using shared_ptr for polymorphism)
+    vector<Item>             mobLoot;  // Loot items dropped by mobs in this chamber
+    double                   difficultyMultiplier;  // Multiplier for chamber difficulty
+    int                      mobLevelMin;           // Minimum level for mobs in this chamber
+    int                      mobLevelMax;           // Maximum level for mobs in this chamber
+    bool                     isCleared;             // Whether this chamber has been cleared
+    int                      goldReward;            // Gold reward for clearing this chamber
+    int                      expReward;             // Experience reward for clearing this chamber
+    RNG                      rng;                   // Random number generator
+
+    /**
+     * @brief Set the gold reward for clearing this chamber
+     *
+     * @param gold The gold reward
+     */
+    void setGoldReward(int gold);
+
+    /**
+     * @brief Set the experience reward for clearing this chamber
+     *
+     * @param exp The experience reward
+     */
+    void setExpReward(int exp);
+
+    /**
+     * @brief Calculate rewards for this chamber
+     *
+     * @param isDoubleChamber Whether this is a double chamber
+     */
+    void calculateRewards(bool isDoubleChamber);
+
+    /**
+     * @brief Check if this is a boss room
+     *
+     * @return true If this is a boss room
+     * @return false If this is not a boss room
+     */
+    bool getIsBossRoom() const;
+
+    /**
+     * @brief Get the minimum mob level
+     *
+     * @return int The minimum mob level
+     */
+    int getMobLevelMin() const;
+
+    /**
+     * @brief Get the maximum mob level
+     *
+     * @return int The maximum mob level
+     */
+    int getMobLevelMax() const;
+
+    /**
+     * @brief Add a mob to this chamber
+     *
+     * @param mob The mob to add
+     */
+    void addMob(shared_ptr<Unit> mob);
+
+    /**
+     * @brief Add a loot item to this chamber
+     *
+     * @param item The item to add as loot
+     */
+    void addLootItem(const Item& item);
+
+    /**
+     * @brief Get the list of mobs in this chamber
+     *
+     * @return vector<shared_ptr<Unit>> Vector of mobs
+     */
+    vector<shared_ptr<Unit>> getMobs() const;
+
+    /**
+     * @brief Get the difficulty multiplier of the chamber
+     *
+     * @return double The difficulty multiplier
+     */
+    double getDifficultyMultiplier() const;
 
 public:
     /**
@@ -58,54 +133,26 @@ public:
     void generateMobs(bool isBossRoom);
 
     /**
-     * @brief Calculate rewards for this chamber
+     * @brief Generate loot for mobs in this chamber
      *
-     * @param isDoubleDungeon Whether this is a double dungeon
+     * @param lootConfigParser The mob loot configuration parser
+     * @param itemManager The item manager for retrieving items
      */
-    void calculateRewards(bool isDoubleDungeon);
+    void generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemManager& itemManager);
 
     /**
-     * @brief Add a mob to this chamber
+     * @brief Get the mob loot items
      *
-     * @param mobId ID of the mob to add
+     * @return vector<Item> Vector of loot items
      */
-    void addMob(int mobId);
+    vector<Item> getMobLoot() const;
 
     /**
-     * @brief Add mob loot mapping
-     * 
-     * @param mobId ID of the mob
-     * @param lootItem Loot item from this mob
-     */
-    void addMobLoot(int mobId, const string& lootItem);
-
-    /**
-     * @brief Add an item to the chamber's loot
+     * @brief Mark this chamber as cleared and return its loot
      *
-     * @param item Item to add to loot
+     * @return vector<Item> The loot items from this chamber
      */
-    void addLoot(const string& item);
-
-    /**
-     * @brief Get the list of mobs in this chamber
-     *
-     * @return vector<int> Vector of mob IDs
-     */
-    vector<int> getMobs() const;
-
-    /**
-     * @brief Get the list of loot in this chamber
-     *
-     * @return vector<string> Vector of loot items
-     */
-    vector<string> getLoot() const;
-
-    /**
-     * @brief Get the mob loot mappings
-     * 
-     * @return map<int, string> Map of mob ID to loot item
-     */
-    map<int, string> getMobLoot() const;
+    vector<Item> clearChamber();
 
     /**
      * @brief Set the chamber as cleared
@@ -123,40 +170,11 @@ public:
     bool getIsCleared() const;
 
     /**
-     * @brief Get the difficulty multiplier of the chamber
-     *
-     * @return double The difficulty multiplier
-     */
-    double getDifficultyMultiplier() const;
-
-    /**
      * @brief Get the chamber number
      *
      * @return int The chamber number
      */
     int getChamberNumber() const;
-
-    /**
-     * @brief Check if this is a boss room
-     *
-     * @return true If this is a boss room
-     * @return false If this is not a boss room
-     */
-    bool getIsBossRoom() const;
-
-    /**
-     * @brief Get the minimum mob level
-     *
-     * @return int The minimum mob level
-     */
-    int getMobLevelMin() const;
-
-    /**
-     * @brief Get the maximum mob level
-     *
-     * @return int The maximum mob level
-     */
-    int getMobLevelMax() const;
 
     /**
      * @brief Get the gold reward for clearing this chamber
@@ -173,18 +191,17 @@ public:
     int getExpReward() const;
 
     /**
-     * @brief Set the gold reward for clearing this chamber
+     * @brief Check if this is a double chamber
      *
-     * @param gold The gold reward
+     * @return true If this is a double chamber
+     * @return false If this is not a double chamber
      */
-    void setGoldReward(int gold);
+    bool getIsDoubleChamber() const;
 
     /**
-     * @brief Set the experience reward for clearing this chamber
+     * @brief Set whether this is a double chamber
      *
-     * @param exp The experience reward
+     * @param isDouble Whether this is a double chamber
      */
-    void setExpReward(int exp);
+    void setIsDoubleChamber(bool isDouble);
 };
-
-#endif

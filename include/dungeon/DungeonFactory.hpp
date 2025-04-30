@@ -1,5 +1,4 @@
-#ifndef DUNGEON_FACTORY_HPP
-#define DUNGEON_FACTORY_HPP
+#pragma once
 
 // Include
 #include <algorithm>
@@ -7,6 +6,8 @@
 
 #include "dungeon/Chamber.hpp"
 #include "dungeon/Dungeon.hpp"
+#include "items/ItemManager.hpp"
+#include "parser/MobLootConfigParser.hpp"
 #include "rng/rng.hpp"
 
 using namespace std;
@@ -20,8 +21,11 @@ using namespace std;
 class DungeonFactory
 {
 private:
-    RNG          rng;                             // Random number generator for dungeon creation
-    const double doubleDungeonActivateThreshold;  // 5% chance of activating double dungeon
+    RNG                  rng;                  // Random number generator for dungeon creation
+    ItemManager&         itemManager;          // Reference to the ItemManager for item generation
+    MobLootConfigParser& mobLootConfigParser;  // Reference to the MobLootConfigParser for mob loot
+                                               // generation
+    const double doubleDungeonActivateThreshold;  // 5% chance of activating double chamber
     bool         isDoubleDungeonYet;              // Tracks if double dungeon has been activated
     double       chance;                          // Stores the result of RNG for probability checks
 
@@ -81,8 +85,11 @@ public:
     /**
      * @brief Constructs a new DungeonFactory object
      * Initializes the random number generator and internal state
+     *
+     * @param itemManager Reference to the ItemManager for item generation
+     * @param mobLootConfigParser Reference to the MobLootConfigParser for mob loot generation
      */
-    DungeonFactory();
+    DungeonFactory(ItemManager& itemManager, MobLootConfigParser& mobLootConfigParser);
 
     /**
      * @brief Destroys the DungeonFactory object
@@ -98,18 +105,19 @@ public:
      *
      * @param rank The rank of the dungeon as a string ("S", "A", "B", etc.)
      * @param playerLevel The level of the player
+     * @param playerGold The player's current gold
+     * @param playerExp The player's current experience
      * @return A fully configured Dungeon object
      */
-    Dungeon createDungeon(const string& rank, int playerLevel);
+    Dungeon createDungeon(const string& rank, int playerLevel, int playerGold, int playerExp);
 
     /**
-     * @brief Determines if a dungeon should be a double dungeon
+     * @brief Determines if a chamber should be a double chamber
      *
-     * Double dungeons have increased difficulty but provide greater rewards.
+     * Double chambers have increased difficulty but provide greater rewards.
+     * This is decided randomly with a small probability.
      *
-     * @return True if the dungeon should be a double dungeon, false otherwise
+     * @return True if the chamber should be a double chamber, false otherwise
      */
-    bool shouldBeDoubleDungeon();
+    bool shouldBeDoubleChamber();
 };
-
-#endif
