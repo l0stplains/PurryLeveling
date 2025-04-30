@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>  // for std::reference_wrapper
+
 #include "exception/Exception.hpp"
 #include "items/Item.hpp"
 
@@ -79,7 +81,7 @@ public:
      * @param type item type
      * @return vector of items with quantity of specified type
      */
-    std::vector<std::pair<Item, int>> filterItemsByType(const std::string& type) const;
+    std::vector<std::pair<Item, int>*> filterItemsByType(const std::string& type);
 
     /**
      * @brief Find item tile

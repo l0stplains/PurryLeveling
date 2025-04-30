@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -10,24 +11,27 @@
 #include "../items/Item.hpp"
 #include "../parser/ShopConfigParser.hpp"
 #include "../units/characters/Character.hpp"
+#include "../inventory/Backpack.hpp"
+#include "../exception/Exception.hpp"
 
-/**
- * @class Shop
- * @brief Manages shop inventory, buying/selling using a parsed shop configuration.
- */
 class Shop
 {
 public:
-    using StockEntry = std::tuple<Item, int /*price*/, int /*quantity*/>;
+    using StockEntry = std::tuple<Item, int /*price*/, int /*qty*/>;
 
-    Shop(const std::string& configFile, const std::vector<Item>& masterItems);
+    // Constructor
+    // Takes a vector of vectors (rows) and a vector of Items (master list)
+    // The first column is the itemID, the second is the rarity, the third is the base price
+    Shop(const std::vector<std::vector<std::string>> shopData,
+         const std::vector<Item>&                     masterItems);
 
+    // Restock items
     void restock();
+    // Buy and sell items
+    void buy(Character& player, Backpack& backpack, const std::string& category, const std::string& itemID);
+    void sell(Character& player, Backpack& backpack, const Item& item);
 
-    // buy/sell now take Character& instead of undefined Player
-    bool buy(Character& player, const std::string& category, int index);
-    bool sell(Character& player, const Item& item);
-
+    // For debugging purpose, gets shop catalogue
     void getShopCatalogue() const;
 
 private:
@@ -35,12 +39,11 @@ private:
     std::vector<std::vector<std::string>> m_configData;
     std::vector<Item>                     m_masterItems;
 
-    std::vector<StockEntry> potionStock;
-    std::vector<StockEntry> weaponStock;
-    std::vector<StockEntry> armorStock;
-    std::vector<StockEntry> pendantStock;
+    std::map<std::string, StockEntry> potionStock;
+    std::map<std::string, StockEntry> weaponStock;
+    std::map<std::string, StockEntry> armorStock;
+    std::map<std::string, StockEntry> pendantStock;
 
-    // non‑const and const overloads
-    std::vector<StockEntry>*       getStock(const std::string& category);
-    const std::vector<StockEntry>* getStock(const std::string& category) const;
+    std::map<std::string, StockEntry>*       getStock(const std::string& category);
+    const std::map<std::string, StockEntry>* getStock(const std::string& category) const;
 };

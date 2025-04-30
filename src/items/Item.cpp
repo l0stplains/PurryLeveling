@@ -2,11 +2,11 @@
 
 Item::Item() : itemID(""), name(""), type(""), rarity(' '), effects({}) {}
 
-Item::Item(std::string                     itemID,
-           const std::string&              name,
-           const std::string&              type,
-           char                            rarity,
-           const std::vector<std::string>& effects)
+Item::Item(std::string                                itemID,
+           const std::string&                         name,
+           const std::string&                         type,
+           char                                       rarity,
+           const std::vector<std::unique_ptr<Effect>> effects)
     : itemID(itemID), name(name), type(type), rarity(rarity), effects(effects)
 {}
 
@@ -62,7 +62,7 @@ char Item::getRarity() const
     return rarity;
 }
 
-std::vector<std::string> Item::getEffects() const
+std::vector<std::unique_ptr<Effect>> Item::getEffects() const
 {
     return effects;
 }

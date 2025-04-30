@@ -41,6 +41,8 @@ public:
     void setFootArmor(const Item& footArmor);
     void setPendant(const Item& pendant);
 
+    Item findAndFillSlot(const std::string& slotType, Item item);
+
     /**
      * @brief Equip an item from the backpack to the equipment
      * @param backpack Backpack object
