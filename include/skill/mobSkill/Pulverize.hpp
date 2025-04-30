@@ -9,7 +9,7 @@ private:
     float stunChance       = 0.9f;  // Chance to stun
 
 public:
-    Pulverize(bool isLearned = false, bool isActivated = false) 
+    Pulverize(bool isLearned = false, bool isActivated = false)
         : Skill("Pulverize", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated) {};
 
     float getDamageMultiplier() const { return damageMultiplier; }

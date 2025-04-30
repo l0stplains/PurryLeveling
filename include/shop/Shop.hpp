@@ -1,23 +1,24 @@
 #pragma once
 
-#include <string>
-#include <vector>
-#include <tuple>
-#include <stdexcept>
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <vector>
 
-#include "../parser/ShopConfigParser.hpp"
 #include "../items/Item.hpp"
+#include "../parser/ShopConfigParser.hpp"
 #include "../units/characters/Character.hpp"
 
 /**
  * @class Shop
  * @brief Manages shop inventory, buying/selling using a parsed shop configuration.
  */
-class Shop {
+class Shop
+{
 public:
-    using StockEntry = std::tuple<Item, int/*price*/, int/*quantity*/>;
+    using StockEntry = std::tuple<Item, int /*price*/, int /*quantity*/>;
 
     Shop(const std::string& configFile, const std::vector<Item>& masterItems);
 
@@ -30,9 +31,9 @@ public:
     void getShopCatalogue() const;
 
 private:
-    ShopConfigParser                       m_parser;
-    std::vector<std::vector<std::string>>  m_configData;
-    std::vector<Item>                      m_masterItems;
+    ShopConfigParser                      m_parser;
+    std::vector<std::vector<std::string>> m_configData;
+    std::vector<Item>                     m_masterItems;
 
     std::vector<StockEntry> potionStock;
     std::vector<StockEntry> weaponStock;

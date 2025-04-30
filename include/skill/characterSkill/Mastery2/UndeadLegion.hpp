@@ -10,7 +10,7 @@ private:
     int   summonedUnit     = 1;
 
 public:
-    UndeadLegion(bool isLearned = false, bool isActivated = false) 
+    UndeadLegion(bool isLearned = false, bool isActivated = false)
         : Skill("Undead Legion", 10, 4, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
@@ -19,7 +19,7 @@ public:
         thirdSkill.push_back(arise);
         this->setChildren(thirdSkill);
     }
-    
+
     float getDamageMultiplier() const { return damageMultiplier; }
-    int getSummonedUnit() const { return summonedUnit; }
+    int   getSummonedUnit() const { return summonedUnit; }
 };

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+
 #include "parser/ConfigParser.hpp"
 #include "parser/ConfigParserUtils.hpp"
 
@@ -9,7 +10,8 @@
  * @class ShopConfigParser
  * @brief Parses shop configuration files with fixed 4 columns per row.
  */
-class ShopConfigParser : public ConfigParser {
+class ShopConfigParser : public ConfigParser
+{
 public:
     bool ParseFromFile(const std::string& filename) override;
 

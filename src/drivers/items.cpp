@@ -875,7 +875,8 @@ int main()
                         // Skip exceptions
                     }
                 }
-                if (count == 2) break;
+                if (count == 2)
+                    break;
             }
 
             count = 0;
@@ -904,7 +905,8 @@ int main()
                         // Skip exceptions
                     }
                 }
-                if (count == 2) break;
+                if (count == 2)
+                    break;
             }
 
             count = 0;
@@ -933,7 +935,8 @@ int main()
                         // Skip exceptions
                     }
                 }
-                if (count == 2) break;
+                if (count == 2)
+                    break;
             }
 
             count = 0;
@@ -962,7 +965,8 @@ int main()
                         // Skip exceptions
                     }
                 }
-                if (count == 2) break;
+                if (count == 2)
+                    break;
             }
 
             count = 0;
@@ -991,7 +995,8 @@ int main()
                         // Skip exceptions
                     }
                 }
-                if (count == 2) break;
+                if (count == 2)
+                    break;
             }
 
             // Print equipment after equipping

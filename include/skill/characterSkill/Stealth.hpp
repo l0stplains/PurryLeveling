@@ -1,7 +1,8 @@
 #pragma once
+#include <memory>
+
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery2/ShadowArtistry.hpp"
-#include <memory>
 
 // Root Skill untuk Assassin
 class Stealth : public Skill
@@ -11,7 +12,8 @@ private:
     float agilityMultiplier = 0.17f;  // Base agility boost
 
 public:
-    Stealth(bool isLearned = true, bool isActivated = true) : Skill("Stealth", 3, 1, 0, 0, {}, {}, isLearned, isActivated)
+    Stealth(bool isLearned = true, bool isActivated = true)
+        : Skill("Stealth", 3, 1, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> secondSkill;
 
@@ -19,7 +21,7 @@ public:
 
         secondSkill.push_back(shadowArtistry);
         this->setChildren(secondSkill);
-        
+
         // No effects currently added, but would use the following pattern if needed:
         // this->addEffect(std::make_unique<EffectType>(parameters));
     };

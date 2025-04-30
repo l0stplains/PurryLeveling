@@ -1,20 +1,21 @@
 #pragma once
+#include <memory>
+
 #include "effects/useEffects/BattleFocus.hpp"
 #include "effects/useEffects/HarmoniousEmpowerment.hpp"
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/Annihilation.hpp"
-#include <memory>
 
 // Berserker Master 2
 class Devastation : public Skill
 {
 private:
-    float rageMultiplier   = 0.25f;  // Major rage boost
-    float lifeStealFactor  = 0.0f;   // No life steal
-    float selfDamage       = 0.0f;   // No self damage
+    float rageMultiplier  = 0.25f;  // Major rage boost
+    float lifeStealFactor = 0.0f;   // No life steal
+    float selfDamage      = 0.0f;   // No self damage
 
 public:
-    Devastation(bool isLearned = false, bool isActivated = false) 
+    Devastation(bool isLearned = false, bool isActivated = false)
         : Skill("Devastation", 9, 4, 12, 1.0f, {}, {}, isLearned, isActivated)
     {
         // Add effects using unique_ptr
@@ -29,7 +30,7 @@ public:
         thirdSkill.push_back(annihilation);
         this->setChildren(thirdSkill);
     }
-    
+
     float getRageMultiplier() const { return rageMultiplier; }
     float getLifeStealFactor() const { return lifeStealFactor; }
     float getSelfDamage() const { return selfDamage; }

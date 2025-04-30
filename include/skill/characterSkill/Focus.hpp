@@ -1,9 +1,10 @@
 #pragma once
+#include <memory>
+
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery2/ArcaneInsight.hpp"
 #include "skill/characterSkill/Mastery2/MentalClarity.hpp"
 #include "skill/characterSkill/Mastery2/SpiritualConnection.hpp"
-#include <memory>
 
 // Root Skill Untuk Mage
 class Focus : public Skill
@@ -15,7 +16,8 @@ private:
 
 public:
     // Cuma iniialize stats untuk multiplier
-    Focus(bool isLearned = true, bool isActivated = true) : Skill("Focus", 5, 3, 0, 0, {}, {}, isLearned, isActivated)
+    Focus(bool isLearned = true, bool isActivated = true)
+        : Skill("Focus", 5, 3, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> secondSkill;
 
@@ -27,12 +29,12 @@ public:
         secondSkill.push_back(spiritualConnection);
         secondSkill.push_back(mentalClarity);
         this->setChildren(secondSkill);
-        
+
         // No effects currently added, but would use the following pattern if needed:
         // this->addEffect(std::make_unique<EffectType>(parameters));
     };
 
     // Getters
     float getIntelligenceMultiplier() const { return intelligenceMultiplier; }
-    int getManaRegenBonus() const { return manaRegenBonus; }
+    int   getManaRegenBonus() const { return manaRegenBonus; }
 };

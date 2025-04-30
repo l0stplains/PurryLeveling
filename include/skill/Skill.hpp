@@ -1,9 +1,9 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include "effects/Effect.hpp"
 #include "effects/Stats.hpp"
@@ -12,15 +12,15 @@ using namespace std;
 class Skill
 {
 private:
-    string         name;
-    float          manaCost;
-    int            masteryCost;
-    float          damage;
-    float          effectChance;
+    string                     name;
+    float                      manaCost;
+    int                        masteryCost;
+    float                      damage;
+    float                      effectChance;
     vector<unique_ptr<Effect>> effects;
-    vector<Skill*> children;
-    bool           isLearned;
-    bool           activated;
+    vector<Skill*>             children;
+    bool                       isLearned;
+    bool                       activated;
 
 public:
     /* @brief Constructor for Skill
@@ -32,30 +32,30 @@ public:
      * @param effectVec Vector of effects associated with the skill
      * @param treeNodeVec Vector of child nodes in the skill tree
      */
-    Skill(string         name,
-          float          manaCost,
-          int            masteryCost,
-          float          damage,
-          float          effectChance,
+    Skill(string                     name,
+          float                      manaCost,
+          int                        masteryCost,
+          float                      damage,
+          float                      effectChance,
           vector<unique_ptr<Effect>> effectVec,
-          vector<Skill*> treeNodeVec,
-          bool           learn,
-          bool           activate);
-    
+          vector<Skill*>             treeNodeVec,
+          bool                       learn,
+          bool                       activate);
+
     // Delete copy constructor and copy assignment operator
-    Skill(const Skill&) = delete;
+    Skill(const Skill&)            = delete;
     Skill& operator=(const Skill&) = delete;
-    
+
     /* @brief Destructor for Skill
      */
     ~Skill();
 
     // -- Getter --
-    string         getName() const { return name; }
-    float          getManaCost() const { return manaCost; }
-    int            getMasteryCost() const { return masteryCost; }
-    float          getDamage() const { return damage; }
-    float          getEffectChance() const { return effectChance; }
+    string                            getName() const { return name; }
+    float                             getManaCost() const { return manaCost; }
+    int                               getMasteryCost() const { return masteryCost; }
+    float                             getDamage() const { return damage; }
+    float                             getEffectChance() const { return effectChance; }
     const vector<unique_ptr<Effect>>& getEffects() const { return effects; }
     void setEffects(vector<unique_ptr<Effect>>&& effectVec) { effects = std::move(effectVec); }
     vector<Skill*> getChildren() const { return children; }
