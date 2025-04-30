@@ -61,6 +61,7 @@ public:
     int                GetAttackDamage() const;
     int                GetHealthRegen() const;
     int                GetManaRegen() const;
+    Stats              GetStats() const;
 
     // --- Setters ---
     void         SetName(const std::string& name);

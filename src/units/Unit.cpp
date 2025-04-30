@@ -58,6 +58,11 @@ int Unit::GetManaRegen() const
     return m_manaRegen;
 }
 
+Stats Unit::GetStats() const 
+{
+    return m_stats;
+}
+
 void Unit::SetName(const std::string& name)
 {
     m_name = name;

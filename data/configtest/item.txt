@@ -4,4 +4,5 @@ HEA Helmet HeadArmor S 500 Damage_Reduction Reflect -
 BOD Dragon_Armor BodyArmor A 200 Damage_Reduction Reflect -
 FOT Foot_Armor FootArmor A 200 Damage_Reduction Reflect -
 MNP Mana_Potion Potion C 0 Mana_Regeneration - -
+HPP Health_Potion Potion C 0 Health_Regeneration - -
 PHP Phoenix_Pendant Pendant B 0 Health_Regeneration - -
