@@ -113,7 +113,8 @@ void ShopMenu::Render()
             // Generate item data for this slot
             try
             {
-                Item item("ice_potion", "Azure_Sword", "Weapon", 'S', {});
+                std::vector<std::shared_ptr<Effect>> effects;
+                Item item("ice_potion", "Azure_Sword", "Weapon", 'S', effects, "");
 
                 stock = rng.generateInRange(1, 64);
                 price = rng.generateInRange(1, 1000);
