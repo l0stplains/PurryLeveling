@@ -4,6 +4,7 @@
 
 #include "inventory/Backpack.hpp"
 #include "inventory/Equipment.hpp"
+#include "skill/Skill.hpp"
 #include "units/characters/Assassin.hpp"
 #include "units/characters/Berseker.hpp"
 #include "units/characters/Character.hpp"
@@ -30,5 +31,6 @@ public:
                              const Character&   character,
                              const Equipment&   equipment,
                              const Backpack&    backpack,
+                             const Skill&       skillTree,
                              std::string&       lastError);
 };

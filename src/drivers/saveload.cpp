@@ -14,6 +14,7 @@
 #include "save/PlayerConfigSaver.hpp"
 #include "units/NavigationGrid.hpp"
 #include "units/characters/Fighter.hpp"
+#include "skill/characterSkill/Fury.hpp"
 
 int main()
 {
@@ -53,7 +54,7 @@ int main()
     }
 
     // 3) build backpack
-    Backpack bp(parser.GetBackpackData());
+    Backpack bp(parser.GetBackpackData(), 4, 8);
 
     // 4) instantiate a Fighter with parsed base stats
     NavigationGrid nav(100, 100, 100, 100);  // stub: create or load your nav‐grid
@@ -81,9 +82,10 @@ int main()
     {
         std::cout << "Quantity at tile (0, 0) is already 5.\n";
     }
+   Fury fury;
 
     // 6) save out
-    if (!PlayerConfigSaver::SaveToFolder(outBase, character, eq, bp, err))
+    if (!PlayerConfigSaver::SaveToFolder(outBase, character, eq, bp, fury, err))
     {
         std::cerr << "Save failed: " << err << "\n";
         return 1;

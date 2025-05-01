@@ -1,10 +1,12 @@
-#ifndef DUNGEON_HPP
-#define DUNGEON_HPP
+#pragma once
 
 #include <string>
 #include <vector>
 
 #include "dungeon/Chamber.hpp"
+#include "items/Item.hpp"
+#include "items/ItemManager.hpp"
+#include "parser/MobLootConfigParser.hpp"
 
 using namespace std;
 
@@ -14,16 +16,88 @@ using namespace std;
 class Dungeon
 {
 private:
-    string          rank;             // The rank of the dungeon (S, A, B, C, D, E, SPECIAL)
-    vector<Chamber> chambers;         // Chambers in the dungeon
-    bool            isDoubleDungeon;  // Whether this is a double dungeon
-    int             entranceFee;      // Gold cost to enter the dungeon
-    int             minPlayerLevel;   // Minimum player level required to enter
-    int             playerLevel;      // Current player level
-    bool            isCleared;        // Whether the dungeon has been cleared
-    vector<string>  dungeonLoot;      // Items obtained from the dungeon
-    double          expMultiplier;    // Experience multiplier for this dungeon
-    double          goldMultiplier;   // Gold multiplier for this dungeon
+    string          rank;            // The rank of the dungeon (S, A, B, C, D, E, SPECIAL)
+    vector<Chamber> chambers;        // Chambers in the dungeon
+    int             entranceFee;     // Gold cost to enter the dungeon
+    int             minPlayerLevel;  // Minimum player level required to enter
+    int             playerLevel;     // Current player level
+    int             initGold;        // Gold obtained from the dungeon
+    int             initExp;         // Experience obtained from the dungeon
+    bool            isCleared;       // Whether the dungeon has been cleared
+    vector<Item>    dungeonLoot;  // Items obtained from completing the dungeon (completion reward)
+    vector<Item>    mobLoot;      // Items obtained from mobs in cleared chambers
+    double          expMultiplier;             // Experience multiplier for this dungeon
+    double          goldMultiplier;            // Gold multiplier for this dungeon
+    ItemManager*    itemManager;               // Pointer to the ItemManager
+    MobLootConfigParser* mobLootConfigParser;  // Pointer to the MobLootConfigParser
+
+    /**
+     * @brief Initialize dungeon properties based on rank
+     */
+    void setupDungeonProperties();
+
+    /**
+     * @brief Set the player level
+     *
+     * @param level The player level
+     */
+    void setPlayerLevel(int level);
+
+    /**
+     * @brief Set the experience multiplier
+     *
+     * @param multiplier The experience multiplier
+     */
+    void setExpMultiplier(double multiplier);
+
+    /**
+     * @brief Set the gold multiplier
+     *
+     * @param multiplier The gold multiplier
+     */
+    void setGoldMultiplier(double multiplier);
+
+    /**
+     * @brief Count the number of double chambers in the dungeon
+     *
+     * @return int The number of double chambers
+     */
+    int countDoubleChambers() const;
+
+    /**
+     * @brief Get the experience multiplier
+     *
+     * @return double The experience multiplier
+     */
+    double getExpMultiplier() const;
+
+    /**
+     * @brief Get the gold multiplier
+     *
+     * @return double The gold multiplier
+     */
+    double getGoldMultiplier() const;
+
+    /**
+     * @brief Add an item to the dungeon completion loot
+     *
+     * @param item The item to add
+     */
+    void addLoot(const Item& item);
+
+    /**
+     * @brief Add an item to the mob loot collection
+     *
+     * @param item The item to add
+     */
+    void addMobLoot(const Item& item);
+
+    /**
+     * @brief Get the rank of the dungeon
+     *
+     * @return string The rank of the dungeon
+     */
+    string getRank() const;
 
 public:
     // Constants for dungeon ranks
@@ -40,8 +114,17 @@ public:
      *
      * @param rank The rank of the dungeon
      * @param playerLevel The level of the player
+     * @param itemManager Pointer to an ItemManager instance
+     * @param mobLootConfigParser Pointer to a MobLootConfigParser instance
+     * @param gold Initial gold value
+     * @param exp Initial experience value
      */
-    Dungeon(const string& rank, int playerLevel);
+    Dungeon(const string&        rank,
+            int                  playerLevel,
+            ItemManager*         itemManager,
+            MobLootConfigParser* mobLootConfigParser,
+            int                  gold,
+            int                  exp);
 
     /**
      * @brief Destroy the Dungeon object
@@ -49,38 +132,11 @@ public:
     ~Dungeon();
 
     /**
-     * @brief Initialize dungeon properties based on rank
-     */
-    void setupDungeonProperties();
-
-    /**
      * @brief Add a chamber to the dungeon
      *
      * @param chamber The chamber to add
      */
     void addChamber(const Chamber& chamber);
-
-    /**
-     * @brief Set whether this is a double dungeon
-     *
-     * @param isDouble Whether this is a double dungeon
-     */
-    void setIsDoubleDungeon(bool isDouble);
-
-    /**
-     * @brief Check if this is a double dungeon
-     *
-     * @return true If this is a double dungeon
-     * @return false If this is not a double dungeon
-     */
-    bool getIsDoubleDungeon() const;
-
-    /**
-     * @brief Set the player level
-     *
-     * @param level The player level
-     */
-    void setPlayerLevel(int level);
 
     /**
      * @brief Get the player level
@@ -104,13 +160,6 @@ public:
     int getMinPlayerLevel() const;
 
     /**
-     * @brief Get the rank of the dungeon
-     *
-     * @return string The rank of the dungeon
-     */
-    string getRank() const;
-
-    /**
      * @brief Get the chambers in the dungeon
      *
      * @return vector<Chamber> The chambers in the dungeon
@@ -124,6 +173,13 @@ public:
      * @return Chamber& Reference to the chamber
      */
     Chamber& getChamber(int index);
+
+    /**
+     * @brief Clear a specific chamber and add its loot to the mob loot collection
+     *
+     * @param index The index of the chamber to clear
+     */
+    void clearChamber(int index);
 
     /**
      * @brief Set whether the dungeon is cleared
@@ -141,23 +197,40 @@ public:
     bool getIsCleared() const;
 
     /**
-     * @brief Add an item to the dungeon loot
+     * @brief Get the dungeon completion loot
      *
-     * @param item The item to add
+     * @return vector<Item> The dungeon completion loot
      */
-    void addLoot(const string& item);
+    vector<Item> getLoot() const;
 
     /**
-     * @brief Get the dungeon loot
+     * @brief Get the mob loot collection
      *
-     * @return vector<string> The dungeon loot
+     * @return vector<Item> The mob loot collection
      */
-    vector<string> getLoot() const;
+    vector<Item> getMobLoot() const;
+
+    /**
+     * @brief Generate completion loot based on dungeon rank
+     * This uses the internal ItemManager
+     */
+    void generateLoot();
+
+    /**
+     * @brief Generate mob loot for all chambers
+     * This uses the internal MobLootConfigParser and ItemManager
+     */
+    void generateMobLoot();
 
     /**
      * @brief Clear the dungeon loot
      */
     void clearLoot();
+
+    /**
+     * @brief Clear the mob loot
+     */
+    void clearMobLoot();
 
     /**
      * @brief Get the number of chambers in the dungeon
@@ -167,40 +240,32 @@ public:
     int getNumChambers() const;
 
     /**
-     * @brief Get the experience multiplier
-     *
-     * @return double The experience multiplier
-     */
-    double getExpMultiplier() const;
-
-    /**
-     * @brief Get the gold multiplier
-     *
-     * @return double The gold multiplier
-     */
-    double getGoldMultiplier() const;
-
-    /**
-     * @brief Set the experience multiplier
-     *
-     * @param multiplier The experience multiplier
-     */
-    void setExpMultiplier(double multiplier);
-
-    /**
-     * @brief Set the gold multiplier
-     *
-     * @param multiplier The gold multiplier
-     */
-    void setGoldMultiplier(double multiplier);
-
-    /**
      * @brief Check if all chambers are cleared
      *
      * @return true If all chambers are cleared
      * @return false If not all chambers are cleared
      */
     bool areAllChambersCleared() const;
-};
 
-#endif
+    /**
+     * @brief Get penalties for failing to complete the dungeon
+     *
+     * @param expPenalty Reference to store experience penalty
+     * @param goldPenalty Reference to store gold penalty
+     */
+    void getPenalty(int& expPenalty, int& goldPenalty) const;
+
+    /**
+     * @brief Get the initial gold value
+     *
+     * @return int The initial gold value
+     */
+    int getInitGold() const;
+
+    /**
+     * @brief Get the initial experience value
+     *
+     * @return int The initial experience value
+     */
+    int getInitExp() const;
+};

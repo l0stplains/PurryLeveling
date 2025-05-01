@@ -1,7 +1,14 @@
 #include "dungeon/DungeonFactory.hpp"
 
-DungeonFactory::DungeonFactory()
-    : rng(), doubleDungeonActivateThreshold(0.05), isDoubleDungeonYet(false), chance(0.0)
+#include "rng/rng.hpp"
+
+DungeonFactory::DungeonFactory(ItemManager& itemManager, MobLootConfigParser& mobLootConfigParser)
+    : rng(),
+      itemManager(itemManager),
+      mobLootConfigParser(mobLootConfigParser),
+      doubleDungeonActivateThreshold(0.05),
+      isDoubleDungeonYet(false),
+      chance(0.0)
 {}
 
 DungeonFactory::~DungeonFactory() {}
@@ -9,8 +16,8 @@ DungeonFactory::~DungeonFactory() {}
 string DungeonFactory::toLowercase(string str) const
 {
     string result = str;
-    std::transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
-        return std::tolower(c);
+    transform(result.begin(), result.end(), result.begin(), [](unsigned char c) {
+        return tolower(c);
     });
     return result;
 }
@@ -162,12 +169,11 @@ bool DungeonFactory::isBossRoom(const string& rank, int chamberIndex, int totalC
     return false;
 }
 
-Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel)
+Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel, int playerGold, int playerExp)
 {
     string  normalizedRank = normalizeRank(rank);
-    Dungeon dungeon(normalizedRank, playerLevel);
-    dungeon.setIsDoubleDungeon(false);
-    this->isDoubleDungeonYet = false;
+    Dungeon dungeon(
+        normalizedRank, playerLevel, &itemManager, &mobLootConfigParser, playerGold, playerExp);
 
     int numChambers = getNumChambers(normalizedRank);
 
@@ -176,30 +182,15 @@ Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel)
 
     for (int i = 0; i < numChambers; i++)
     {
-        if (!isDoubleDungeonYet)
-        {
-            if (shouldBeDoubleDungeon())
-            {
-                isDoubleDungeonYet = true;
-                dungeon.setIsDoubleDungeon(true);
-            }
-        }
-
-        bool isBossRoom = this->isBossRoom(normalizedRank, i, numChambers);
-
+        bool   isBossRoom           = this->isBossRoom(normalizedRank, i, numChambers);
         double difficultyMultiplier = getDifficultyMultiplier(normalizedRank, i);
-
-        if (isDoubleDungeonYet)
-        {
-            difficultyMultiplier *= 2.0;
-        }
 
         int specialMinLevel = mobLevelMin;
         int specialMaxLevel = mobLevelMax;
 
         if (normalizedRank == Dungeon::RANK_SPECIAL)
         {
-            int levelIncrease = i * 2;
+            int levelIncrease = i * 1.2;
             specialMinLevel += levelIncrease;
             specialMaxLevel += levelIncrease;
         }
@@ -210,13 +201,25 @@ Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel)
                         normalizedRank == Dungeon::RANK_SPECIAL ? specialMinLevel : mobLevelMin,
                         normalizedRank == Dungeon::RANK_SPECIAL ? specialMaxLevel : mobLevelMax);
 
+        bool isDoubleChamber = shouldBeDoubleChamber();
+        if (isDoubleChamber)
+        {
+            chamber.setIsDoubleChamber(true);
+        }
+
+        chamber.generateMobs(isBossRoom);
+
         dungeon.addChamber(chamber);
     }
+
+    dungeon.generateLoot();
+
+    dungeon.generateMobLoot();
 
     return dungeon;
 }
 
-bool DungeonFactory::shouldBeDoubleDungeon()
+bool DungeonFactory::shouldBeDoubleChamber()
 {
     chance = rng.generatePercentage();
     return (chance <= doubleDungeonActivateThreshold * 100);

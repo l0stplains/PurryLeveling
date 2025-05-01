@@ -1,12 +1,38 @@
 #include "dungeon/Chamber.hpp"
 
 #include <iostream>
+#include <map>
 
 using namespace std;
 
-Chamber::Chamber(int chamberNumber, bool isBossRoom, double difficultyMultiplier, int mobLevelMin, int mobLevelMax)
+/*
+class MobUnit : public Unit
+{
+public:
+    MobUnit(const std::string& name) : Unit(name) {}
+
+    // Implement the pure virtual function from Unit
+    void UseSkill(int skillId, ActionCompletionCallback callback = nullptr) override
+    {
+        std::cout << GetName() << " uses skill ID: " << skillId << std::endl;
+
+        // Default behavior for mob skill
+        if (callback)
+        {
+            callback();
+        }
+    }
+};
+*/
+
+Chamber::Chamber(int    chamberNumber,
+                 bool   isBossRoom,
+                 double difficultyMultiplier,
+                 int    mobLevelMin,
+                 int    mobLevelMax)
     : chamberNumber(chamberNumber),
       isBossRoom(isBossRoom),
+      isDoubleChamber(false),
       difficultyMultiplier(difficultyMultiplier),
       mobLevelMin(mobLevelMin),
       mobLevelMax(mobLevelMax),
@@ -14,102 +40,196 @@ Chamber::Chamber(int chamberNumber, bool isBossRoom, double difficultyMultiplier
       goldReward(0),
       expReward(0),
       rng()
-{
-    generateMobs(isBossRoom);
-}
+{}
 
-Chamber::~Chamber()
-{
-}
+Chamber::~Chamber() {}
 
 void Chamber::generateMobs(bool isBossRoom)
 {
-    if (isBossRoom) {
+    if (isBossRoom)
+    {
         int bossType = rng.generateInRange(4);
-        
-        int bossId = 100 + bossType;
-        mobs.push_back(bossId);
 
-        string bossLoot;
-        switch (bossType) {
-            case 0: bossLoot = "OgreAxe"; break;
-            case 1: bossLoot = "DarkSword"; break;
-            case 2: bossLoot = "DemonCrown"; break;
-            case 3: bossLoot = "SoulStaff"; break;
+        // Create a boss character
+        string bossName;
+
+        switch (bossType)
+        {
+            case 0:
+                bossName = "Ogre";
+                break;
+            case 1:
+                bossName = "Dark_Knight";
+                break;
+            case 2:
+                bossName = "Demon_Lord";
+                break;
+            case 3:
+                bossName = "Lich";
+                break;
+            default:
+                bossName = "Unknown_Boss";
         }
-        
-        addMobLoot(bossId, bossLoot);
-    } else {
+
+        auto boss = make_shared<MobUnit>(bossName);
+
+        // Set boss stats based on chamber difficulty
+        int bossLevel        = rng.generateInRange(mobLevelMin, mobLevelMax);
+        int healthMultiplier = isBossRoom ? 3 : 1;
+
+        boss->SetMaxHealth(100 * bossLevel / 10 * healthMultiplier * difficultyMultiplier);
+        boss->SetHealth(boss->GetMaxHealth());
+        boss->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
+        boss->SetCurrentMana(boss->GetMaxMana());
+        boss->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
+
+        mobs.push_back(boss);
+    }
+    else
+    {
         int numMobs = 1 + chamberNumber / 2;
-        
-        for (int i = 0; i < numMobs; i++) {
-            int mobType = rng.generateInRange(4);
-            
-            int mobId = mobType;
-            mobs.push_back(mobId);
-            
-            string mobLoot;
-            switch (mobType) {
-                case 0: mobLoot = "SlimeJelly"; break;
-                case 1: mobLoot = "GoblinDagger"; break;
-                case 2: mobLoot = "BoneFragment"; break;
-                case 3: mobLoot = "OrcTusk"; break;
+
+        // Double chambers have more mobs
+        if (isDoubleChamber)
+        {
+            numMobs = static_cast<int>(numMobs * 1.5);
+        }
+
+        for (int i = 0; i < numMobs; i++)
+        {
+            int    mobType = rng.generateInRange(4);
+            string mobName;
+
+            switch (mobType)
+            {
+                case 0:
+                    mobName = "Slime";
+                    break;
+                case 1:
+                    mobName = "Goblin";
+                    break;
+                case 2:
+                    mobName = "Skeleton";
+                    break;
+                case 3:
+                    mobName = "Orc";
+                    break;
+                default:
+                    mobName = "Unknown_Mob";
             }
 
-            if (rng.generateProbability() < 0.5) {
-                addMobLoot(mobId, mobLoot);
-            }
+            auto mob = make_shared<MobUnit>(mobName);
+
+            // Set mob stats based on chamber difficulty
+            int mobLevel = rng.generateInRange(mobLevelMin, mobLevelMax);
+
+            mob->SetMaxHealth(60 * mobLevel / 10 * difficultyMultiplier);
+            mob->SetHealth(mob->GetMaxHealth());
+            mob->SetMaxMana(30 * mobLevel / 10 * difficultyMultiplier);
+            mob->SetCurrentMana(mob->GetMaxMana());
+            mob->SetAttackDamage(8 * mobLevel / 10 * difficultyMultiplier);
+
+            mobs.push_back(mob);
         }
     }
 
-    calculateRewards(false);
+    calculateRewards(isDoubleChamber);
 }
 
-void Chamber::calculateRewards(bool isDoubleDungeon)
+void Chamber::calculateRewards(bool isDoubleChamber)
 {
     goldReward = chamberNumber * 50 + (mobLevelMin + mobLevelMax) / 2 * 10;
-    expReward = chamberNumber * 100 + (mobLevelMin + mobLevelMax) / 2 * 20;
-    
-    goldReward = static_cast<int>(goldReward * difficultyMultiplier);
-    expReward = static_cast<int>(expReward * difficultyMultiplier);
+    expReward  = chamberNumber * 100 + (mobLevelMin + mobLevelMax) / 2 * 20;
 
-    if (isBossRoom) {
+    goldReward = static_cast<int>(goldReward * difficultyMultiplier);
+    expReward  = static_cast<int>(expReward * difficultyMultiplier);
+
+    if (isBossRoom)
+    {
         goldReward *= 2;
         expReward *= 2;
     }
 
-    if (isDoubleDungeon) {
+    if (isDoubleChamber)
+    {
         goldReward *= 3;
         expReward *= 3;
+
+        this->isDoubleChamber = isDoubleChamber;
     }
 }
 
-void Chamber::addMob(int mobId)
+void Chamber::addMob(shared_ptr<Unit> mob)
 {
-    mobs.push_back(mobId);
+    mobs.push_back(mob);
 }
 
-void Chamber::addMobLoot(int mobId, const string& lootItem)
+void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemManager& itemManager)
 {
-    mobLoot[mobId] = lootItem;
+    const auto& mobLootData = lootConfigParser.GetData();
+
+    vector<Item> allItems = itemManager.getAllItems();
+
+    if (allItems.empty())
+    {
+        return;
+    }
+
+    for (const auto& mob : mobs)
+    {
+        string mobName = mob->GetName();
+
+        auto mobIt = mobLootData.find(mobName);
+        if (mobIt != mobLootData.end())
+        {
+            const auto& itemsMap = mobIt->second;
+
+            for (const auto& itemEntry : itemsMap)
+            {
+                const string& itemId          = itemEntry.first;
+                float         dropProbability = itemEntry.second;
+
+                double randomProb = rng.generateProbability();
+
+                if (randomProb <= dropProbability)
+                {
+                    try
+                    {
+                        Item& item = itemManager.getItem(itemId);
+
+                        mobLoot.push_back(item);
+
+                        cout << "Mob " << mobName << " dropped item " << item.getName()
+                             << " (ID: " << itemId << ")" << endl;
+                    }
+                    catch (const char* error)
+                    {
+                        cerr << "Error retrieving item " << itemId << ": " << error << endl;
+                    }
+                }
+            }
+        }
+    }
 }
 
-void Chamber::addLoot(const string& item)
+void Chamber::addLootItem(const Item& item)
 {
-    loot.push_back(item);
+    mobLoot.push_back(item);
 }
 
-vector<int> Chamber::getMobs() const
+vector<Item> Chamber::clearChamber()
+{
+    isCleared = true;
+
+    return mobLoot;
+}
+
+vector<shared_ptr<Unit>> Chamber::getMobs() const
 {
     return mobs;
 }
 
-vector<string> Chamber::getLoot() const
-{
-    return loot;
-}
-
-map<int, string> Chamber::getMobLoot() const
+vector<Item> Chamber::getMobLoot() const
 {
     return mobLoot;
 }
@@ -167,4 +287,26 @@ void Chamber::setGoldReward(int gold)
 void Chamber::setExpReward(int exp)
 {
     expReward = exp;
+}
+
+void Chamber::setIsDoubleChamber(bool isDouble)
+{
+    if (isDouble != isDoubleChamber)
+    {
+        isDoubleChamber = isDouble;
+
+        calculateRewards(isDoubleChamber);
+
+        if (isDoubleChamber)
+        {
+            mobLevelMin = static_cast<int>(mobLevelMin * 1.2);
+            mobLevelMax = static_cast<int>(mobLevelMax * 1.2);
+            difficultyMultiplier *= 2.0;
+        }
+    }
+}
+
+bool Chamber::getIsDoubleChamber() const
+{
+    return isDoubleChamber;
 }

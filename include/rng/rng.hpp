@@ -1,5 +1,4 @@
-#ifndef RNG_HPP
-#define RNG_HPP
+#pragma once
 
 #include <vector>
 using namespace std;
@@ -119,5 +118,3 @@ public:
      */
     vector<double> generatePercentageVector(size_t size);
 };
-
-#endif

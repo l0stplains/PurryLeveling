@@ -135,54 +135,58 @@ void Equipment::setPendant(const Item& newPendant)
     pendant = newPendant;
 }
 
+Item Equipment::findAndFillSlot(const std::string& slotType, Item item)
+{
+    if (slotType == "Weapon")
+    {
+        setWeapon(item);
+        return item;
+    }
+    else if (slotType == "HeadArmor")
+    {
+        setHeadArmor(item);
+        return item;
+    }
+    else if (slotType == "BodyArmor")
+    {
+        setBodyArmor(item);
+        return item;
+    }
+    else if (slotType == "FootArmor")
+    {
+        setFootArmor(item);
+        return item;
+    }
+    else if (slotType == "Pendant")
+    {
+        setPendant(item);
+        return item;
+    }
+    else
+    {
+        throw InvalidEquipmentTypeException("Invalid equipment slot type");
+    }
+
+    return item;
+}
+
 void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const std::string& slotType)
 {
     // Get the item from backpack (take one from the stack)
-    Item itemToEquip = backpack.takeItemAtTile(x, y, 1);
+    Item itemToEquip = backpack.getItemAtTile(x, y);
+    if (itemToEquip.getType() == slotType && backpack.getQuantityAtTile(x, y) == 1)
+    {
+        return;
+    }
 
     // Check if the item type matches the slot type
     if (itemToEquip.getType() != slotType)
     {
-        // Return the item to backpack if types don't match
-        backpack.addItemAtTile(x, y, itemToEquip, 1);
         throw InvalidEquipmentTypeException("Item type doesn't match required slot type");
     }
 
     // Get the currently equipped item (if any)
-    Item currentlyEquipped;
-
-    // Equip the new item and store the previously equipped item
-    if (slotType == "Weapon")
-    {
-        currentlyEquipped = weapon;
-        setWeapon(itemToEquip);
-    }
-    else if (slotType == "HeadArmor")
-    {
-        currentlyEquipped = headArmor;
-        setHeadArmor(itemToEquip);
-    }
-    else if (slotType == "BodyArmor")
-    {
-        currentlyEquipped = bodyArmor;
-        setBodyArmor(itemToEquip);
-    }
-    else if (slotType == "FootArmor")
-    {
-        currentlyEquipped = footArmor;
-        setFootArmor(itemToEquip);
-    }
-    else if (slotType == "Pendant")
-    {
-        currentlyEquipped = pendant;
-        setPendant(itemToEquip);
-    }
-    else
-    {
-        // Unknown slot type
-        backpack.addItemAtTile(x, y, itemToEquip, 1);
-        throw InvalidEquipmentTypeException("Invalid equipment slot type");
-    }
+    Item currentlyEquipped = findAndFillSlot(slotType, itemToEquip);
 
     // If there was a previous item
     if (!currentlyEquipped.isNull())
@@ -197,6 +201,7 @@ void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const st
         {
             // Since findItemTile returns tiles with this item type that have space available,
             // we can directly add to this tile without additional checks
+            backpack.takeItemAtTile(x, y, 1);
             backpack.addItemAtTile(itemX, itemY, currentlyEquipped, 1);
             addedToExistingStack = true;
 
@@ -221,6 +226,7 @@ void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const st
             int emptyY = emptyTiles[0].second;
 
             // Add the unequipped item to the empty slot
+            backpack.takeItemAtTile(x, y, 1);
             backpack.addItemAtTile(emptyX, emptyY, currentlyEquipped, 1);
         }
     }
@@ -290,26 +296,7 @@ void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const st
         backpack.addItemAtTile(x, y, itemToUnequip, 1);
 
         // Clear the equipment slot
-        if (slotType == "Weapon")
-        {
-            setWeapon(Item());
-        }
-        else if (slotType == "HeadArmor")
-        {
-            setHeadArmor(Item());
-        }
-        else if (slotType == "BodyArmor")
-        {
-            setBodyArmor(Item());
-        }
-        else if (slotType == "FootArmor")
-        {
-            setFootArmor(Item());
-        }
-        else if (slotType == "Pendant")
-        {
-            setPendant(Item());
-        }
+        findAndFillSlot(slotType, Item());
     }
     else
     {
@@ -325,27 +312,8 @@ void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const st
             // Put the unequipped item in the backpack
             backpack.addItemAtTile(x, y, itemToUnequip, 1);
 
-            // Update the equipment with the taken item
-            if (slotType == "Weapon")
-            {
-                setWeapon(takenItem);
-            }
-            else if (slotType == "HeadArmor")
-            {
-                setHeadArmor(takenItem);
-            }
-            else if (slotType == "BodyArmor")
-            {
-                setBodyArmor(takenItem);
-            }
-            else if (slotType == "FootArmor")
-            {
-                setFootArmor(takenItem);
-            }
-            else if (slotType == "Pendant")
-            {
-                setPendant(takenItem);
-            }
+            // Fill the slot with the item we took
+            findAndFillSlot(slotType, takenItem);
         }
         else
         {
@@ -369,26 +337,7 @@ void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const st
                 addedToExistingStack = true;
 
                 // Clear the equipment slot
-                if (slotType == "Weapon")
-                {
-                    setWeapon(Item());
-                }
-                else if (slotType == "HeadArmor")
-                {
-                    setHeadArmor(Item());
-                }
-                else if (slotType == "BodyArmor")
-                {
-                    setBodyArmor(Item());
-                }
-                else if (slotType == "FootArmor")
-                {
-                    setFootArmor(Item());
-                }
-                else if (slotType == "Pendant")
-                {
-                    setPendant(Item());
-                }
+                findAndFillSlot(slotType, Item());
 
                 // Successfully added to existing stack, exit the loop
                 break;
@@ -414,26 +363,7 @@ void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const st
                 backpack.addItemAtTile(emptyX, emptyY, itemToUnequip, 1);
 
                 // Clear the equipment slot
-                if (slotType == "Weapon")
-                {
-                    setWeapon(Item());
-                }
-                else if (slotType == "HeadArmor")
-                {
-                    setHeadArmor(Item());
-                }
-                else if (slotType == "BodyArmor")
-                {
-                    setBodyArmor(Item());
-                }
-                else if (slotType == "FootArmor")
-                {
-                    setFootArmor(Item());
-                }
-                else if (slotType == "Pendant")
-                {
-                    setPendant(Item());
-                }
+                findAndFillSlot(slotType, Item());
             }
         }
     }

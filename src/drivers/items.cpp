@@ -106,7 +106,7 @@ void printItemDetails(const Item& item)
     // Print effects
     for (const auto& effect : item.getEffects())
     {
-        std::cout << " " << effect;
+        std::cout << " | " << effect->GetName() << " (" << effect->GetDescription() << ")";
     }
     std::cout << std::endl;
 }
@@ -123,14 +123,15 @@ void printItemDatabase(const ItemManager& itemManager)
 }
 
 // Function to print filtered items by type
-void printFilteredItems(const std::vector<std::pair<Item, int>>& filteredItems)
+// Updated to use pointers instead of reference_wrapper
+void printFilteredItems(const std::vector<std::pair<Item, int>*>& filteredItems)
 {
     std::cout << "Found " << filteredItems.size() << " item(s):" << std::endl;
 
-    for (const auto& pair : filteredItems)
+    for (const auto* itemPtr : filteredItems)
     {
-        std::cout << "- " << pair.first.getName() << " (ID: " << pair.first.getItemID()
-                  << ", Quantity: " << pair.second << ")" << std::endl;
+        std::cout << "- " << itemPtr->first.getName() << " (ID: " << itemPtr->first.getItemID()
+                  << ", Quantity: " << itemPtr->second << ")" << std::endl;
     }
 }
 
@@ -163,17 +164,17 @@ int main()
             Item("SAB", "Sabatons", "FootArmor", 'A', {"80", "Heavy_Protection"}),
 
             // Pendants
-            Item("AMU", "Amulet", "Pendant", 'B', {"Magic_Boost"}),
-            Item("NCK", "Necklace", "Pendant", 'C', {"Charm"}),
-            Item("PND", "Power_Pendant", "Pendant", 'A', {"Strength_Boost"}),
-            Item("GEM", "Magic_Gem", "Pendant", 'S', {"Special_Power"}),
+            Item("AMU", "Amulet", "Pendant", 'B', {"Magic_Boost", ""}),
+            Item("NCK", "Necklace", "Pendant", 'C', {"Charm", ""}),
+            Item("PND", "Power_Pendant", "Pendant", 'A', {"Strength_Boost", ""}),
+            Item("GEM", "Magic_Gem", "Pendant", 'S', {"Special_Power", ""}),
 
             // Potions
-            Item("HPP", "Health_Potion", "Potion", 'C', {"Heal_50"}),
-            Item("MPP", "Mana_Potion", "Potion", 'C', {"Mana_50"}),
-            Item("SPP", "Strength_Potion", "Potion", 'B', {"Strength_Boost"}),
-            Item("APP", "Agility_Potion", "Potion", 'B', {"Agility_Boost"}),
-            Item("EPP", "Elixir_Potion", "Potion", 'A', {"Full_Restore"})};
+            Item("HPP", "Health_Potion", "Potion", 'C', {"Heal_50", ""}),
+            Item("MPP", "Mana_Potion", "Potion", 'C', {"Mana_50", ""}),
+            Item("SPP", "Strength_Potion", "Potion", 'B', {"Strength_Boost", ""}),
+            Item("APP", "Agility_Potion", "Potion", 'B', {"Agility_Boost", ""}),
+            Item("EPP", "Elixir_Potion", "Potion", 'A', {"Full_Restore", ""})};
 
         ItemManager itemManager(itemDatabase);
 
@@ -210,7 +211,6 @@ int main()
         std::cout << "=== Initial Backpack State ===" << std::endl;
         printBackpack(backpack);
         std::cout << std::endl;
-
         // 1. Test adding items to backpack
         std::cout << std::endl;
         std::cout << "! ===== 1. Test Adding Items to Backpack ===== !" << std::endl;
@@ -372,29 +372,36 @@ int main()
         try
         {
             // Find a slot with a HeadArmor item
-            std::vector<std::pair<Item, int>> headArmorItems = backpack.filterItemsByType("HeadArmo"
-                                                                                          "r");
+            auto headArmorItems = backpack.filterItemsByType("HeadArmor");
 
-            int                              helmetRow = -1, helmetCol = -1;
-            std::vector<std::pair<int, int>> headArmorTiles =
-                backpack.findItemTile(headArmorItems[0].first);
+            int helmetRow = -1, helmetCol = -1;
 
-            if (!headArmorTiles.empty())
+            if (!headArmorItems.empty())
             {
-                helmetRow = headArmorTiles[0].first;
-                helmetCol = headArmorTiles[0].second;
+                std::vector<std::pair<int, int>> headArmorTiles =
+                    backpack.findItemTile(headArmorItems[0]->first);
+
+                if (!headArmorTiles.empty())
+                {
+                    helmetRow = headArmorTiles[0].first;
+                    helmetCol = headArmorTiles[0].second;
+                }
+
+                std::cout << "Taking 1 item from position (" << helmetRow << ","
+                          << (char)('A' + helmetCol) << ")..." << std::endl;
+                Item takenItem = backpack.takeItemAtTile(helmetRow, helmetCol, 1);
+                std::cout << "Taken item: ";
+                printItemDetails(takenItem);
+
+                // Print updated backpack
+                std::cout << "=== Updated Backpack State ===" << std::endl;
+                printBackpack(backpack);
+                std::cout << std::endl;
             }
-
-            std::cout << "Taking 1 item from position (" << helmetRow << ","
-                      << (char)('A' + helmetCol) << ")..." << std::endl;
-            Item takenItem = backpack.takeItemAtTile(helmetRow, helmetCol, 1);
-            std::cout << "Taken item: ";
-            printItemDetails(takenItem);
-
-            // Print updated backpack
-            std::cout << "=== Updated Backpack State ===" << std::endl;
-            printBackpack(backpack);
-            std::cout << std::endl;
+            else
+            {
+                std::cout << "No HeadArmor items found in the backpack" << std::endl;
+            }
         }
         catch (const std::exception& e)
         {
@@ -604,6 +611,56 @@ int main()
             auto potions = backpack.filterItemsByType("Potion");
             printFilteredItems(potions);
 
+            // Test modifying potions through the filtered results
+            std::cout << "\n! ===== 6a. Test Modifying Items Through Filtered Results ===== !"
+                      << std::endl;
+            if (!potions.empty())
+            {
+                // get the first potion pair using pointer
+                auto* firstPotionPair  = potions[0];
+                int   originalQuantity = firstPotionPair->second;
+
+                std::cout << "Original potion quantity: " << originalQuantity << std::endl;
+                std::cout << "Modifying quantity through filtered result pointer..." << std::endl;
+
+                // Modify the quantity through the pointer
+                firstPotionPair->second += 10;
+
+                std::cout << "Modified potion quantity: " << firstPotionPair->second << std::endl;
+
+                // Now check if the backpack reflects the change
+                std::vector<std::pair<int, int>> potionTiles =
+                    backpack.findItemTile(firstPotionPair->first);
+                if (!potionTiles.empty())
+                {
+                    int row              = potionTiles[0].first;
+                    int col              = potionTiles[0].second;
+                    int backpackQuantity = backpack.getQuantityAtTile(row, col);
+
+                    std::cout << "Quantity in backpack at position (" << row << ","
+                              << (char)('A' + col) << "): " << backpackQuantity << std::endl;
+
+                    if (backpackQuantity == firstPotionPair->second)
+                    {
+                        std::cout << "SUCCESS: Backpack quantity matches the modified quantity!"
+                                  << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "ERROR: Backpack quantity does not match the modified "
+                                     "quantity!"
+                                  << std::endl;
+                    }
+                }
+
+                // Restore original quantity for other tests
+                firstPotionPair->second = originalQuantity;
+            }
+            else
+            {
+                std::cout << "No potions found to test modification" << std::endl;
+            }
+
             // Filter for weapons
             std::cout << "\nFiltering for Weapons:" << std::endl;
             auto weapons = backpack.filterItemsByType("Weapon");
@@ -688,11 +745,11 @@ int main()
             int count = 0;
 
             // Find and equip weapon
-            std::vector<std::pair<Item, int>> weapons = backpack.filterItemsByType("Weapon");
+            auto weapons = backpack.filterItemsByType("Weapon");
 
-            for (const auto& pair : weapons)
+            for (auto* weaponPtr : weapons)
             {
-                Item item = pair.first;
+                Item& item = weaponPtr->first;
 
                 if (count < 2)
                 {
@@ -716,11 +773,11 @@ int main()
 
             count = 0;
             // Find and equip head armor
-            std::vector<std::pair<Item, int>> headArmors = backpack.filterItemsByType("HeadArmor");
+            auto headArmors = backpack.filterItemsByType("HeadArmor");
 
-            for (const auto& pair : headArmors)
+            for (auto* headArmorPtr : headArmors)
             {
-                Item item = pair.first;
+                Item& item = headArmorPtr->first;
 
                 if (count < 2)
                 {
@@ -745,11 +802,11 @@ int main()
 
             count = 0;
             // Find and equip body armor
-            std::vector<std::pair<Item, int>> bodyArmors = backpack.filterItemsByType("BodyArmor");
+            auto bodyArmors = backpack.filterItemsByType("BodyArmor");
 
-            for (const auto& pair : bodyArmors)
+            for (auto* bodyArmorPtr : bodyArmors)
             {
-                Item item = pair.first;
+                Item& item = bodyArmorPtr->first;
 
                 if (count < 2)
                 {
@@ -774,11 +831,11 @@ int main()
 
             count = 0;
             // Find and equip foot armor
-            std::vector<std::pair<Item, int>> footArmors = backpack.filterItemsByType("FootArmor");
+            auto footArmors = backpack.filterItemsByType("FootArmor");
 
-            for (const auto& pair : footArmors)
+            for (auto* footArmorPtr : footArmors)
             {
-                Item item = pair.first;
+                Item& item = footArmorPtr->first;
 
                 if (count < 2)
                 {
@@ -803,11 +860,11 @@ int main()
 
             count = 0;
             // Find and equip pendant
-            std::vector<std::pair<Item, int>> pendants = backpack.filterItemsByType("Pendant");
+            auto pendants = backpack.filterItemsByType("Pendant");
 
-            for (const auto& pair : pendants)
+            for (auto* pendantPtr : pendants)
             {
-                Item item = pair.first;
+                Item& item = pendantPtr->first;
 
                 if (count < 2)
                 {
@@ -967,19 +1024,27 @@ int main()
             std::cout << std::endl;
 
             // Find a slot with a potion
-            std::vector<std::pair<Item, int>> potions = backpack.filterItemsByType("Potion");
+            auto potions = backpack.filterItemsByType("Potion");
 
-            std::vector<std::pair<int, int>> potionTiles = backpack.findItemTile(potions[0].first);
-
-            if (!potionTiles.empty())
+            if (!potions.empty())
             {
-                int potionRow = potionTiles[0].first;
-                int potionCol = potionTiles[0].second;
+                std::vector<std::pair<int, int>> potionTiles =
+                    backpack.findItemTile(potions[0]->first);
 
-                std::cout << "Unequipping body armor to position with potion (" << potionRow << ","
-                          << (char)('A' + potionCol) << ")..." << std::endl;
-                equipment.unequipItemToBackpack(backpack, potionRow, potionCol, "BodyArmor");
-                std::cout << "Body armor unequipped" << std::endl;
+                if (!potionTiles.empty())
+                {
+                    int potionRow = potionTiles[0].first;
+                    int potionCol = potionTiles[0].second;
+
+                    std::cout << "Unequipping body armor to position with potion (" << potionRow
+                              << "," << (char)('A' + potionCol) << ")..." << std::endl;
+                    equipment.unequipItemToBackpack(backpack, potionRow, potionCol, "BodyArmor");
+                    std::cout << "Body armor unequipped" << std::endl;
+                }
+            }
+            else
+            {
+                std::cout << "No potions found in the backpack" << std::endl;
             }
 
             printEquippedItems(equipment);
@@ -1074,18 +1139,26 @@ int main()
         try
         {
             // Find a slot with a Weapon
-            std::vector<std::pair<Item, int>> weapons = backpack.filterItemsByType("Weapon");
+            auto weapons = backpack.filterItemsByType("Weapon");
 
-            std::vector<std::pair<int, int>> weaponTiles = backpack.findItemTile(weapons[0].first);
-
-            if (!weaponTiles.empty())
+            if (!weapons.empty())
             {
-                int weaponRow = weaponTiles[0].first;
-                int weaponCol = weaponTiles[0].second;
+                std::vector<std::pair<int, int>> weaponTiles =
+                    backpack.findItemTile(weapons[0]->first);
 
-                std::cout << "Trying to add a Helmet to position (" << weaponRow << ","
-                          << (char)('A' + weaponCol) << ") that has a Weapon..." << std::endl;
-                backpack.addItemAtTile(weaponRow, weaponCol, itemManager.getItem("HLM"), 1);
+                if (!weaponTiles.empty())
+                {
+                    int weaponRow = weaponTiles[0].first;
+                    int weaponCol = weaponTiles[0].second;
+
+                    std::cout << "Trying to add a Helmet to position (" << weaponRow << ","
+                              << (char)('A' + weaponCol) << ") that has a Weapon..." << std::endl;
+                    backpack.addItemAtTile(weaponRow, weaponCol, itemManager.getItem("HLM"), 1);
+                }
+            }
+            else
+            {
+                std::cout << "No weapons found in the backpack" << std::endl;
             }
         }
         catch (const ItemSlotOccupiedException& e)

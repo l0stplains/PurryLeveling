@@ -20,7 +20,8 @@ void RNG::setSeed(usl seed)
 
 RNG& RNG::operator=(const RNG& other)
 {
-    if (this != &other) {
+    if (this != &other)
+    {
         this->state = other.state;
     }
     return *this;
