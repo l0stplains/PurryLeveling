@@ -8,9 +8,12 @@ Shop::Shop(const std::vector<std::vector<std::string>> shopData, const std::vect
 
 void Shop::restock()
 {
+    allStock.clear();
     potionStock.clear();
     weaponStock.clear();
-    armorStock.clear();
+    headStock.clear();
+    bodyStock.clear();
+    footStock.clear();
     pendantStock.clear();
 
     // Checks each row of the config data and populates the stock maps
@@ -38,17 +41,20 @@ void Shop::restock()
         StockEntry  entry {*it, price, qty};
         const auto& type = it->getType();
 
+        // Add the entry to the allStock map
+        allStock[id] = entry;
+
         // Add the entry to the appropriate stock map
         if (type == "Potion")
             potionStock[id] = entry;
         else if (type == "Weapon")
             weaponStock[id] = entry;
         else if (type == "HeadArmor")
-            armorStock[id] = entry;
+            headStock[id] = entry;
         else if (type == "BodyArmor")
-            armorStock[id] = entry;
+            bodyStock[id] = entry;
         else if (type == "FootArmor")
-            armorStock[id] = entry;
+            footStock[id] = entry;
         else if (type == "Pendant")
             pendantStock[id] = entry;
         else
@@ -154,7 +160,9 @@ void Shop::getShopCatalogue() const
     };
     printCat("Potions", potionStock);
     printCat("Weapons", weaponStock);
-    printCat("Armor", armorStock);
+    printCat("Head Armor", headStock);
+    printCat("Body Armor", bodyStock);
+    printCat("Foot Armor", footStock);
     printCat("Pendants", pendantStock);
 }
 
@@ -162,12 +170,19 @@ std::map<std::string, Shop::StockEntry>* Shop::getStock(const std::string& categ
 {
     if (category == "Potion")
         return &potionStock;
-    if (category == "Weapon")
+    else if (category == "Weapon")
         return &weaponStock;
-    if (category == "Armor")
-        return &armorStock;
-    if (category == "Pendant")
+    else if (category == "HeadArmor")
+        return &headStock;
+    else if (category == "BodyArmor")
+        return &bodyStock;
+    else if (category == "FootArmor")
+        return &footStock;
+    else if (category == "Pendant")
         return &pendantStock;
+    else
+        std::cerr << "Shop::getStock: unhandled category '" << category << "'\n";
+
     return nullptr;
 }
 

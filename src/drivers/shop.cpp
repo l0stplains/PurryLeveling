@@ -20,7 +20,9 @@ int main()
         std::cerr << "Item parse error: " << itemParser.GetLastError() << "\n";
         return 1;
     }
-    ItemManager itemMgr(itemParser.GetData());
+    ItemManager itemMgr;
+    itemMgr.setItemDatabase(itemParser.GetData());
+
     // Assume ItemManager provides all items in a vector:
     std::vector<Item> masterItems = itemMgr.getAllItems();
 

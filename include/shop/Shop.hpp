@@ -41,9 +41,12 @@ private:
     std::vector<std::vector<std::string>> m_configData;
     std::vector<Item>                     m_masterItems;
 
+    std::map<std::string, StockEntry> allStock;
     std::map<std::string, StockEntry> potionStock;
     std::map<std::string, StockEntry> weaponStock;
-    std::map<std::string, StockEntry> armorStock;
+    std::map<std::string, StockEntry> headStock;
+    std::map<std::string, StockEntry> bodyStock;
+    std::map<std::string, StockEntry> footStock;
     std::map<std::string, StockEntry> pendantStock;
 
     std::map<std::string, StockEntry>*       getStock(const std::string& category);
