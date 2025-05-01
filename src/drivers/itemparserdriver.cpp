@@ -24,6 +24,7 @@ int main()
         for (const auto& e : item.getEffects())
             std::cout << e << ",";
         std::cout << "]\n";
+        std::cout << "Description: " << item.getDescription() << "\n";
     }
 
     return 0;
