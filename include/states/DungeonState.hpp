@@ -25,7 +25,7 @@ public:
      *
      * @param context The game context to share resources
      */
-    explicit DungeonState(GameContext& context, DimensionType dimension, std::string rank);
+    explicit DungeonState(GameContext& context, DimensionType dimension, Dungeon dungeon);
 
     void Init() override;
 
@@ -67,8 +67,8 @@ private:
 
     bool m_wasInChamberExit = false;
 
-    bool m_showExitPopup = false;  ///< Flag to show exit confirmation popup
-    // Dungeon m_dungeon;
+    bool    m_showExitPopup = false;  ///< Flag to show exit confirmation popup
+    Dungeon m_dungeon;
 
     AnimatedUnit*              m_character;
     std::vector<AnimatedUnit*> m_mobs;

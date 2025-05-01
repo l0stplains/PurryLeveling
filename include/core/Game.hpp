@@ -8,6 +8,8 @@
 
 #include "inventory/Backpack.hpp"
 #include "inventory/Equipment.hpp"
+#include "items/ItemManager.hpp"
+#include "parser/MobLootConfigParser.hpp"
 
 /**
  * @class Game
@@ -49,9 +51,11 @@ private:
     ResourceManager m_resourceManager;  ///< Resource manager for loading and managing game assets
     UnitManager     m_unitManager;      ///< Unit manager for managing game units
     StateManager    m_stateManager;     ///< State manager for handling game states
-    Backpack        m_backpack;
-    Equipment       m_equipment;
-    ImGuiManager    m_gui;  ///< ImGui backend manager for rendering UI
+    ItemManager     m_itemManager;
+    MobLootConfigParser m_mobLootConfigParser;
+    Backpack            m_backpack;
+    Equipment           m_equipment;
+    ImGuiManager        m_gui;  ///< ImGui backend manager for rendering UI
 
     /**
      * @brief Processes events from the window and updates the game state.

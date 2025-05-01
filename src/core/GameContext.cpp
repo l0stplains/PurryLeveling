@@ -39,6 +39,15 @@ Equipment* GameContext::GetEquipment() const
     return m_equipment;
 }
 
+ItemManager* GameContext::GetItemManager() const
+{
+    return m_itemManager;
+}
+
+MobLootConfigParser* GameContext::GetMobLootConfigParser() const
+{
+    return m_mobLootConfigParser;
+}
 sf::RenderWindow* GameContext::GetWindow() const
 {
     return m_window;
@@ -92,6 +101,16 @@ void GameContext::SetBackpack(Backpack* backpack)
 void GameContext::SetEquipment(Equipment* equipment)
 {
     m_equipment = equipment;
+}
+
+void GameContext::SetItemManager(ItemManager* itemManager)
+{
+    m_itemManager = itemManager;
+}
+
+void GameContext::SetMobLootConfigParser(MobLootConfigParser* mobLootConfig)
+{
+    m_mobLootConfigParser = mobLootConfig;
 }
 
 void GameContext::SetWindow(sf::RenderWindow* window)

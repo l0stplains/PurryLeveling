@@ -1,13 +1,6 @@
 #include "items/ItemManager.hpp"
 
-ItemManager::ItemManager(std::vector<Item> items)
-{
-    // Convert vector of items to map with itemID as key
-    for (const auto& item : items)
-    {
-        itemDatabase[item.getItemID()] = item;
-    }
-}
+ItemManager::ItemManager() {}
 
 ItemManager::~ItemManager() {}
 
@@ -20,6 +13,15 @@ Item& ItemManager::getItem(std::string itemID)
     }
 
     throw "Item not found";
+}
+
+void ItemManager::setItemDatabase(std::vector<Item> items)
+{
+    itemDatabase.clear();
+    for (const auto& item : items)
+    {
+        itemDatabase[item.getItemID()] = item;
+    }
 }
 
 std::vector<Item> ItemManager::getAllItems() const

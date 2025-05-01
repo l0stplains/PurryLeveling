@@ -14,7 +14,7 @@ float calculateDistance(const sf::Vector2f& a, const sf::Vector2f& b)
 }
 
 // Constructor
-DungeonState::DungeonState(GameContext& context, DimensionType dimension, std::string rank)
+DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon dungeon)
     : State(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
@@ -27,6 +27,7 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, std::s
       m_font(GetContext().GetResourceManager()->GetFont("main_font")),
       m_boldFont(GetContext().GetResourceManager()->GetFont("main_bold_font")),
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
+      m_dungeon(dungeon),
       m_character(dynamic_cast<AnimatedUnit*>(
           GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId()))),
       m_pendingStateChange({StateAction::NONE})

@@ -69,8 +69,5 @@ public:
 class InsufficientGoldException : public std::exception
 {
 public:
-    const char* what() const noexcept override
-    {
-        return "Not enough money to buy the item";
-    }
+    const char* what() const noexcept override { return "Not enough money to buy the item"; }
 };

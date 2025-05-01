@@ -16,10 +16,10 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
 
     // convert to grid of <Item, count>
     m_backpackData.clear();
-    for (const auto& rec: backpackRecs)
+    for (const auto& rec : backpackRecs)
     {
         Item itm = m_itemManager.getItem(rec[2]);
-        int cnt = std::stoi(rec[3]);
+        int  cnt = std::stoi(rec[3]);
         m_backpackData.emplace_back(std::move(itm), cnt);
     }
 
@@ -58,26 +58,24 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
         }
     }
 
-        // 4) skills.txt : { SkillName, Activated(0|1) } per line
+    // 4) skills.txt : { SkillName, Activated(0|1) } per line
     {
-            std::vector<std::vector<std::string>> skillRecs;
-            if (!ConfigParserUtils::ReadTokensFile(
-                    basePath + "/skills.txt",
-                    skillRecs,
-                    /*expectedCols=*/1,
-                    m_lastError))
-            {
-                return false;
-            }
-    
-            m_skilltree.clear();
-            for (auto const& rec : skillRecs)
-            {
-                // rec[0] = skill name
-                m_skilltree.insert(rec[0]);
-            }
+        std::vector<std::vector<std::string>> skillRecs;
+        if (!ConfigParserUtils::ReadTokensFile(basePath + "/skills.txt",
+                                               skillRecs,
+                                               /*expectedCols=*/1,
+                                               m_lastError))
+        {
+            return false;
         }
-    
+
+        m_skilltree.clear();
+        for (auto const& rec : skillRecs)
+        {
+            // rec[0] = skill name
+            m_skilltree.insert(rec[0]);
+        }
+    }
 
     return true;
 }

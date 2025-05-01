@@ -4,12 +4,13 @@
 
 #include <optional>
 
+#include "dungeon/Dungeon.hpp"
 #include "units/Animation.hpp"
 
 class Portal
 {
 public:
-    Portal(sf::Texture texture, sf::Vector2f position, sf::Vector2f scale);
+    Portal(sf::Texture texture, sf::Vector2f position, sf::Vector2f scale, Dungeon dungeon);
     ~Portal() = default;
 
     void Draw(sf::RenderWindow& window);
@@ -23,6 +24,7 @@ public:
     bool isInBounds(const sf::Vector2f& point) const;
 
 private:
+    Dungeon      m_dungeon;
     unsigned int m_portalId;
     sf::Vector2f m_position;
     sf::Vector2f m_scale;

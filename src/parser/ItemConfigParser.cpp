@@ -1,5 +1,7 @@
 #include "parser/ItemConfigParser.hpp"
 
+#include "effects/Effect.hpp"
+
 bool ItemConfigParser::ParseFromFile(const std::string& filename)
 {
     // 1) read raw tokens: 8 cols per row
@@ -19,8 +21,9 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename)
         const std::string& type   = rec[2];
         char               rarity = rec[3].empty() ? '\0' : rec[3][0];
 
-        std::vector<std::string> effects;
-        effects.insert(effects.end(), rec.begin() + 4, rec.end());
+        std::vector<std::shared_ptr<Effect>> effects;
+        // TODO: implement effect database
+        // effects.insert(effects.end(), rec.begin() + 4, rec.end());
 
         m_data.emplace_back(id, name, type, rarity, effects);
     }

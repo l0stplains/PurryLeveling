@@ -12,6 +12,7 @@
 #include "states/State.hpp"
 
 // Include ImGuiFileDialog
+#include "dungeon/DungeonFactory.hpp"
 #include "external/ImGuiFileDialog.h"
 
 class WorldState : public State
@@ -46,9 +47,10 @@ public:
     void Resume() override;
 
 private:
-    sf::Texture m_backgroundTexture;  ///< Background texture
-    sf::Sprite  m_backgroundSprite;   ///< Background sprite
-    sf::Sprite  m_doorEnterArea;      ///< Door enter area sprite
+    DungeonFactory m_dungeonFactory;
+    sf::Texture    m_backgroundTexture;  ///< Background texture
+    sf::Sprite     m_backgroundSprite;   ///< Background sprite
+    sf::Sprite     m_doorEnterArea;      ///< Door enter area sprite
 
     sf::Sound m_buttonHoverSound;  ///< Button hover sound
     sf::Sound m_buttonClickSound;  ///< Button click sound

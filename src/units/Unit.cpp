@@ -58,7 +58,7 @@ int Unit::GetManaRegen() const
     return m_manaRegen;
 }
 
-Stats Unit::GetStats() const 
+Stats Unit::GetStats() const
 {
     return m_stats;
 }

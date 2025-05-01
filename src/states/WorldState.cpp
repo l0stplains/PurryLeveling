@@ -12,6 +12,7 @@
 // Constructor
 WorldState::WorldState(GameContext& context)
     : State(context),
+      m_dungeonFactory(*context.GetItemManager(), *context.GetMobLootConfigParser()),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
       m_buttonHoverSound(GetContext().GetResourceManager()->GetSoundBuffer("button_hover")),
@@ -34,27 +35,36 @@ WorldState::WorldState(GameContext& context)
 
     // TODO: setup portal spawn
 
+    Dungeon e = m_dungeonFactory.createDungeon("E", 10, 1000, 1000);
+    Dungeon d = m_dungeonFactory.createDungeon("D", 20, 510000, 1000);
+    Dungeon b = m_dungeonFactory.createDungeon("B", 30, 100000, 1000);
+    Dungeon c = m_dungeonFactory.createDungeon("C", 40, 100000, 1000);
+
     std::unique_ptr<Portal> portal =
         std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture("portal_e"),
                                  sf::Vector2f(265.0f * 0.7f, 305.0f * 0.7f),
-                                 sf::Vector2f(1.0f, 1.0f));
+                                 sf::Vector2f(1.0f, 1.0f),
+                                 e);
 
     m_portals.emplace_back(std::move(portal));
     portal = std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture("portal_d"),
                                       sf::Vector2f(265.0f * 0.7f, 825.0f * 0.7f),
-                                      sf::Vector2f(1.0f, 1.0f));
+                                      sf::Vector2f(1.0f, 1.0f),
+                                      d);
 
     m_portals.emplace_back(std::move(portal));
 
     portal = std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture("portal_c"),
                                       sf::Vector2f(1412.0f * 0.7f, 790.0f * 0.7f),
-                                      sf::Vector2f(1.0f, 1.0f));
+                                      sf::Vector2f(1.0f, 1.0f),
+                                      b);
 
     m_portals.emplace_back(std::move(portal));
 
     portal = std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture("portal_s"),
                                       sf::Vector2f(1450.0f * 0.7f, 310.0f * 0.7f),
-                                      sf::Vector2f(1.0f, 1.0f));
+                                      sf::Vector2f(1.0f, 1.0f),
+                                      c);
 
     m_portals.emplace_back(std::move(portal));
 }
