@@ -2,17 +2,17 @@
 
 #include <filesystem>
 #include <fstream>
-#include "skill/SkillTree.hpp"
-#include "skill/Skill.hpp"
 #include <functional>
 
 #include "exception/Exception.hpp"
+#include "skill/Skill.hpp"
+#include "skill/SkillTree.hpp"
 
 bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
                                      const Character&   character,
                                      const Equipment&   equipment,
                                      const Backpack&    backpack,
-                                     const Skill&   skillTree,
+                                     const Skill&       skillTree,
                                      std::string&       lastError)
 {
     namespace fs = std::filesystem;
@@ -134,20 +134,19 @@ bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
         }
     }
 
-    // 4) skills.txt : column 0 are skills that are learned, column 1 are whether the skill is activated
+    // 4) skills.txt : column 0 are skills that are learned, column 1 are whether the skill is
+    // activated
     {
         std::ofstream sk(outDir / "skills.txt");
-        if (!sk) {
+        if (!sk)
+        {
             lastError = "Failed to open skills.txt";
             return false;
         }
 
         // helper to walk the tree
-        std::function<void(const Skill*)> dump =
-            [&](const Skill* s)
-        {
-            sk << (s->getName())
-               << "\n";
+        std::function<void(const Skill*)> dump = [&](const Skill* s) {
+            sk << (s->getName()) << "\n";
             for (Skill* child : s->getChildren())
                 dump(child);
         };

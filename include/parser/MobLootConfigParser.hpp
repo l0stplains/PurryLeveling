@@ -1,8 +1,8 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "parser/ConfigParser.hpp"
 #include "parser/ConfigParserUtils.hpp"

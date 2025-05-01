@@ -12,9 +12,9 @@
 #include "parser/ItemConfigParser.hpp"
 #include "parser/PlayerConfigParser.hpp"
 #include "save/PlayerConfigSaver.hpp"
+#include "skill/characterSkill/Fury.hpp"
 #include "units/NavigationGrid.hpp"
 #include "units/characters/Fighter.hpp"
-#include "skill/characterSkill/Fury.hpp"
 
 int main()
 {
@@ -82,7 +82,7 @@ int main()
     {
         std::cout << "Quantity at tile (0, 0) is already 5.\n";
     }
-   Fury fury;
+    Fury fury;
 
     // 6) save out
     if (!PlayerConfigSaver::SaveToFolder(outBase, character, eq, bp, fury, err))

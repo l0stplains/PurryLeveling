@@ -8,11 +8,11 @@
 #include <tuple>
 #include <vector>
 
+#include "../exception/Exception.hpp"
+#include "../inventory/Backpack.hpp"
 #include "../items/Item.hpp"
 #include "../parser/ShopConfigParser.hpp"
 #include "../units/characters/Character.hpp"
-#include "../inventory/Backpack.hpp"
-#include "../exception/Exception.hpp"
 
 class Shop
 {
@@ -22,13 +22,15 @@ public:
     // Constructor
     // Takes a vector of vectors (rows) and a vector of Items (master list)
     // The first column is the itemID, the second is the rarity, the third is the base price
-    Shop(const std::vector<std::vector<std::string>> shopData,
-         const std::vector<Item>&                     masterItems);
+    Shop(const std::vector<std::vector<std::string>> shopData, const std::vector<Item>& masterItems);
 
     // Restock items
     void restock();
     // Buy and sell items
-    void buy(Character& player, Backpack& backpack, const std::string& category, const std::string& itemID);
+    void buy(Character&         player,
+             Backpack&          backpack,
+             const std::string& category,
+             const std::string& itemID);
     void sell(Character& player, Backpack& backpack, const Item& item);
 
     // For debugging purpose, gets shop catalogue
