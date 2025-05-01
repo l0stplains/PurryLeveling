@@ -140,47 +140,45 @@ int main()
     try
     {
         std::vector<std::shared_ptr<Effect>> effects;
-        std::vector<Item> itemDatabase = {
-            // Weapons
-            Item("EXC", "Excalibur", "Weapon", 'S', effects, ""),
-            Item("KAT", "Katana", "Weapon", 'A', effects, ""),
-            Item("BOW", "Longbow", "Weapon", 'B', effects, ""),
-            Item("DAG", "Dagger", "Weapon", 'C', effects, ""),
-            Item("SWD", "Sword", "Weapon", 'D', effects, ""),
+        std::vector<Item>                    itemDatabase = {// Weapons
+                                          Item("EXC", "Excalibur", "Weapon", 'S', effects, ""),
+                                          Item("KAT", "Katana", "Weapon", 'A', effects, ""),
+                                          Item("BOW", "Longbow", "Weapon", 'B', effects, ""),
+                                          Item("DAG", "Dagger", "Weapon", 'C', effects, ""),
+                                          Item("SWD", "Sword", "Weapon", 'D', effects, ""),
 
-            // Head Armor
-            Item("HLM", "Helmet", "HeadArmor", 'B', effects, ""),
-            Item("HAT", "Hat", "HeadArmor", 'C', effects, ""),
-            Item("HTL", "Heavy_Helmet", "HeadArmor", 'A', effects, ""),
+                                          // Head Armor
+                                          Item("HLM", "Helmet", "HeadArmor", 'B', effects, ""),
+                                          Item("HAT", "Hat", "HeadArmor", 'C', effects, ""),
+                                          Item("HTL", "Heavy_Helmet", "HeadArmor", 'A', effects, ""),
 
-            // Body Armor
-            Item("BPA", "Breastplate", "BodyArmor", 'A', effects, ""),
-            Item("LTH", "Leather_Armor", "BodyArmor", 'C', effects, ""),
-            Item("CHN", "Chain_Mail", "BodyArmor", 'B', effects, ""),
-            Item("BAC", "Battle_Armor", "BodyArmor", 'S', effects, ""),
+                                          // Body Armor
+                                          Item("BPA", "Breastplate", "BodyArmor", 'A', effects, ""),
+                                          Item("LTH", "Leather_Armor", "BodyArmor", 'C', effects, ""),
+                                          Item("CHN", "Chain_Mail", "BodyArmor", 'B', effects, ""),
+                                          Item("BAC", "Battle_Armor", "BodyArmor", 'S', effects, ""),
 
-            // Foot Armor
-            Item("BOO", "Boots", "FootArmor", 'C', effects, ""),
-            Item("GRV", "Greaves", "FootArmor", 'B', effects, ""),
-            Item("SAB", "Sabatons", "FootArmor", 'A', effects, ""),
+                                          // Foot Armor
+                                          Item("BOO", "Boots", "FootArmor", 'C', effects, ""),
+                                          Item("GRV", "Greaves", "FootArmor", 'B', effects, ""),
+                                          Item("SAB", "Sabatons", "FootArmor", 'A', effects, ""),
 
-            // Pendants
-            Item("AMU", "Amulet", "Pendant", 'B', effects, ""),
-            Item("NCK", "Necklace", "Pendant", 'C', effects, ""),
-            Item("PND", "Power_Pendant", "Pendant", 'A', effects, ""),
-            Item("GEM", "Magic_Gem", "Pendant", 'S', effects, ""),
-            
-            // Potions
-            Item("HPP", "Health_Potion", "Potion", 'C', effects, ""),
-            Item("MPP", "Mana_Potion", "Potion", 'C', effects, ""),
-            Item("SPP", "Strength_Potion", "Potion", 'B', effects, ""),
-            Item("APP", "Agility_Potion", "Potion", 'B', effects, ""),
-            Item("EPP", "Elixir_Potion", "Potion", 'A', effects, "")
-            };
+                                          // Pendants
+                                          Item("AMU", "Amulet", "Pendant", 'B', effects, ""),
+                                          Item("NCK", "Necklace", "Pendant", 'C', effects, ""),
+                                          Item("PND", "Power_Pendant", "Pendant", 'A', effects, ""),
+                                          Item("GEM", "Magic_Gem", "Pendant", 'S', effects, ""),
+
+                                          // Potions
+                                          Item("HPP", "Health_Potion", "Potion", 'C', effects, ""),
+                                          Item("MPP", "Mana_Potion", "Potion", 'C', effects, ""),
+                                          Item("SPP", "Strength_Potion", "Potion", 'B', effects, ""),
+                                          Item("APP", "Agility_Potion", "Potion", 'B', effects, ""),
+                                          Item("EPP", "Elixir_Potion", "Potion", 'A', effects, "")};
 
         ItemManager itemManager;
         itemManager.setItemDatabase(itemDatabase);
-        
+
         std::cout << std::endl;
         std::cout << "=== Test Item and ItemManager ===" << std::endl;
         std::cout << std::endl;

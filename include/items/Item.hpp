@@ -14,7 +14,7 @@ public:
          const std::string&                         type,
          char                                       rarity,
          const std::vector<std::shared_ptr<Effect>> effects,
-         const std::string&              description);
+         const std::string&                         description);
     Item(const Item& other);
     Item& operator=(const Item& other);
     bool  operator==(const Item& other) const;
@@ -27,7 +27,7 @@ public:
     char                                 getRarity() const;
     std::vector<std::shared_ptr<Effect>> getEffects() const;
     bool                                 isNull() const;
-    std::string              getDescription() const;
+    std::string                          getDescription() const;
 
 protected:
     std::string                          itemID;
@@ -35,5 +35,5 @@ protected:
     std::string                          type;
     char                                 rarity;
     std::vector<std::shared_ptr<Effect>> effects;
-    std::string              description;
+    std::string                          description;
 };

@@ -1,8 +1,9 @@
 #include "parser/ItemConfigParser.hpp"
-#include "parser/ConfigParserUtils.hpp"
-#include "effects/Effect.hpp"    
 
 #include <sstream>
+
+#include "effects/Effect.hpp"
+#include "parser/ConfigParserUtils.hpp"
 
 bool ItemConfigParser::ParseFromFile(const std::string& filename)
 {
@@ -18,8 +19,7 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename)
     {
         if (rec.size() < 8)
         {
-            m_lastError = "Line has too few columns: expected >=8, got " +
-                          std::to_string(rec.size());
+            m_lastError = "Line has too few columns: expected >=8, got " + std::to_string(rec.size());
             return false;
         }
 
@@ -29,11 +29,13 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename)
         char               rarity = rec[3].empty() ? '\0' : rec[3][0];
         // rec[4] is BaseAtk—ignore if Item ctor doesn't use it
 
-        // 2) up to 3 effects at rec[5..7], stop on "-"        
+        // 2) up to 3 effects at rec[5..7], stop on "-"
         std::vector<std::shared_ptr<Effect>> effects;
-        size_t idx = 5;
-        for (; idx < rec.size() && idx < 8; ++idx) {
-            if (rec[idx] == "-") {
+        size_t                               idx = 5;
+        for (; idx < rec.size() && idx < 8; ++idx)
+        {
+            if (rec[idx] == "-")
+            {
                 ++idx;  // skip the "-" and begin description
                 break;
             }
@@ -44,7 +46,8 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename)
 
         // 3) remaining tokens are description
         std::string description;
-        if (idx < rec.size()) {
+        if (idx < rec.size())
+        {
             std::ostringstream oss;
             oss << rec[idx++];
             for (; idx < rec.size(); ++idx)
@@ -53,14 +56,7 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename)
         }
 
         // 4) construct the Item
-        m_data.emplace_back(
-            id,
-            name,
-            type,
-            rarity,
-            effects,
-            description
-        );
+        m_data.emplace_back(id, name, type, rarity, effects, description);
     }
 
     return true;

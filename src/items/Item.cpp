@@ -7,7 +7,7 @@ Item::Item(std::string                                itemID,
            const std::string&                         type,
            char                                       rarity,
            const std::vector<std::shared_ptr<Effect>> effects,
-           const std::string&              description)
+           const std::string&                         description)
     : itemID(itemID), name(name), type(type), rarity(rarity), effects(effects), description(description)
 {}
 
