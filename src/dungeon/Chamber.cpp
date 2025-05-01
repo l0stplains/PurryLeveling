@@ -50,7 +50,6 @@ void Chamber::generateMobs(bool isBossRoom)
     {
         int bossType = rng.generateInRange(4);
 
-        // Create a boss character
         string bossName;
 
         switch (bossType)
@@ -59,10 +58,10 @@ void Chamber::generateMobs(bool isBossRoom)
                 bossName = "Ogre";
                 break;
             case 1:
-                bossName = "Dark_Knight";
+                bossName = "Dark Knight";
                 break;
             case 2:
-                bossName = "Demon_Lord";
+                bossName = "Demon Lord";
                 break;
             case 3:
                 bossName = "Lich";
@@ -70,10 +69,9 @@ void Chamber::generateMobs(bool isBossRoom)
             default:
                 bossName = "Unknown_Boss";
         }
+        /*
+        auto boss = make_shared<Mob*>(bossName);
 
-        auto boss = make_shared<MobUnit>(bossName);
-
-        // Set boss stats based on chamber difficulty
         int bossLevel        = rng.generateInRange(mobLevelMin, mobLevelMax);
         int healthMultiplier = isBossRoom ? 3 : 1;
 
@@ -82,8 +80,10 @@ void Chamber::generateMobs(bool isBossRoom)
         boss->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
         boss->SetCurrentMana(boss->GetMaxMana());
         boss->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
+        boss->SetLevel(bossLevel);
 
         mobs.push_back(boss);
+        */
     }
     else
     {
@@ -117,8 +117,8 @@ void Chamber::generateMobs(bool isBossRoom)
                 default:
                     mobName = "Unknown_Mob";
             }
-
-            auto mob = make_shared<MobUnit>(mobName);
+            /*
+            auto mob = make_shared<Mob*>(mobName);
 
             // Set mob stats based on chamber difficulty
             int mobLevel = rng.generateInRange(mobLevelMin, mobLevelMax);
@@ -128,8 +128,10 @@ void Chamber::generateMobs(bool isBossRoom)
             mob->SetMaxMana(30 * mobLevel / 10 * difficultyMultiplier);
             mob->SetCurrentMana(mob->GetMaxMana());
             mob->SetAttackDamage(8 * mobLevel / 10 * difficultyMultiplier);
+            mob->SetLevel(mobLevel);
 
             mobs.push_back(mob);
+            */
         }
     }
 

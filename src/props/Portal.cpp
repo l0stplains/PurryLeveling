@@ -4,8 +4,9 @@
 
 unsigned int Portal::s_portalIdCounter = 0;
 
-Portal::Portal(sf::Texture texture, sf::Vector2f position, sf::Vector2f scale)
-    : m_portalId(s_portalIdCounter++),
+Portal::Portal(sf::Texture texture, sf::Vector2f position, sf::Vector2f scale, Dungeon dungeon)
+    : m_dungeon(dungeon),
+      m_portalId(s_portalIdCounter++),
       m_position(position),
       m_scale(scale),
       m_texture(texture),  // This will copy the texture into m_texture member

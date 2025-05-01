@@ -7,6 +7,8 @@
 
 #include "inventory/Backpack.hpp"
 #include "inventory/Equipment.hpp"
+#include "items/ItemManager.hpp"
+#include "parser/MobLootConfigParser.hpp"
 #include "units/NavigationGrid.hpp"
 
 class StateManager;  // forward declaration
@@ -70,6 +72,10 @@ public:
      * @return Equipment* Pointer to the Equipment
      */
     Equipment* GetEquipment() const;
+
+    ItemManager* GetItemManager() const;
+
+    MobLootConfigParser* GetMobLootConfigParser() const;
 
     /**
      * @brief Get the window
@@ -140,6 +146,10 @@ public:
      */
     void SetEquipment(Equipment* equipment);
 
+    void SetItemManager(ItemManager* itemManager);
+
+    void SetMobLootConfigParser(MobLootConfigParser* mobLootConfigParser);
+
     /**
      * @brief Set the window
      *
@@ -175,9 +185,11 @@ public:
 private:
     // IMPORTANT NOTE: Clear everything related to the user loaded thing on WorldState::Exit();
 
-    ResourceManager* m_resourceManager;  ///< Pointer to the resource manager
-    UnitManager*     m_unitManager;      ///< Pointer to the unit manager
-    StateManager*    m_stateManager;     ///< Pointer to the state manager
+    ResourceManager*     m_resourceManager;  ///< Pointer to the resource manager
+    UnitManager*         m_unitManager;      ///< Pointer to the unit manager
+    StateManager*        m_stateManager;     ///< Pointer to the state manager
+    ItemManager*         m_itemManager;
+    MobLootConfigParser* m_mobLootConfigParser;
 
     Backpack*  m_backpack;
     Equipment* m_equipment;

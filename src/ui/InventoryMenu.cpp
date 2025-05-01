@@ -28,11 +28,11 @@ InventoryMenu::InventoryMenu(GameContext& gameContext)
     m_backpack.addItem(Item("stone", "Stone", "resource", 'C', {}), 64);
 
     // Add some m_equipment items
-    m_backpack.addItem(Item("iron_sword", "Iron Sword", "Weapon", 'B', {"dmg+5"}), 5);
-    m_backpack.addItem(Item("leather_helmet", "Leather Helmet", "HeadArmor", 'C', {"def+2"}), 1);
-    m_backpack.addItem(Item("chain_mail", "Chain Mail", "BodyArmor", 'B', {"def+5"}), 1);
-    m_backpack.addItem(Item("leather_boots", "Leather Boots", "FootArmor", 'C', {"spd+1"}), 1);
-    m_backpack.addItem(Item("magic_amulet", "Magic Amulet", "Pendant", 'A', {"mp+10"}), 1);
+    m_backpack.addItem(Item("iron_sword", "Iron Sword", "Weapon", 'B', {}), 5);
+    m_backpack.addItem(Item("leather_helmet", "Leather Helmet", "HeadArmor", 'C', {}), 1);
+    m_backpack.addItem(Item("chain_mail", "Chain Mail", "BodyArmor", 'B', {}), 1);
+    m_backpack.addItem(Item("leather_boots", "Leather Boots", "FootArmor", 'C', {}), 1);
+    m_backpack.addItem(Item("magic_amulet", "Magic Amulet", "Pendant", 'A', {}), 1);
 }
 
 void InventoryMenu::Render()

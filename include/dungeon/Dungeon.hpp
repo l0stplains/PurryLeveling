@@ -28,8 +28,8 @@ private:
     vector<Item>    mobLoot;      // Items obtained from mobs in cleared chambers
     double          expMultiplier;             // Experience multiplier for this dungeon
     double          goldMultiplier;            // Gold multiplier for this dungeon
-    ItemManager*    itemManager;               // Pointer to the ItemManager
-    MobLootConfigParser* mobLootConfigParser;  // Pointer to the MobLootConfigParser
+    ItemManager&    itemManager;               // Pointer to the ItemManager
+    MobLootConfigParser& mobLootConfigParser;  // Pointer to the MobLootConfigParser
 
     /**
      * @brief Initialize dungeon properties based on rank
@@ -121,8 +121,8 @@ public:
      */
     Dungeon(const string&        rank,
             int                  playerLevel,
-            ItemManager*         itemManager,
-            MobLootConfigParser* mobLootConfigParser,
+            ItemManager&         itemManager,
+            MobLootConfigParser& mobLootConfigParser,
             int                  gold,
             int                  exp);
 

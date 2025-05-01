@@ -1,17 +1,20 @@
-#include "units/characters/Mage.hpp"
+#include "units/mobs/basics/Slime.hpp"
 
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
 #include <limits>
 
-Mage::Mage(const std::string&  name,
-           const sf::Vector2f& position,
-           NavigationGrid&     navGrid,
-           bool                isPlayerControlled,
-           const GameContext&  gameContext)
-    : Unit(name),  // ← must initialize the virtual base
-      Character(name),
-      AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
+#include "units/mobs/basics/BasicMob.hpp"
+
+Slime::Slime(const std::string&  name,
+             const sf::Vector2f& position,
+             NavigationGrid&     navGrid,
+             const GameContext&  gameContext)
+    : Unit(name),
+      m_acidityCorrossion(true, true),
+      Mob(name, m_acidityCorrossion),
+      BasicMob(name, m_acidityCorrossion),  // ← must initialize the virtual base
+      AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides
     m_maxHealth = 150;
@@ -24,36 +27,36 @@ Mage::Mage(const std::string&  name,
     m_moveSpeed    = 130.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
-    sf::Vector2i mageFrameSize(32, 32);
+    sf::Vector2i slimeFrameSize(32, 32);
 
-    std::unordered_map<UnitAnimationType, std::string> mageTexturePaths = {
-        {UnitAnimationType::IDLE, "character_centaur_idle"},
-        {UnitAnimationType::WALK, "character_centaur_jump"},
-        {UnitAnimationType::ATTACK, "character_centaur_attack"},
-        {UnitAnimationType::JUMP, "character_centaur_jump"},
-        {UnitAnimationType::DAMAGE, "character_centaur_dmg"},
-        {UnitAnimationType::DIE, "character_centaur_die"}
+    std::unordered_map<UnitAnimationType, std::string> slimeTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_slime_idle"},
+        {UnitAnimationType::WALK, "mob_slime_walk"},
+        {UnitAnimationType::ATTACK, "mob_slime_attack"},
+        {UnitAnimationType::JUMP, "mob_slime_jump"},
+        {UnitAnimationType::DAMAGE, "mob_slime_dmg"},
+        {UnitAnimationType::DIE, "mob_slime_die"}
 
     };
-    std::unordered_map<UnitAnimationType, std::string> mageShadowTexturePaths = {
-        {UnitAnimationType::IDLE, "character_centaur_idle_shadow"},
-        {UnitAnimationType::WALK, "character_centaur_jump_shadow"},
-        {UnitAnimationType::ATTACK, "character_centaur_attack_shadow"},
-        {UnitAnimationType::JUMP, "character_centaur_jump_shadow"},
-        {UnitAnimationType::DAMAGE, "character_centaur_dmg_shadow"},
-        {UnitAnimationType::DIE, "character_centaur_die_shadow"}
+    std::unordered_map<UnitAnimationType, std::string> slimeShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_slime_idle_shadow"},
+        {UnitAnimationType::WALK, "mob_slime_walk_shadow"},
+        {UnitAnimationType::ATTACK, "mob_slime_attack_shadow"},
+        {UnitAnimationType::JUMP, "mob_slime_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "mob_slime_dmg_shadow"},
+        {UnitAnimationType::DIE, "mob_slime_die_shadow"}
 
     };
     // Example frame counts (adjust these!)
-    std::unordered_map<UnitAnimationType, int> mageFramesPerAnim = {{UnitAnimationType::IDLE, 16},
-                                                                    {UnitAnimationType::WALK, 4},
-                                                                    {UnitAnimationType::ATTACK, 4},
-                                                                    {UnitAnimationType::JUMP, 4},
-                                                                    {UnitAnimationType::DAMAGE, 4},
-                                                                    {UnitAnimationType::DIE, 12}};
+    std::unordered_map<UnitAnimationType, int> slimeFramesPerAnim = {{UnitAnimationType::IDLE, 16},
+                                                                     {UnitAnimationType::WALK, 4},
+                                                                     {UnitAnimationType::ATTACK, 4},
+                                                                     {UnitAnimationType::JUMP, 4},
+                                                                     {UnitAnimationType::DAMAGE, 4},
+                                                                     {UnitAnimationType::DIE, 12}};
 
     // Example durations (in seconds, adjust these!)
-    std::unordered_map<UnitAnimationType, float> mageDurationPerAnim = {
+    std::unordered_map<UnitAnimationType, float> slimeDurationPerAnim = {
         {UnitAnimationType::IDLE, 3.2f},
         {UnitAnimationType::WALK, 0.8f},
         {UnitAnimationType::ATTACK, 0.4f},
@@ -62,7 +65,7 @@ Mage::Mage(const std::string&  name,
         {UnitAnimationType::DIE, 1.2f}};
 
     // Example looping status (Idle/Walk usually loop)
-    std::unordered_map<UnitAnimationType, bool> mageLoopingAnims = {
+    std::unordered_map<UnitAnimationType, bool> slimeLoopingAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, false},
@@ -70,7 +73,7 @@ Mage::Mage(const std::string&  name,
         {UnitAnimationType::DAMAGE, false},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, bool> mageDirectionalAnims = {
+    std::unordered_map<UnitAnimationType, bool> slimeDirectionalAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, true},
@@ -78,19 +81,19 @@ Mage::Mage(const std::string&  name,
         {UnitAnimationType::DAMAGE, true},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, int> mageDefaultRows = {{UnitAnimationType::DIE, 0}};
+    std::unordered_map<UnitAnimationType, int> slimeDefaultRows = {{UnitAnimationType::DIE, 0}};
 
-    LoadAnimations(mageTexturePaths,
-                   mageFrameSize,
-                   mageFramesPerAnim,
-                   mageDurationPerAnim,
-                   mageLoopingAnims,
-                   mageDirectionalAnims,
-                   mageDefaultRows,
-                   mageShadowTexturePaths);
+    LoadAnimations(slimeTexturePaths,
+                   slimeFrameSize,
+                   slimeFramesPerAnim,
+                   slimeDurationPerAnim,
+                   slimeLoopingAnims,
+                   slimeDirectionalAnims,
+                   slimeDefaultRows,
+                   slimeShadowTexturePaths);
 }
 
-void Mage::Attack(Unit& target, ActionCompletionCallback callback)
+void Slime::Attack(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {  // Check self and target state
@@ -182,7 +185,7 @@ void Mage::Attack(Unit& target, ActionCompletionCallback callback)
     }
 }
 
-void Mage::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
+void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
@@ -206,7 +209,7 @@ void Mage::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback
             float        distanceToTarget =
                 std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
 
-            // Deal damage if still in range (maybe slightly larger range check here?)
+            // Deal daslime if still in range (maybe slightly larger range check here?)
             if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
             {
                 std::cout << GetName() << " deals " << m_attackDamage << " damage to "
@@ -216,7 +219,7 @@ void Mage::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback
                 AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
                 if (animatedTarget)
                 {
-                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes damage
+                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes daslime
                 }
                 else
                 {
@@ -227,13 +230,13 @@ void Mage::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback
             else
             {
                 std::cout << GetName()
-                          << " dealt no damage, target moved out of range during animation."
+                          << " dealt no daslime, target moved out of range during animation."
                           << std::endl;  // Debug
             }
         }
         else
         {
-            std::cout << GetName() << " dealt no damage, target is no longer valid."
+            std::cout << GetName() << " dealt no daslime, target is no longer valid."
                       << std::endl;  // Debug
         }
 
@@ -254,7 +257,7 @@ void Mage::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback
     });
 }
 
-void Mage::UseSkill(int skillId, ActionCompletionCallback callback)
+void Slime::UseSkill(int skillId, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -265,7 +268,7 @@ void Mage::UseSkill(int skillId, ActionCompletionCallback callback)
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
-// void Mage::RenderUI(sf::RenderWindow& window) {
+// void Slime::RenderUI(sf::RenderWindow& window) {
 //     Character::RenderUI(window); // Call base UI rendering
 //     // Add fighter-specific UI elements here (e.g., rage bar?)
 // }

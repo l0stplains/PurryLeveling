@@ -10,6 +10,7 @@
 #include "parser/MobLootConfigParser.hpp"
 #include "rng/rng.hpp"
 #include "units/Unit.hpp"
+#include "units/mobs/Mob.hpp"
 
 using namespace std;
 

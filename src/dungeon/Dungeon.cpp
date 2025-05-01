@@ -12,8 +12,8 @@ const string Dungeon::RANK_SPECIAL = "SPECIAL";
 
 Dungeon::Dungeon(const string&        rank,
                  int                  playerLevel,
-                 ItemManager*         itemManager,
-                 MobLootConfigParser* mobLootConfigParser,
+                 ItemManager&         itemManager,
+                 MobLootConfigParser& mobLootConfigParser,
                  int                  gold,
                  int                  exp)
     : rank(rank),
@@ -185,11 +185,6 @@ vector<Item> Dungeon::getMobLoot() const
 
 void Dungeon::generateLoot()
 {
-    if (!itemManager)
-    {
-        return;
-    }
-
     RNG rng;
     int numItems = 1;
 
@@ -231,7 +226,7 @@ void Dungeon::generateLoot()
 
     if (rank == RANK_SPECIAL)
     {
-        vector<Item> allItems = itemManager->getAllItems();
+        vector<Item> allItems = itemManager.getAllItems();
 
         if (allItems.empty())
         {
@@ -268,7 +263,7 @@ void Dungeon::generateLoot()
                 targetRarity = 'E';
             }
 
-            vector<Item> itemsOfRarity = itemManager->getItemsByRarity(targetRarity);
+            vector<Item> itemsOfRarity = itemManager.getItemsByRarity(targetRarity);
 
             if (itemsOfRarity.empty())
             {
@@ -294,11 +289,11 @@ void Dungeon::generateLoot()
         else if (rank == RANK_D)
             targetRarity = 'D';
 
-        vector<Item> itemsOfRarity = itemManager->getItemsByRarity(targetRarity);
+        vector<Item> itemsOfRarity = itemManager.getItemsByRarity(targetRarity);
 
         if (itemsOfRarity.empty())
         {
-            itemsOfRarity = itemManager->getAllItems();
+            itemsOfRarity = itemManager.getAllItems();
         }
 
         if (itemsOfRarity.empty())
@@ -316,14 +311,9 @@ void Dungeon::generateLoot()
 
 void Dungeon::generateMobLoot()
 {
-    if (!itemManager || !mobLootConfigParser)
-    {
-        return;
-    }
-
     for (auto& chamber : chambers)
     {
-        chamber.generateMobLoot(*mobLootConfigParser, *itemManager);
+        chamber.generateMobLoot(mobLootConfigParser, itemManager);
     }
 }
 

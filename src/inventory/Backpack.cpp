@@ -394,8 +394,7 @@ void Backpack::moveItem(int fromX, int fromY, int toX, int toY)
     }
 }
 
-std::vector<std::pair<Item, int>*> Backpack::filterItemsByType(
-    const std::string& type)
+std::vector<std::pair<Item, int>*> Backpack::filterItemsByType(const std::string& type)
 {
     std::vector<std::pair<Item, int>*> result;
 
@@ -403,9 +402,9 @@ std::vector<std::pair<Item, int>*> Backpack::filterItemsByType(
     {
         for (int j = 0; j < backpackCols; ++j)
         {
-            auto& slot = backpack[i][j];
-            const Item& item = slot.first;
-            int quantity = slot.second;
+            auto&       slot     = backpack[i][j];
+            const Item& item     = slot.first;
+            int         quantity = slot.second;
 
             if (quantity > 0 && item.getType() == type)
             {

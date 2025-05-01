@@ -173,7 +173,7 @@ Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel, int p
 {
     string  normalizedRank = normalizeRank(rank);
     Dungeon dungeon(
-        normalizedRank, playerLevel, &itemManager, &mobLootConfigParser, playerGold, playerExp);
+        normalizedRank, playerLevel, itemManager, mobLootConfigParser, playerGold, playerExp);
 
     int numChambers = getNumChambers(normalizedRank);
 

@@ -38,4 +38,5 @@ private:
     int                m_row;  // Current row on the spritesheet
     bool               m_isDirectional;
     int                m_defaultRow;
+    bool               m_isFlipped;
 };
