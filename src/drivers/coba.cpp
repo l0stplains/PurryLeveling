@@ -16,6 +16,7 @@
 #include "units/Enums.hpp"  // Include Enums for UnitAnimationType
 #include "units/characters/Fighter.hpp"
 #include "units/characters/Mage.hpp"
+#include "units/mobs/basics/Slime.hpp"
 
 int main()
 {
@@ -121,13 +122,12 @@ int main()
     unitManager.AddUnit(std::move(fighter));
 
     // --- Create an Enemy ---
-    auto enemy = std::make_unique<Mage>("Enemy",
-                                        sf::Vector2f(WINDOW_WIDTH / 2 + 400 * WINDOW_WIDTH / 1820,
-                                                     780 * WINDOW_HEIGHT / 1024),  // Position
-                                                                                   // etc.)
-                                        navGrid,  // Pass navigation grid
-                                        false,    // Not player controlled
-                                        context);
+    auto enemy = std::make_unique<Slime>("Enemy",
+                                         sf::Vector2f(WINDOW_WIDTH / 2 + 400 * WINDOW_WIDTH / 1820,
+                                                      780 * WINDOW_HEIGHT / 1024),  // Position
+                                                                                    // etc.)
+                                         navGrid,  // Pass navigation grid
+                                         context);
 
     enemy->SetDirection(Direction::WEST);
     enemy->SetShowUI(true);

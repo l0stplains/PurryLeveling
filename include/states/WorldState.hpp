@@ -2,11 +2,6 @@
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Graphics.hpp>
 
-#include <atomic>
-#include <filesystem>
-#include <mutex>
-#include <string>
-#include <thread>
 #include <vector>
 
 #include "core/GameContext.hpp"

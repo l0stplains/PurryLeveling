@@ -60,7 +60,7 @@ Fighter::Fighter(const std::string&  name,
         {UnitAnimationType::ATTACK, 0.8f},
         {UnitAnimationType::JUMP, 0.8f},
         {UnitAnimationType::DAMAGE, 0.8f},
-        {UnitAnimationType::DIE, 2.4f}};
+        {UnitAnimationType::DIE, 4.8f}};
 
     // Example looping status (Idle/Walk usually loop)
     std::unordered_map<UnitAnimationType, bool> fighterLoopingAnims = {
@@ -206,7 +206,7 @@ void Fighter::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callb
             // Deal damage if still in range (maybe slightly larger range check here?)
             if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
             {
-                std::cout << GetName() << " dealing " << m_attackDamage << " damage to "
+                std::cout << GetName() << " deals " << m_attackDamage << " damage to "
                           << target.GetName() << std::endl;  // Debug
                 // Cast target back to AnimatedUnit if TakeDamage is needed
                 // This is risky if target might not be AnimatedUnit, but necessary for TakeDamage

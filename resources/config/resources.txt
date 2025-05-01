@@ -11,6 +11,11 @@ choose_character_menu_background = resources/textures/ui/choose_character_menu_b
 main_logo_shadow = resources/textures/ui/main_logo_shadow.png
 main_menu_button = resources/textures/ui/main_menu_button.png
 square_button = resources/textures/ui/square_button.png
+
+normal_button = resources/textures/ui/normal_button.png
+misty_button = resources/textures/ui/misty_button.png
+lava_button = resources/textures/ui/lava_button.png
+crystal_button = resources/textures/ui/crystal_button.png
 world_background = resources/textures/ui/world_background.jpg
 inventory_background = resources/textures/ui/inventory_background.jpg
 

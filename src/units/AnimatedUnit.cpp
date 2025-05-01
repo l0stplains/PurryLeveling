@@ -196,7 +196,7 @@ void AnimatedUnit::Update(const sf::Time& dt)
     if (m_currentAnimation && m_isAnimating)
     {
         // Update direction row before updating the frame
-        if (m_animations.count(m_currentAnimationType))
+        if (m_animations.count(m_currentAnimationType) && m_currentAnimation->IsDirectional())
         {
             m_currentAnimation->SetRow(GetAnimationRowForDirection(m_direction));
         }
@@ -250,13 +250,6 @@ void AnimatedUnit::Update(const sf::Time& dt)
     else if (m_currentAnimation)
     {
         // Apply current (possibly static) frame even if not animating
-        m_currentAnimation->ApplyToSprite(*m_sprite);
-    }
-
-    // advance main animation
-    if (m_currentAnimation && m_isAnimating)
-    {
-        m_currentAnimation->Update(dt);
         m_currentAnimation->ApplyToSprite(*m_sprite);
     }
 
@@ -383,7 +376,6 @@ bool AnimatedUnit::LoadAnimations(
         bool  isDirectional = directionalAnims.count(type) ? directionalAnims.at(type) : false;
         int   defaultRow    = defaultRows.count(type) ? defaultRows.at(type) : 0;
 
-        // Create Animation object
         m_animations[type] = std::make_unique<Animation>(
             m_textures.at(type), frameSize, numFrames, duration, isLooping, isDirectional, defaultRow);
     }
@@ -495,6 +487,7 @@ void AnimatedUnit::PlayAnimation(UnitAnimationType        type,
 
     // 7) Apply the very first frame immediately
     m_currentAnimation->ApplyToSprite(*m_sprite);
+
     if (m_shadowSprite.has_value() && sIt != m_shadowAnimations.end())
     {
         sIt->second->ApplyToSprite(*m_shadowSprite);

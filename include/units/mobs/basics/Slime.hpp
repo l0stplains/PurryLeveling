@@ -4,10 +4,11 @@
 
 #include "core/GameContext.hpp"
 
+#include "skill/mobSkill/AcidityCorrosion.hpp"
 #include "units/AnimatedUnit.hpp"
-#include "units/mobs/Mob.hpp"
+#include "units/mobs/basics/BasicMob.hpp"
 
-class Slime : public Mob, public AnimatedUnit
+class Slime : public BasicMob, public AnimatedUnit
 {
 public:
     Slime(const std::string&  name,
@@ -38,6 +39,8 @@ private:
      * @brief Helper function to perform the attack animation and damage after range check.
      */
     void PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback);
+
+    AcidityCorrosion m_acidityCorrossion;
 
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
 };
