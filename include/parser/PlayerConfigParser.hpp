@@ -1,9 +1,9 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 #include "effects/Stats.hpp"
 #include "items/Item.hpp"
@@ -33,7 +33,7 @@ public:
     // line 21–end
     const std::map<std::string, std::string>& GetTypeStats() const { return m_typestats; }
     // get set of skills
-    const std::set<std::string>&              GetSkillTree() const { return m_skilltree; }
+    const std::set<std::string>& GetSkillTree() const { return m_skilltree; }
 
     std::string GetLastError() const override { return m_lastError; }
 
