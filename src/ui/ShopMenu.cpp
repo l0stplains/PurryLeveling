@@ -12,11 +12,11 @@ ShopMenu::ShopMenu(GameContext& gameContext)
 {
     // Initialize some sample items in m_backpack
     // Using proper Item constructor: Item(itemID, name, type, rarity, effects)
-    m_backpack.addItem(Item("DFB", "Diamond_Boots", "FootArmor", 'B', {}), 5);
-    m_backpack.addItem(Item("ABS", "Azure_Body", "BodyArmor", 'C', {}), 45);
-    m_backpack.addItem(Item("TPS", "Totem", "Pendant", 'S', {}), 12);
-    m_backpack.addItem(Item("HPS", "Healing_Potion", "Potion", 'S', {}), 32);
-    m_backpack.addItem(Item("CHA", "Caesar_Head", "HeadArmor", 'A', {}), 64);
+    // m_backpack.addItem(Item("DFB", "Diamond_Boots", "FootArmor", 'B', {}), 5);
+    // m_backpack.addItem(Item("ABS", "Azure_Body", "BodyArmor", 'C', {}), 45);
+    // m_backpack.addItem(Item("TPS", "Totem", "Pendant", 'S', {}), 12);
+    // m_backpack.addItem(Item("HPS", "Healing_Potion", "Potion", 'S', {}), 32);
+    // m_backpack.addItem(Item("CHA", "Caesar_Head", "HeadArmor", 'A', {}), 64);
 }
 
 void ShopMenu::Render()
