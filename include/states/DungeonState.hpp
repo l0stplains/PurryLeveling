@@ -25,7 +25,7 @@ public:
      *
      * @param context The game context to share resources
      */
-    explicit DungeonState(GameContext& context, DimensionType dimension, Dungeon dungeon);
+    explicit DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon);
 
     void Init() override;
 

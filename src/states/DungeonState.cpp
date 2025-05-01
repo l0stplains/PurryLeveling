@@ -14,7 +14,7 @@ float calculateDistance(const sf::Vector2f& a, const sf::Vector2f& b)
 }
 
 // Constructor
-DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon dungeon)
+DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon)
     : State(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),

@@ -98,6 +98,8 @@ private:
      */
     void showError(const std::string& message);
 
+    vector<std::string> generateDungeonRank(int level);
+
     unsigned int m_currentPortalId = -1;  ///< ID of the current portal
 
     std::vector<std::unique_ptr<Portal>> m_portals;  ///< List of portals in the world

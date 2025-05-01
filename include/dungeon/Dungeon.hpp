@@ -92,13 +92,6 @@ private:
      */
     void addMobLoot(const Item& item);
 
-    /**
-     * @brief Get the rank of the dungeon
-     *
-     * @return string The rank of the dungeon
-     */
-    string getRank() const;
-
 public:
     // Constants for dungeon ranks
     static const string RANK_S;
@@ -268,4 +261,11 @@ public:
      * @return int The initial experience value
      */
     int getInitExp() const;
+
+    /**
+     * @brief Get the rank of the dungeon
+     *
+     * @return string The rank of the dungeon
+     */
+    string getRank() const;
 };
