@@ -1,23 +1,15 @@
 #pragma once
-#include <memory>
-
-#include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery2/BloodRitual.hpp"
 #include "skill/characterSkill/Mastery2/UndeadLegion.hpp"
 
 // Root Skill untuk Necromancer
-class LifeSteal : public Skill
+class LifeSteal : public NecromancerSkill
 {
-private:
-    float lifestealPercentage = 0.13f;
-    int   summonedUnit        = 0;
-
 public:
     LifeSteal(bool isLearned = true, bool isActivated = true)
-        : Skill("LifeSteal", 6, 2, 0, 0, {}, {}, isLearned, isActivated)
+        : NecromancerSkill("LifeSteal", 6, 2, 0, 0, {}, {}, isLearned, isActivated, 0.13f, 0)
     {
         vector<Skill*> secondSkill;
-
         BloodRitual*  bloodRitual  = new BloodRitual();
         UndeadLegion* undeadLegion = new UndeadLegion();
         secondSkill.push_back(bloodRitual);
@@ -25,6 +17,6 @@ public:
         this->setChildren(secondSkill);
     };
 
-    float getLifestealPercentage() const { return lifestealPercentage; }
-    int   getSummonedUnit() const { return summonedUnit; }
+    float getLifestealPercentage() const override { return lifestealPercentage; }
+    int getSummonedUnit() const override { return summonedUnit; }
 };
