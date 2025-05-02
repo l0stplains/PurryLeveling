@@ -1,25 +1,18 @@
 #pragma once
-#include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/Arise.hpp"
 
-// Necromancer Matery 2
-class UndeadLegion : public Skill
+// Necromancer Mastery 2
+class UndeadLegion : public NecromancerSkill
 {
-private:
-    float damageMultiplier = 0.12f;
-    int   summonedUnit     = 1;
-
 public:
     UndeadLegion(bool isLearned = false, bool isActivated = false)
-        : Skill("Undead Legion", 10, 4, 0, 0, {}, {}, isLearned, isActivated)
+        : NecromancerSkill("Undead Legion", 10, 4, 0, 0, {}, {}, isLearned, isActivated, 0.05f, 1)
     {
-        vector<Skill*> thirdSkill;
-
-        Arise* arise = new Arise();
-        thirdSkill.push_back(arise);
-        this->setChildren(thirdSkill);
+        vector<unique_ptr<Skill>> thirdSkill;
+        thirdSkill.push_back(std::make_unique<Arise>());
+        this->setChildren(std::move(thirdSkill));
     }
 
-    float getDamageMultiplier() const { return damageMultiplier; }
-    int   getSummonedUnit() const { return summonedUnit; }
+    float getLifestealPercentage() const override { return lifestealPercentage; }
+    int   getSummonedUnit() const override { return summonedUnit; }
 };

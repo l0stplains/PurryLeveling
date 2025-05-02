@@ -3,17 +3,15 @@
 
 #include "effects/useEffects/Bloodthirst.hpp"
 #include "effects/useEffects/Shadowstep.hpp"
-#include "skill/Skill.hpp"
+#include "skill/characterSkill/AssassinSkill.hpp"
+using namespace std;
 
 // Skill Mastery3 Assassin
-class Vanish : public Skill
+class Vanish : public AssassinSkill
 {
-private:
-    float agilityMultiplier = 0.30f;
-
 public:
     Vanish(bool isLearned = false, bool isActive = false)
-        : Skill("Vanish", 10, 5, 0, 1.0f, {}, {}, isLearned, isActive)
+        : AssassinSkill("Vanish", 10, 5, 0, 0.7f, {}, {}, isLearned, isActive, 0.30f)
     {
         vector<unique_ptr<Effect>> effectVec;
         effectVec.push_back(make_unique<Shadowstep>(78, 0.45f, 0.38f, 4));
@@ -21,6 +19,5 @@ public:
         this->setEffects(std::move(effectVec));
     }
 
-    // Getter
-    float getAgilityMultiplier() const { return agilityMultiplier; }
+    float getAgilityMultiplier() const override { return this->agilityMultiplier; }
 };
