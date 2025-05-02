@@ -8,7 +8,7 @@ private:
     float damageMultiplier = 2.0f;  // Damage multiplier for the skill
 
 public:
-    SneakyStab(bool isLearned = false, bool isActivated = false) 
+    SneakyStab(bool isLearned = false, bool isActivated = false)
         : Skill("Sneaky Stab", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated) {};
 
     void  setDamageMultiplier(float multiplier) { damageMultiplier = multiplier; }

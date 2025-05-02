@@ -1,8 +1,9 @@
 #pragma once
+#include <memory>
+
+#include "effects/useEffects/Chronoflux.hpp"
 #include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/ManaMastery.hpp"
-#include "effects/useEffects/Chronoflux.hpp"
-#include <memory>
 
 // Mage Master 2
 class MentalClarity : public Skill
@@ -12,7 +13,7 @@ private:
     int   manaRegenBonus         = 0;
 
 public:
-    MentalClarity(bool isLearned = false, bool isActivated = false) 
+    MentalClarity(bool isLearned = false, bool isActivated = false)
         : Skill("Mental Clarity", 7, 2, 0, 1.0f, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
@@ -25,7 +26,7 @@ public:
         effectVec.push_back(make_unique<Chronoflux>(0.2, 0, 3));
         this->setEffects(std::move(effectVec));
     }
-    
+
     float getIntelligenceMultiplier() const { return intelligenceMultiplier; }
-    int getManaRegenBonus() const { return manaRegenBonus; }
+    int   getManaRegenBonus() const { return manaRegenBonus; }
 };

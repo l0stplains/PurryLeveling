@@ -6,8 +6,8 @@ class Chronoflux : public Effect
 public:
     Chronoflux(float resourceReduction, float hasteBonus, int duration)
         : Effect("Chrono Mastery",
-                 "Resource cost×" + std::to_string(resourceReduction) + 
-                 ", Haste×" + std::to_string(hasteBonus),
+                 "Resource cost×" + std::to_string(resourceReduction) + ", Haste×" +
+                     std::to_string(hasteBonus),
                  duration)
     {
         m_modifiers.resourceCostMul = resourceReduction;

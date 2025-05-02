@@ -10,7 +10,7 @@ private:
     int   summonedUnit     = 0;
 
 public:
-    BloodRitual(bool isLearned = false, bool isActivated = false) 
+    BloodRitual(bool isLearned = false, bool isActivated = false)
         : Skill("Blood Ritual", 8, 3, 0, 0, {}, {}, isLearned, isActivated)
     {
         vector<Skill*> thirdSkill;
@@ -19,7 +19,7 @@ public:
         thirdSkill.push_back(soulHarvest);
         this->setChildren(thirdSkill);
     }
-    
+
     float getDamageMultiplier() const { return damageMultiplier; }
-    int getSummonedUnit() const { return summonedUnit; }
+    int   getSummonedUnit() const { return summonedUnit; }
 };

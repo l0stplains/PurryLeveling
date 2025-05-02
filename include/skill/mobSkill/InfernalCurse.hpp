@@ -5,7 +5,7 @@
 class InfernalCurse : public Skill
 {
 public:
-    InfernalCurse(bool isLearned = false, bool isActivated = false) 
+    InfernalCurse(bool isLearned = false, bool isActivated = false)
         : Skill("Infernal Curse", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated)
     {
         vector<Effect> effectVec;

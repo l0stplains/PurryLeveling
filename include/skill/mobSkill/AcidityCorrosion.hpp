@@ -9,7 +9,7 @@ private:
     int   corrosionDuration = 3;      // Duration of the corrosion effect in turns
 
 public:
-    AcidityCorrosion(bool isLearned = false, bool isActivated = false) 
+    AcidityCorrosion(bool isLearned = false, bool isActivated = false)
         : Skill("Acidity Corrosion", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated) {};
 
     void  setDamageMultiplier(float multiplier) { damageMultiplier = multiplier; }
