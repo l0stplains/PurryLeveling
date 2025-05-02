@@ -8,6 +8,8 @@
 #include "dungeon/Dungeon.hpp"
 #include "items/ItemManager.hpp"
 #include "parser/MobLootConfigParser.hpp"
+#include "parser/QuestConfigParser.hpp"
+#include "quest/QuestGenerator.hpp"
 #include "rng/rng.hpp"
 
 using namespace std;
@@ -25,9 +27,10 @@ private:
     ItemManager&         itemManager;          // Reference to the ItemManager for item generation
     MobLootConfigParser& mobLootConfigParser;  // Reference to the MobLootConfigParser for mob loot
                                                // generation
-    const double doubleDungeonActivateThreshold;  // 5% chance of activating double chamber
-    bool         isDoubleDungeonYet;              // Tracks if double dungeon has been activated
-    double       chance;                          // Stores the result of RNG for probability checks
+    QuestGenerator& questGenerator;  // Reference to the QuestGenerator for quest generation
+    const double    doubleDungeonActivateThreshold;  // 5% chance of activating double chamber
+    bool            isDoubleDungeonYet;              // Tracks if double dungeon has been activated
+    double          chance;  // Stores the result of RNG for probability checks
 
     // Helper methods to break down the dungeon creation process
     /**
@@ -88,8 +91,11 @@ public:
      *
      * @param itemManager Reference to the ItemManager for item generation
      * @param mobLootConfigParser Reference to the MobLootConfigParser for mob loot generation
+     * @param questGenerator Reference to the QuestGenerator for quest generation
      */
-    DungeonFactory(ItemManager& itemManager, MobLootConfigParser& mobLootConfigParser);
+    DungeonFactory(ItemManager&         itemManager,
+                   MobLootConfigParser& mobLootConfigParser,
+                   QuestGenerator&      questGenerator);
 
     /**
      * @brief Destroys the DungeonFactory object
@@ -120,4 +126,13 @@ public:
      * @return True if the chamber should be a double chamber, false otherwise
      */
     bool shouldBeDoubleChamber();
+
+    /**
+     * @brief Check if quests are available for a specific dungeon rank
+     *
+     * @param rank The dungeon rank to check
+     * @return true If quests are available for this rank
+     * @return false If no quests are available for this rank
+     */
+    bool hasQuestsForRank(const string& rank) const;
 };
