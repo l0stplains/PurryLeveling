@@ -2,10 +2,21 @@
 
 #include "rng/rng.hpp"
 
-DungeonFactory::DungeonFactory(ItemManager& itemManager, MobLootConfigParser& mobLootConfigParser)
+const string Dungeon::RANK_S       = "S";
+const string Dungeon::RANK_A       = "A";
+const string Dungeon::RANK_B       = "B";
+const string Dungeon::RANK_C       = "C";
+const string Dungeon::RANK_D       = "D";
+const string Dungeon::RANK_E       = "E";
+const string Dungeon::RANK_SPECIAL = "SPECIAL";
+
+DungeonFactory::DungeonFactory(ItemManager&         itemManager,
+                               MobLootConfigParser& mobLootConfigParser,
+                               QuestGenerator&      questGenerator)
     : rng(),
       itemManager(itemManager),
       mobLootConfigParser(mobLootConfigParser),
+      questGenerator(questGenerator),
       doubleDungeonActivateThreshold(0.05),
       isDoubleDungeonYet(false),
       chance(0.0)
@@ -213,8 +224,13 @@ Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel, int p
     }
 
     dungeon.generateLoot();
-
     dungeon.generateMobLoot();
+
+    if (hasQuestsForRank(rank))
+    {
+        Quest quest = questGenerator.generateQuest(rank);
+        dungeon.setQuest(quest);
+    }
 
     return dungeon;
 }
@@ -223,4 +239,9 @@ bool DungeonFactory::shouldBeDoubleChamber()
 {
     chance = rng.generatePercentage();
     return (chance <= doubleDungeonActivateThreshold * 100);
+}
+
+bool DungeonFactory::hasQuestsForRank(const string& rank) const
+{
+    return questGenerator.hasQuestsForRank(rank);
 }

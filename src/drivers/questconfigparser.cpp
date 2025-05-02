@@ -13,7 +13,7 @@ int main()
     }
 
     // Retrieve and print
-    const auto& questsByRank = parser.GetQuestEData();
+    const auto& questsByRank = parser.GetQuestData();
     for (auto const& [rank, quests] : questsByRank)
     {
         std::cout << "Dungeon Rank: " << rank << "\n";
