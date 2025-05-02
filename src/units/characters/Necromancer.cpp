@@ -52,12 +52,12 @@ Necromancer::Necromancer(const std::string&  name,
         {UnitAnimationType::DIE, 12}};
 
     std::unordered_map<UnitAnimationType, float> necromancerDurationPerAnim = {
-        {UnitAnimationType::IDLE, 6.4f},
-        {UnitAnimationType::WALK, 1.6f},
-        {UnitAnimationType::ATTACK, 0.8f},
-        {UnitAnimationType::JUMP, 0.8f},
-        {UnitAnimationType::DAMAGE, 0.8f},
-        {UnitAnimationType::DIE, 2.4f}};
+        {UnitAnimationType::IDLE, 3.2f},
+        {UnitAnimationType::WALK, 0.8f},
+        {UnitAnimationType::ATTACK, 0.4f},
+        {UnitAnimationType::JUMP, 0.4f},
+        {UnitAnimationType::DAMAGE, 0.4f},
+        {UnitAnimationType::DIE, 1.2f}};
 
     std::unordered_map<UnitAnimationType, bool> necromancerLoopingAnims = {
         {UnitAnimationType::IDLE, true},
@@ -96,10 +96,6 @@ void Necromancer::Attack(Unit& target, ActionCompletionCallback callback)
         return;
     }
 
-    // TODO: Check attack cooldown
-    // if (m_currentAttackCooldown > 0) { /* Still on cooldown */ if (callback) callback(); return;
-    // }
-
     AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
 
     sf::Vector2f vectorToTarget = animatedTarget->GetPosition() - m_position;
@@ -117,24 +113,58 @@ void Necromancer::Attack(Unit& target, ActionCompletionCallback callback)
         std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
 
         // Move, and chain the PerformAttack call as the callback for Move
-        Move(positionInRange, [this, animatedTarget, cb = std::move(callback)]() mutable {
-            // This lambda is called when Move() finishes (reaches destination or gets blocked)
-            sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
-            float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
-            if (dist <= m_attackRange * 1.1f)
-            {  // Check range again (allow small tolerance)
-                std::cout << GetName() << " reached target, performing attack on "
-                          << animatedTarget->GetName() << std::endl;  // Debug
-                this->PerformAttack(*animatedTarget, std::move(cb));  // Now perform the attack
-            }
-            else
-            {
-                std::cout << GetName() << " move finished but target still out of range or blocked."
-                          << std::endl;  // Debug
-                if (cb)
-                    cb();  // Call original callback if attack couldn't proceed
-            }
-        });
+        Move(positionInRange,
+             [this,
+              animatedTarget,
+              initialPosition = m_position,
+              initialDir      = m_direction,
+              cb              = std::move(callback)]() mutable {
+                 // This lambda is called when Move() finishes (reaches destination or gets blocked)
+                 sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
+                 float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
+
+                 if (dist <= m_attackRange * 1.1f)
+                 {  // Check range again (allow small tolerance)
+                     std::cout << GetName() << " reached target, performing attack on "
+                               << animatedTarget->GetName() << std::endl;  // Debug
+
+                     // Create a wrapped callback that will handle returning to position
+                     // We need to wrap this in a std::shared_ptr to avoid potential lifetime issues
+                     auto wrappedCallback = std::make_shared<ActionCompletionCallback>(
+                         [this, initialPosition, initialDir, originalCb = std::move(cb)]() mutable {
+                             std::cout << GetName()
+                                       << " attack completed, returning to initial position"
+                                       << std::endl;
+
+                             // Move back to initial position
+                             Move(initialPosition,
+                                  [this, initialDir, originalCb = std::move(originalCb)]() mutable {
+                                      // After moving back, set direction
+                                      SetDirection(initialDir);
+
+                                      // Call original callback
+                                      if (originalCb)
+                                          originalCb();
+                                  });
+                         });
+
+                     // Call the original PerformAttack with our wrapped callback
+                     // The lambda captures a shared_ptr by value to ensure it stays alive
+                     this->PerformAttack(*animatedTarget, [wrappedCb = wrappedCallback]() {
+                         // Execute our wrapped callback when PerformAttack finishes
+                         if (*wrappedCb)
+                             (*wrappedCb)();
+                     });
+                 }
+                 else
+                 {
+                     std::cout << GetName()
+                               << " move finished but target still out of range or blocked."
+                               << std::endl;  // Debug
+                     if (cb)
+                         cb();  // Call original callback if attack couldn't proceed
+                 }
+             });
     }
     else
     {
@@ -217,7 +247,7 @@ void Necromancer::PerformAttack(AnimatedUnit& target, ActionCompletionCallback c
     });
 }
 
-void Necromancer::UseSkill(int skillId, ActionCompletionCallback callback)
+void Necromancer::UseSkill(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
     {

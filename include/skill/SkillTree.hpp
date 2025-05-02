@@ -6,15 +6,15 @@
 class SkillTree
 {
 private:
-    Skill* skill;
+    std::unique_ptr<Skill> skill;
 
 public:
     // -- 4 Sekawan
-    SkillTree(Skill* rootNode);
+    SkillTree(std::unique_ptr<Skill> rootNode);
     ~SkillTree();
 
     // - Getter
-    Skill* getSkill() const { return this->skill; }
+    const std::unique_ptr<Skill>& getSkill() const { return this->skill; }
 };
 
 #endif  // SKILLTREE_HPP

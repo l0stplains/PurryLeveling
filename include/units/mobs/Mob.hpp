@@ -3,9 +3,6 @@
 #include "skill/Skill.hpp"
 #include "units/Unit.hpp"
 
-/**
- * @brief Represents an AnimatedUnit controlled by a player or with RPG stats.
- */
 class Mob : virtual public Unit
 {
 public:

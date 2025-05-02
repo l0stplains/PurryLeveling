@@ -59,6 +59,35 @@ void UnitManager::RemoveUnit(unsigned int id)
     }
 }
 
+void UnitManager::RemoveUnitExcept(unsigned int id)
+{
+    // Remove all units except the one with the given ID
+    auto it = std::remove_if(m_units.begin(), m_units.end(), [id](const std::unique_ptr<Unit>& u) {
+        return u->GetId() != id;
+    });
+
+    // Erase the removed units from the vector
+    m_units.erase(it, m_units.end());
+
+    // Clear lookup maps
+    m_unitsById.clear();
+    m_unitsByName.clear();
+
+    // Rebuild lookup maps for remaining units
+    for (const auto& unitPtr : m_units)
+    {
+        unsigned int id     = unitPtr->GetId();
+        std::string  name   = unitPtr->GetName();
+        Unit*        rawPtr = unitPtr.get();
+
+        m_unitsById[id] = rawPtr;
+        if (!name.empty())
+        {
+            m_unitsByName[name] = rawPtr;
+        }
+    }
+}
+
 Unit* UnitManager::GetUnit(unsigned int id)
 {
     auto it = m_unitsById.find(id);

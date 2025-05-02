@@ -167,21 +167,37 @@ void Unit::Heal(int amount)
     // std::cout << m_name << " (Base) healed " << amount << " health. Health: " << m_health << "/"
     // << m_maxHealth << std::endl; // Debug
 }
-void Unit::AddSkill(int skillId)
+void Unit::AddEffect(std::unique_ptr<Effect> effect)
 {
-    // Placeholder - implement properly with a Skill class/system later
-    m_skills.push_back(skillId);
+    if (!m_active || m_currentHealth <= 0)
+        return;  // Cannot add effects to inactive/dead units
+
+    // Find same effect if so add duration.
+    for (auto& effectIt : m_activeEffects)
+    {
+        if (effectIt->GetName() == effect->GetName())
+        {
+            effectIt->SetDuration(effectIt->GetDuration() + effect->GetDuration());
+            return;
+        }
+    }
+    m_activeEffects.push_back(std::move(effect));
 }
-void Unit::RemoveSkill(int skillId)
-{ /* Placeholder */
-}
-void Unit::AddEffect(int effectId)
+
+void Unit::RemoveEffect(const std::string& effectName)
 {
-    // Placeholder - implement properly with an Effect class/system later
-    m_activeEffects.push_back(effectId);
-}
-void Unit::RemoveEffect(int effectId)
-{ /* Placeholder */
+    if (!m_active || m_currentHealth <= 0)
+        return;
+
+    auto it = std::find_if(
+        m_activeEffects.begin(), m_activeEffects.end(), [&](const std::unique_ptr<Effect>& effect) {
+            return effect->GetName() == effectName;
+        });
+
+    if (it != m_activeEffects.end())
+    {
+        m_activeEffects.erase(it);
+    }
 }
 
 void Unit::Reset()
@@ -190,4 +206,5 @@ void Unit::Reset()
     m_currentHealth = m_maxHealth;
     m_currentMana   = m_maxMana;
     m_active        = true;  // Ensure active is true
+    m_activeEffects.clear();
 }

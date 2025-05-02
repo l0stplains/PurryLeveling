@@ -16,13 +16,16 @@ public:
     Effect& operator=(Effect&&)      = default;
 
     // --- Getters ---
-    const std::string& GetName() const { return m_name; }
-    const std::string& GetDescription() const { return m_description; }
-    int                GetDuration() const { return m_duration; }
-    int                GetRemainingDuration() const { return m_remainingDuration; }
+    const std::string& GetName() const;
+    const std::string& GetDescription() const;
+    int                GetDuration() const;
+    int                GetRemainingDuration() const;
 
-    virtual void ApplyEffect(unsigned int unitID);  // on integration will be applied to unit
-    virtual void RemoveEffect(unsigned int unitID);
+    // --- Setters ---
+    void SetName(const std::string& name);
+    void SetDescription(const std::string& description);
+    void SetDuration(int duration);
+    void SetRemainingDuration(int remainingDuration);
 
 protected:
     std::string m_name;

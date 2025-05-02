@@ -8,7 +8,9 @@
 #include <functional>
 #include <string>
 
+#include "effects/Effect.hpp"
 #include "effects/Stats.hpp"
+#include "skill/SkillTree.hpp"
 
 /**
  * @brief Abstract base class for any entity in the game world.
@@ -37,13 +39,10 @@ public:
     /**
      * @brief Uses a skill, playing a generic skill animation.
      */
-    virtual void UseSkill(int skillId, ActionCompletionCallback callback = nullptr) = 0;
+    virtual void UseSkill(Unit& target, ActionCompletionCallback callback = nullptr) = 0;
 
-    // AddSkill, RemoveSkill, AddEffect, RemoveEffect placeholders (virtual if needed)
-    virtual void AddSkill(int skillId);
-    virtual void RemoveSkill(int skillId);
-    virtual void AddEffect(int effectId);
-    virtual void RemoveEffect(int effectId);
+    virtual void AddEffect(std::unique_ptr<Effect> effect);
+    virtual void RemoveEffect(const std::string& effectName);
 
     /**
      * @brief Resets unit state (health, mana, position, animation).
@@ -89,9 +88,9 @@ protected:
     int m_attackDamage  = 10;  // Base damage
 
     // --- Skills & Effects (Placeholders) ---
-    std::vector<int> m_skills;  // Consider dedicated Skill/Effect classes later
-    std::vector<int> m_activeEffects;
-    Stats            m_stats;  // Core stats (health, mana, etc.)
+    std::unique_ptr<SkillTree>           m_skillTree = nullptr;
+    std::vector<std::unique_ptr<Effect>> m_activeEffects;
+    Stats                                m_stats;
 
 private:
     static unsigned int s_nextId;

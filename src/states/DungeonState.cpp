@@ -1,17 +1,10 @@
 #include "states/DungeonState.hpp"
 
-#include <cmath>
 #include <iostream>
 
 #include "units/AnimatedUnit.hpp"
-
-// a little helper
-float calculateDistance(const sf::Vector2f& a, const sf::Vector2f& b)
-{
-    sf::Vector2f diff = a - b;
-    return std::sqrt(diff.x * diff.x + diff.y * diff.y);
-    // maybe i can use this instead: return std::hypot(diff.x, diff.y);
-}
+#include "units/mobs/basics/Slime.hpp"
+#include "units/summons/Summon.hpp"
 
 // Constructor
 DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon)
@@ -21,15 +14,15 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_buttonHoverSound(GetContext().GetResourceManager()->GetSoundBuffer("button_hover")),
       m_buttonClickSound(GetContext().GetResourceManager()->GetSoundBuffer("button_click")),
       m_buttonTexture(GetContext().GetResourceManager()->GetTexture("main_menu_button")),
-      m_attackButton(m_buttonTexture, {32.f, 500}, {1.f, 1.f}),
-      m_useItemButton(m_buttonTexture, {32.f, 580.f}, {1.f, 1.f}),
-      m_exitButton(m_buttonTexture, {32.f, 660.f}, {1.f, 1.f}),
+      m_attackButton(m_buttonTexture, {96.f, 500}, {0.8f, 0.8f}),  // must be changed again below
+      m_useSkillButton(m_buttonTexture, {96.f, 668.f}, {0.8f, 0.8f}),
+      m_useItemButton(m_buttonTexture, {96.f, 584.f}, {0.8f, 0.8f}),
+      m_exitButton(m_buttonTexture, {96.f, 668.f}, {0.8f, 0.8f}),
       m_font(GetContext().GetResourceManager()->GetFont("main_font")),
       m_boldFont(GetContext().GetResourceManager()->GetFont("main_bold_font")),
+      m_navGrid(GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
-      m_character(dynamic_cast<AnimatedUnit*>(
-          GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId()))),
       m_pendingStateChange({StateAction::NONE})
 {
     SetName("Dungeon State");
@@ -55,9 +48,10 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
             break;
     }
     m_backgroundSprite.setTexture(m_backgroundTexture);
-    m_attackButton  = Button(m_buttonTexture, {32.f, 500}, {1.f, 1.f}),
-    m_useItemButton = Button(m_buttonTexture, {32.f, 580.f}, {1.f, 1.f}),
-    m_exitButton    = Button(m_buttonTexture, {32.f, 660.f}, {1.f, 1.f}),
+    m_attackButton   = Button(m_buttonTexture, {120.f, 416.f}, {.9f, .9f}),
+    m_useSkillButton = Button(m_buttonTexture, {120.f, 500.f}, {.9f, .9f}),
+    m_useItemButton  = Button(m_buttonTexture, {120.f, 584.f}, {.9f, .9f}),
+    m_exitButton     = Button(m_buttonTexture, {120.f, 668.f}, {.9f, .9f}),
 
     // setup door enter area
         m_chamberExitArea.setOrigin({0, 0});
@@ -73,52 +67,98 @@ void DungeonState::Init()
                                  static_cast<float>(windowSize.y) / m_backgroundTexture.getSize().y});
     m_backgroundSprite.setPosition({0, 0});
 
-    m_attackButton.setText("Attack", m_font, 24);
+    m_attackButton.setText("Attack", m_font, 32);
     m_attackButton.setHoverSound(m_buttonHoverSound);
     m_attackButton.setClickSound(m_buttonClickSound);
 
-    m_useItemButton.setText("Use Item", m_font, 24);
+    m_useSkillButton.setText("Use Skill", m_font, 32);
+    m_useSkillButton.setHoverSound(m_buttonHoverSound);
+    m_useSkillButton.setClickSound(m_buttonClickSound);
+
+    m_useItemButton.setText("Use Item", m_font, 32);
     m_useItemButton.setHoverSound(m_buttonHoverSound);
     m_useItemButton.setClickSound(m_buttonClickSound);
 
-    m_exitButton.setText("Surrender", m_font, 24);
+    m_exitButton.setText("Surrender", m_font, 32);
     m_exitButton.setHoverSound(m_buttonHoverSound);
     m_exitButton.setClickSound(m_buttonClickSound);
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
     m_attackButton.setOnClickCallback([this]() {
-        Unit* closestMob;
-        float distance = 0;
-        if (m_mobs.size())
+        Mob*         closestMob = getClosestUnitOfType<Mob>(m_mobsID, m_character->GetPosition());
+        unsigned int targetId   = closestMob->GetId();
+        if (closestMob == nullptr)
         {
-            distance   = calculateDistance(m_mobs[0]->GetPosition(), m_character->GetPosition());
-            closestMob = m_mobs[0];
+            std::cerr << "No mobs available to attack!" << std::endl;
+            return;
         }
-        for (auto mob : m_mobs)
-        {
-            float tempDistance = calculateDistance(mob->GetPosition(), m_character->GetPosition());
-            if (tempDistance < distance)
+        m_turnQueue.pop();
+        // set callback to trigger
+        std::function<void()> callback = [this, targetId] {
+            m_triggerActionTurn = true;
+            m_isPlayerTurn      = false;
+            m_turnQueue.push(m_character->GetId());
+            Mob* attackedMob = GetContext().GetUnitManager()->GetUnitOfType<Mob>(targetId);
+            if (!attackedMob->IsActive())
             {
-                distance   = tempDistance;
-                closestMob = mob;
+                m_mobsID.erase(std::remove(m_mobsID.begin(), m_mobsID.end(), targetId),
+                               m_mobsID.end());
+                // TODO: remove unit from unit manager
+                // GetContext().GetUnitManager()->RemoveUnit(targetId);
             }
-        }
-
-        m_character->Attack(*closestMob);
+        };
+        m_character->Attack(*closestMob, callback);
     });
 
+    int                       slimeCount  = 4;
+    std::vector<sf::Vector2f> spawnPoints = generateMobSpawnPoints(
+        {windowSize.x / 2.0f + 400.f * windowSize.x / 1820.f, 780.0f * windowSize.y / 1024.f},
+        slimeCount,
+        true);
+    for (int i = 0; i < slimeCount; ++i)
+    {
+        std::unique_ptr<Slime> slime =
+            std::make_unique<Slime>("Slime", sf::Vector2f {0, 0}, m_navGrid, GetContext());
+        slime->SetScale(8.f, 8.f);
+        slime->SetPosition(spawnPoints[i]);
+        slime->SetControlledByPlayer(false);
+        slime->SetShowUI(true);
+        slime->SetDirection(Direction::WEST);
+        m_mobsID.push_back(slime->GetId());
+        GetContext().GetUnitManager()->AddUnit(std::move(slime));
+    }
+
+    m_character =
+        GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
     if (m_character)
     {
         m_character->SetScale({8.0f, 8.0f});
-        m_character->SetPosition({windowSize.x / 2.0f - 400.f * windowSize.x / 1820,
-                                  windowSize.y / 2.0f + 780.0f * windowSize.y / 1024});
+        m_character->SetPosition(
+            {windowSize.x / 2.0f - 400.f * windowSize.x / 1820.f, 780.0f * windowSize.y / 1024.f});
+        m_character->SetDirection(Direction::EAST);
+        m_character->SetShowUI(true);
         m_character->SetControlledByPlayer(false);
+        m_character->SetNavGrid(m_navGrid);
+        m_character->SetMoveSpeed(m_character->GetMoveSpeed() * 1.5f);
+
+        m_character->SetAttackDamage(2000);
+        m_character->SetMaxHealth(10000);
+        m_character->SetHealth(10000);
     }
     else
     {
         std::cerr << "Character not found!" << std::endl;
         return;
     }
+
+    // setup turn queue
+    m_turnQueue.push(m_character->GetId());
+    for (auto id : m_mobsID)
+    {
+        m_turnQueue.push(id);
+    }
+
+    m_triggerActionTurn = true;
 }
 
 State::StateChange DungeonState::ProcessEvent(const sf::Event& event)
@@ -136,9 +176,46 @@ State::StateChange DungeonState::ProcessEvent(const sf::Event& event)
 
 State::StateChange DungeonState::Update(const sf::Time& dt)
 {
-    // see if we're currently inside any portal
+    // checks if player die
+    if (m_turnQueue.front() == m_character->GetId() && !m_character->IsActive())
+    {
+        return StateChange {StateAction::POP};
+    }
+
+    // checks if mob clears
+    if (m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId())
+    {
+        return StateChange {StateAction::POP};
+    }
+
+    // checks if player finish dungeon
+    if (m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId() &&
+        m_dungeon.getNumChambers() == m_dungeon.getChambers().size())
+    {
+        m_dungeon.setCleared(true);
+        return StateChange {StateAction::POP};
+    }
+
     AnimatedUnit* character =
         GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
+
+    if (m_turnQueue.front() == m_character->GetId())
+    {
+        m_isPlayerTurn = true;
+    }
+
+    bool isPlayerPlaying = m_turnQueue.front() == m_character->GetId();
+    m_exitButton.setActive(isPlayerPlaying);
+    m_attackButton.setActive(isPlayerPlaying);
+    m_useSkillButton.setActive(isPlayerPlaying);
+    m_useItemButton.setActive(isPlayerPlaying);
+
+    if (m_triggerActionTurn && !m_isPlayerTurn)
+    {
+        std::cout << "Mob turn triggered." << std::endl;
+        m_triggerActionTurn = false;
+        playMobTurn();
+    }
 
     bool isInChamberExit = false;
     if (character)
@@ -161,9 +238,10 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
 
     if (!(m_showExitPopup))
     {
-        m_exitButton.update(*GetContext().GetWindow());
         m_attackButton.update(*GetContext().GetWindow());
+        m_useSkillButton.update(*GetContext().GetWindow());
         m_useItemButton.update(*GetContext().GetWindow());
+        m_exitButton.update(*GetContext().GetWindow());
     }
 
     // handle any pending state-change (from your buttons, etc)
@@ -180,9 +258,10 @@ void DungeonState::Draw(sf::RenderWindow& window)
     window.draw(m_backgroundSprite);
 
     window.draw(m_chamberExitArea);
-    m_exitButton.draw(window);
     m_attackButton.draw(window);
+    m_useSkillButton.draw(window);
     m_useItemButton.draw(window);
+    m_exitButton.draw(window);
 }
 
 void DungeonState::RenderUI()
@@ -234,7 +313,113 @@ void DungeonState::Resume() {}
 
 void DungeonState::Exit()
 {
-    GetContext().GetUnitManager()->Clear();
+    GetContext().GetUnitManager()->RemoveUnitExcept(GetContext().GetCharacterId());
+    AnimatedUnit* character =
+        GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
+
+    if (character)
+    {
+        character->SetMoveSpeed(character->GetMoveSpeed() / 1.5f);
+        character->SetShowUI(false);
+    }
 
     // Save everything related to the user loaded thing
+}
+
+void DungeonState::playMobTurn()
+{
+    unsigned int mobId = m_turnQueue.front();
+
+    // if mobId not in m_mobsID, pop and return
+    if (std::find(m_mobsID.begin(), m_mobsID.end(), mobId) == m_mobsID.end())
+    {
+        m_turnQueue.pop();
+        m_triggerActionTurn = true;
+        return;
+    }
+
+    AnimatedUnit* mob =
+        GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(m_turnQueue.front());
+    AnimatedUnit* character =
+        GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
+
+    // NOTE: potential for refactoring later (if not close to deadline, but this works fine)
+    std::vector<Summon*>      summons = GetContext().GetUnitManager()->GetAllUnitsOfType<Summon>();
+    std::vector<unsigned int> summonIDs;
+    for (auto summon : summons)
+    {
+        summonIDs.push_back(summon->GetId());
+    }
+
+    // set callback
+    std::function<void()> callback = [this, mob]() {
+        std::cout << "Mob " << mob->GetName() << " turn finished." << std::endl;
+        m_triggerActionTurn = true;
+        m_turnQueue.pop();
+        m_turnQueue.push(mob->GetId());
+    };
+
+    AnimatedUnit* summon = getClosestUnitOfType<AnimatedUnit>(summonIDs, mob->GetPosition());
+    if (summon == nullptr)
+    {
+        std::cout << character->GetId() << " " << m_character->GetId() << " "
+                  << GetContext().GetCharacterId() << std::endl;
+        std::cout << character->GetPosition().x << " " << character->GetPosition().y << std::endl;
+        std::cout << mob->GetPosition().x << " " << mob->GetPosition().y << std::endl;
+        std::cout << "No summons available to attack!" << std::endl;
+        mob->Attack(*character, callback);
+    }
+    else
+    {
+        // compare distance to character and summon and choose the closest
+        float mobDist = std::sqrt(std::pow(mob->GetPosition().x - character->GetPosition().x, 2) +
+                                  std::pow(mob->GetPosition().y - character->GetPosition().y, 2));
+        float summonDist = std::sqrt(std::pow(mob->GetPosition().x - summon->GetPosition().x, 2) +
+                                     std::pow(mob->GetPosition().y - summon->GetPosition().y, 2));
+        if (mobDist < summonDist)
+        {
+            mob->Attack(*character, callback);
+        }
+        else
+        {
+            mob->Attack(*summon, callback);
+        }
+    }
+
+    return;
+}
+
+std::vector<sf::Vector2f> DungeonState::generateMobSpawnPoints(const sf::Vector2f& center,
+                                                               unsigned int        mobCount,
+                                                               bool                isLeftHalf)
+{
+    float                     radius = 80.f;
+    std::vector<sf::Vector2f> spawnPoints;
+    spawnPoints.reserve(mobCount);
+
+    // single mob goes in the center
+    if (mobCount == 1)
+    {
+        spawnPoints.emplace_back(center);
+        return spawnPoints;
+    }
+
+    // define start angle based on which half-circle:
+    // Right  half: from -90° to +90°  (i.e. -π/2 … +π/2)
+    // Left   half: from +90° to +270° (i.e.  π/2 … 3π/2)
+    float startAngle = (isLeftHalf) ? M_PI_2 : -M_PI_2;
+    float arc        = M_PI;  // 180° sweep
+
+    // divide that arc into (mobCount–1) segments so endpoints line up
+    float step = arc / static_cast<float>(mobCount - 1);
+
+    for (unsigned int i = 0; i < mobCount; ++i)
+    {
+        float angle = startAngle + step * static_cast<float>(i);
+        float x     = center.x + std::cos(angle) * radius;
+        float y     = center.y + std::sin(angle) * radius;
+        spawnPoints.emplace_back(x, y);
+    }
+
+    return spawnPoints;
 }

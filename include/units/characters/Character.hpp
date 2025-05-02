@@ -6,9 +6,6 @@
 
 #include "units/Unit.hpp"
 
-/**
- * @brief Represents an AnimatedUnit controlled by a player or with RPG stats.
- */
 class Character : virtual public Unit
 {
 public:

@@ -4,25 +4,25 @@
 
 #include "core/GameContext.hpp"
 
-#include "skill/mobSkill/AcidityCorrosion.hpp"
+#include "skill/mobSkill/BrutalStrike.hpp"
 #include "units/AnimatedUnit.hpp"
 #include "units/mobs/basics/BasicMob.hpp"
 
-class Slime : public BasicMob, public AnimatedUnit
+class Orc : public BasicMob, public AnimatedUnit
 {
 public:
-    Slime(const std::string&  name,
-          const sf::Vector2f& position,
-          NavigationGrid&     navGrid,  // Pass grid to base
-          const GameContext&  gameContext);
+    Orc(const std::string&  name,
+        const sf::Vector2f& position,
+        NavigationGrid&     navGrid,  // Pass grid to base
+        const GameContext&  gameContext);
 
-    ~Slime() override = default;
+    ~Orc() override = default;
 
     // Prevent copying, allow moving
-    Slime(const Slime&)            = delete;
-    Slime& operator=(const Slime&) = delete;
-    Slime(Slime&&)                 = default;
-    Slime& operator=(Slime&&)      = default;
+    Orc(const Orc&)            = delete;
+    Orc& operator=(const Orc&) = delete;
+    Orc(Orc&&)                 = default;
+    Orc& operator=(Orc&&)      = default;
 
     // --- Action Overrides ---
     void Attack(Unit& target, ActionCompletionCallback callback = nullptr) override;
@@ -40,7 +40,7 @@ private:
      */
     void PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback);
 
-    AcidityCorrosion m_acidityCorrossion;
+    BrutalStrike m_brutalStrike;
 
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
 };

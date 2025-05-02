@@ -17,14 +17,14 @@ Slime::Slime(const std::string&  name,
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides
-    m_maxHealth = 150;
+    m_maxHealth = 100;
     SetHealth(m_maxHealth);
     m_maxMana = 100;
     SetCurrentMana(m_maxMana);
     m_attackDamage = 12;
     m_healthRegen  = 4;
     m_manaRegen    = 4;
-    m_moveSpeed    = 130.f;  // Maybe slightly slower, heavier armor?
+    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
     sf::Vector2i slimeFrameSize(32, 32);
@@ -53,7 +53,7 @@ Slime::Slime(const std::string&  name,
                                                                      {UnitAnimationType::ATTACK, 4},
                                                                      {UnitAnimationType::JUMP, 4},
                                                                      {UnitAnimationType::DAMAGE, 4},
-                                                                     {UnitAnimationType::DIE, 12}};
+                                                                     {UnitAnimationType::DIE, 9}};
 
     // Example durations (in seconds, adjust these!)
     std::unordered_map<UnitAnimationType, float> slimeDurationPerAnim = {
@@ -62,7 +62,7 @@ Slime::Slime(const std::string&  name,
         {UnitAnimationType::ATTACK, 0.4f},
         {UnitAnimationType::JUMP, 0.4f},
         {UnitAnimationType::DAMAGE, 0.4f},
-        {UnitAnimationType::DIE, 1.2f}};
+        {UnitAnimationType::DIE, 0.9f}};
 
     // Example looping status (Idle/Walk usually loop)
     std::unordered_map<UnitAnimationType, bool> slimeLoopingAnims = {
@@ -102,10 +102,6 @@ void Slime::Attack(Unit& target, ActionCompletionCallback callback)
         return;
     }
 
-    // TODO: Check attack cooldown
-    // if (m_currentAttackCooldown > 0) { /* Still on cooldown */ if (callback) callback(); return;
-    // }
-
     AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
 
     sf::Vector2f vectorToTarget = animatedTarget->GetPosition() - m_position;
@@ -120,7 +116,7 @@ void Slime::Attack(Unit& target, ActionCompletionCallback callback)
         sf::Vector2f positionInRange = animatedTarget->GetPosition() -
                                        direction * (m_attackRange * 0.9f);  // Move 90% of the way
 
-        std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
+        std::cout << GetName() << " moving to attack zirr " << target.GetName() << std::endl;  // Debug
 
         // Move, and chain the PerformAttack call as the callback for Move
         Move(positionInRange,
@@ -257,7 +253,7 @@ void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callbac
     });
 }
 
-void Slime::UseSkill(int skillId, ActionCompletionCallback callback)
+void Slime::UseSkill(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
     {

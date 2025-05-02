@@ -501,7 +501,7 @@ void AnimatedUnit::Move(const sf::Vector2f& targetPosition, ActionCompletionCall
     // 1) Early-out if already at target
     sf::Vector2f delta     = targetPosition - m_position;
     float        distance  = std::sqrt(delta.x * delta.x + delta.y * delta.y);
-    const float  threshold = 1.0f;
+    const float  threshold = 16.0f;
     if (distance < threshold)
     {
         if (callback)
@@ -654,7 +654,7 @@ void AnimatedUnit::Reset()
     m_velocity       = {0.f, 0.f};
     m_targetPosition = m_position;
     m_activeEffects.clear();
-    m_skills.clear();                        // Reset skills? Depends on design.
+
     PlayAnimation(UnitAnimationType::IDLE);  // Reset animation
 }
 
@@ -681,6 +681,12 @@ void AnimatedUnit::SetScale(float scaleX, float scaleY)
 {
     m_scale = {scaleX, scaleY};
 }
+
+void AnimatedUnit::SetNavGrid(NavigationGrid& navGrid)
+{
+    m_navGrid = navGrid;
+}
+
 void AnimatedUnit::SetMoveSpeed(float speed)
 {
     m_moveSpeed = std::max(0.0f, speed);
@@ -703,10 +709,22 @@ const sf::Vector2f& AnimatedUnit::GetVelocity() const
 {
     return m_velocity;
 }
+
+float AnimatedUnit::GetMoveSpeed() const
+{
+    return m_moveSpeed;
+}
+
 const sf::Vector2f& AnimatedUnit::GetScale() const
 {
     return m_scale;
 }
+
+NavigationGrid& AnimatedUnit::GetNavGrid() const
+{
+    return m_navGrid;
+}
+
 bool AnimatedUnit::IsMoving() const
 {
     return m_isMoving;

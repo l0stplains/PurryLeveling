@@ -3,14 +3,14 @@
 #include <iostream>
 
 #include "core/ResourceManager.hpp"
-#include "rng/rng.hpp"
 
 #include "imgui.h"
+#include "rng/rng.hpp"
 #include "states/ChooseCharacterState.hpp"
-#include "states/InventoryMenuState.hpp"
 #include "states/DungeonState.hpp"
-#include "units/AnimatedUnit.hpp"  // Include AnimatedUnit header
-#include "units/characters/Character.hpp"     // Include Character header
+#include "states/InventoryMenuState.hpp"
+#include "units/AnimatedUnit.hpp"          // Include AnimatedUnit header
+#include "units/characters/Character.hpp"  // Include Character header
 
 // Constructor
 WorldState::WorldState(GameContext& context)
@@ -32,52 +32,67 @@ WorldState::WorldState(GameContext& context)
 {
     SetName("World Menu State");
 
-
     // setup door enter area
     m_doorEnterArea.setOrigin({0, 0});
     m_doorEnterArea.setPosition({628.f, 350.f});
-
 }
 
 void WorldState::Init()
 {
-    Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+    Character* character =
+        GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
 
     vector<std::string> distributedRank = generateDungeonRank(character->GetLevel());
 
     Dungeon e = m_dungeonFactory.createDungeon(distributedRank[0], character->GetLevel(), 1000, 1000);
-    Dungeon d = m_dungeonFactory.createDungeon(distributedRank[1], character->GetLevel(), 510000, 1000);
-    Dungeon b = m_dungeonFactory.createDungeon(distributedRank[2], character->GetLevel(), 100000, 1000);
-    Dungeon c = m_dungeonFactory.createDungeon(distributedRank[3], character->GetLevel(), 100000, 1000);
+    Dungeon d =
+        m_dungeonFactory.createDungeon(distributedRank[1], character->GetLevel(), 510000, 1000);
+    Dungeon b =
+        m_dungeonFactory.createDungeon(distributedRank[2], character->GetLevel(), 100000, 1000);
+    Dungeon c =
+        m_dungeonFactory.createDungeon(distributedRank[3], character->GetLevel(), 100000, 1000);
 
-    std::map<string, string> portalAssets = {{"E", "portal_e"}, {"D", "portal_d"}, {"C", "portal_c"}, {"B", "portal_b"}, {"A", "portal_a"}, {"S", "portal_s"}, {"SPECIAL", "portal_special"}};
+    std::map<string, string> portalAssets = {{"E", "portal_e"},
+                                             {"D", "portal_d"},
+                                             {"C", "portal_c"},
+                                             {"B", "portal_b"},
+                                             {"A", "portal_a"},
+                                             {"S", "portal_s"},
+                                             {"SPECIAL", "portal_special"}};
 
     // In order: Top left - bottom left - bottom right - top right
-    std::unique_ptr<Portal> portal =
-        std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[0]]),
-                                 sf::Vector2f(265.0f * 0.7f, 305.0f * 0.7f),
-                                 sf::Vector2f(1.0f, 1.0f),
-                                 e, DimensionType::CRYSTAL);
+    std::unique_ptr<Portal> portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[0]]),
+        sf::Vector2f(265.0f * 0.7f, 305.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        e,
+        DimensionType::CRYSTAL);
 
     m_portals.emplace_back(std::move(portal));
-    portal = std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[1]]),
-                                      sf::Vector2f(265.0f * 0.7f, 825.0f * 0.7f),
-                                      sf::Vector2f(1.0f, 1.0f),
-                                      d, DimensionType::NORMAL);
-
-    m_portals.emplace_back(std::move(portal));
-
-    portal = std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[2]]),
-                                      sf::Vector2f(1412.0f * 0.7f, 790.0f * 0.7f),
-                                      sf::Vector2f(1.0f, 1.0f),
-                                      b, DimensionType::MISTY);
+    portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[1]]),
+        sf::Vector2f(265.0f * 0.7f, 825.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        d,
+        DimensionType::NORMAL);
 
     m_portals.emplace_back(std::move(portal));
 
-    portal = std::make_unique<Portal>(GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[3]]),
-                                      sf::Vector2f(1450.0f * 0.7f, 310.0f * 0.7f),
-                                      sf::Vector2f(1.0f, 1.0f),
-                                      c, DimensionType::LAVA);
+    portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[2]]),
+        sf::Vector2f(1412.0f * 0.7f, 790.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        b,
+        DimensionType::MISTY);
+
+    m_portals.emplace_back(std::move(portal));
+
+    portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[3]]),
+        sf::Vector2f(1450.0f * 0.7f, 310.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        c,
+        DimensionType::LAVA);
 
     m_portals.emplace_back(std::move(portal));
     // Background setup
@@ -106,8 +121,9 @@ void WorldState::Init()
             StateChange {StateAction::PUSH, std::make_unique<InventoryMenuState>(GetContext())};
     });
 
-    unsigned int characterId = GetContext().GetCharacterId();
-    AnimatedUnit* animatedCharacter = GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(characterId);
+    unsigned int  characterId = GetContext().GetCharacterId();
+    AnimatedUnit* animatedCharacter =
+        GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(characterId);
 
     if (animatedCharacter)
     {
@@ -233,12 +249,18 @@ void WorldState::RenderUI()
             if (character)
                 character->SetControlledByPlayer(false);
             Portal* currentPortal = nullptr;
-            for(const auto& portal : m_portals){
-                if(portal->GetId() == m_currentPortalId){
+            for (const auto& portal : m_portals)
+            {
+                if (portal->GetId() == m_currentPortalId)
+                {
                     currentPortal = portal.get();
                 }
             }
-            m_pendingStateChange = StateChange{StateAction::PUSH, std::make_unique<DungeonState>(GetContext(), currentPortal->GetDimensionType(), currentPortal->GetDungeon())};
+            m_pendingStateChange =
+                StateChange {StateAction::PUSH,
+                             std::make_unique<DungeonState>(GetContext(),
+                                                            currentPortal->GetDimensionType(),
+                                                            currentPortal->GetDungeon())};
             m_showPortalEnterModal = false;
             m_currentPortalId      = -1;
             ImGui::CloseCurrentPopup();
@@ -415,112 +437,162 @@ void WorldState::showError(const std::string& message)
     m_errorMessage   = message;
 }
 
-vector<std::string> WorldState::generateDungeonRank(int level) {
+vector<std::string> WorldState::generateDungeonRank(int level)
+{
     // Initialize RNG
     RNG rng;
     // Define available ranks
     const vector<std::string> ranks = {"E", "D", "C", "B", "A", "S", "SPECIAL"};
     // Vector to store the result
     vector<std::string> result(4);
-    
+
     // Define rank probabilities based on player level
-    vector<double> rankProbabilities;
+    vector<double>      rankProbabilities;
     vector<std::string> availableRanks;
-    
+
     // Set base probabilities (will include SPECIAL later)
-    if (level >= 50) {
+    if (level >= 50)
+    {
         rankProbabilities = {5, 5, 15, 15, 20, 40, 10};
-        availableRanks = {"E", "D", "C", "B", "A", "S", "SPECIAL"};
-    } else if (level >= 35) {
-        rankProbabilities = {5, 10, 20, 20, 40, 5, 10};
-        availableRanks = {"E", "D", "C", "B", "A", "S", "SPECIAL"};
-    } else if (level >= 25) {
-        rankProbabilities = {10, 20, 30, 40, 0, 0, 10};
-        availableRanks = {"E", "D", "C", "B", "SPECIAL"};
-    } else if (level >= 20) {
-        rankProbabilities = {20, 40, 40, 0, 0, 0, 10};
-        availableRanks = {"E", "D", "C", "SPECIAL"};
-    } else if (level >= 10) {
-        rankProbabilities = {60, 40, 0, 0, 0, 0, 10};
-        availableRanks = {"E", "D", "SPECIAL"};
-    } else {
-        rankProbabilities = {100, 0, 0, 0, 0, 0, 10};
-        availableRanks = {"E", "SPECIAL"};
+        availableRanks    = {"E", "D", "C", "B", "A", "S", "SPECIAL"};
     }
-    
+    else if (level >= 35)
+    {
+        rankProbabilities = {5, 10, 20, 20, 40, 5, 10};
+        availableRanks    = {"E", "D", "C", "B", "A", "S", "SPECIAL"};
+    }
+    else if (level >= 25)
+    {
+        rankProbabilities = {10, 20, 30, 40, 0, 0, 10};
+        availableRanks    = {"E", "D", "C", "B", "SPECIAL"};
+    }
+    else if (level >= 20)
+    {
+        rankProbabilities = {20, 40, 40, 0, 0, 0, 10};
+        availableRanks    = {"E", "D", "C", "SPECIAL"};
+    }
+    else if (level >= 10)
+    {
+        rankProbabilities = {60, 40, 0, 0, 0, 0, 10};
+        availableRanks    = {"E", "D", "SPECIAL"};
+    }
+    else
+    {
+        rankProbabilities = {100, 0, 0, 0, 0, 0, 10};
+        availableRanks    = {"E", "SPECIAL"};
+    }
+
     // Position-based distribution - we want to bias lower positions toward lower ranks
     // and higher positions toward higher ranks
-    for (int pos = 0; pos < 4; pos++) {
+    for (int pos = 0; pos < 4; pos++)
+    {
         // Skip processing if there's only one available rank
-        if (availableRanks.size() == 1) {
+        if (availableRanks.size() == 1)
+        {
             result[pos] = availableRanks[0];
             continue;
         }
-        
+
         // Adjust probabilities based on position
         vector<double> positionAdjustedProbs = rankProbabilities;
-        
+
         // Position bias factor (0.0 to 1.0)
-        double positionBias = pos / 3.0; // 0.0, 0.33, 0.67, 1.0
-        
+        double positionBias = pos / 3.0;  // 0.0, 0.33, 0.67, 1.0
+
         // Calculate adjusted probabilities
-        for (size_t i = 0; i < positionAdjustedProbs.size(); i++) {
-            if (positionAdjustedProbs[i] > 0) {
+        for (size_t i = 0; i < positionAdjustedProbs.size(); i++)
+        {
+            if (positionAdjustedProbs[i] > 0)
+            {
                 // Lower ranks (E, D) get boosted at lower positions
                 // Higher ranks get boosted at higher positions
                 double rankFactor = i / static_cast<double>(availableRanks.size() - 1);
-                
+
                 // Bias factor: increases probability of lower ranks at pos 0,
                 // and higher ranks at pos 3
                 double biasFactor = 1.0 + (rankFactor - 0.5) * 2.0 * (positionBias - 0.5);
                 positionAdjustedProbs[i] *= biasFactor;
             }
         }
-        
+
         // Normalize probabilities
         double sum = 0;
-        for (double prob : positionAdjustedProbs) {
+        for (double prob : positionAdjustedProbs)
+        {
             sum += prob;
         }
-        for (size_t i = 0; i < positionAdjustedProbs.size(); i++) {
+        for (size_t i = 0; i < positionAdjustedProbs.size(); i++)
+        {
             positionAdjustedProbs[i] = (sum > 0) ? positionAdjustedProbs[i] / sum * 100 : 0;
         }
-        
+
         // SPECIAL rank has a fixed 10% chance regardless of position
         // So we need to adjust all other probabilities to account for this
-        if (std::find(availableRanks.begin(), availableRanks.end(), "SPECIAL") != availableRanks.end()) {
-            for (size_t i = 0; i < positionAdjustedProbs.size() - 1; i++) {
+        if (std::find(availableRanks.begin(), availableRanks.end(), "SPECIAL") != availableRanks.end())
+        {
+            for (size_t i = 0; i < positionAdjustedProbs.size() - 1; i++)
+            {
                 positionAdjustedProbs[i] *= 0.9;
             }
             positionAdjustedProbs[6] = 10.0;
         }
-        
+
         vector<double> cumulativeProbs;
-        double cumulative = 0;
-        for (size_t i = 0; i < positionAdjustedProbs.size(); i++) {
+        double         cumulative = 0;
+        for (size_t i = 0; i < positionAdjustedProbs.size(); i++)
+        {
             cumulative += positionAdjustedProbs[i];
             cumulativeProbs.push_back(cumulative);
         }
-        
+
         double randomPercent = rng.generatePercentage();
-        
+
         std::string selectedRank;
-        for (size_t i = 0; i < cumulativeProbs.size(); i++) {
-            if (randomPercent <= cumulativeProbs[i] && positionAdjustedProbs[i] > 0) {
+        for (size_t i = 0; i < cumulativeProbs.size(); i++)
+        {
+            if (randomPercent <= cumulativeProbs[i] && positionAdjustedProbs[i] > 0)
+            {
                 selectedRank = ranks[i];
                 break;
             }
         }
-        
+
         result[pos] = selectedRank;
     }
-    
+
     return result;
 }
 
-void WorldState::Pause() {}
+void WorldState::Pause()
+{
+    m_lastPosition = GetContext()
+                         .GetUnitManager()
+                         ->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId())
+                         ->GetPosition();
+}
 
-void WorldState::Resume() {}
+void WorldState::Resume()
+{
+    sf::Vector2u  windowSize  = GetContext().GetWindow()->getSize();
+    unsigned int  characterId = GetContext().GetCharacterId();
+    AnimatedUnit* animatedCharacter =
+        GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(characterId);
+
+    if (animatedCharacter)
+    {
+        animatedCharacter->Reset();
+        animatedCharacter->SetNavGrid(GetContext().GetNavigationGrid());
+        animatedCharacter->SetActive(true);
+        animatedCharacter->SetScale({4.0f, 4.0f});
+        animatedCharacter->SetPosition(m_lastPosition);
+        animatedCharacter->SetControlledByPlayer(true);
+    }
+    else
+    {
+        std::cerr << "Character not found!" << std::endl;
+        return;
+    }
+}
 
 void WorldState::Exit()
 {

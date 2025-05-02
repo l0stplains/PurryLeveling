@@ -1,60 +1,62 @@
-#include "units/characters/Assassin.hpp"
+#include "units/mobs/basics/Orc.hpp"
 
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
+#include <limits>
 
-Assassin::Assassin(const std::string&  name,
-                   const sf::Vector2f& position,
-                   NavigationGrid&     navGrid,
-                   bool                isPlayerControlled,
-                   const GameContext&  gameContext)
-    : Unit(name),  // ← must initialize the virtual base
-      Character(name),
-      AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
+#include "units/mobs/basics/BasicMob.hpp"
+
+Orc::Orc(const std::string&  name,
+         const sf::Vector2f& position,
+         NavigationGrid&     navGrid,
+         const GameContext&  gameContext)
+    : Unit(name),
+      m_brutalStrike(true, true),
+      Mob(name, m_brutalStrike),
+      BasicMob(name, m_brutalStrike),  // ← must initialize the virtual base
+      AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides
     m_maxHealth = 100;
     SetHealth(m_maxHealth);
     m_maxMana = 100;
     SetCurrentMana(m_maxMana);
-    m_attackDamage = 25;
-    m_healthRegen  = 3;
-    m_manaRegen    = 3;
-    m_moveSpeed    = 180.f;
+    m_attackDamage = 12;
+    m_healthRegen  = 4;
+    m_manaRegen    = 4;
+    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
-    sf::Vector2i assassinFrameSize(32, 32);
+    sf::Vector2i orcFrameSize(32, 32);
 
-    std::unordered_map<UnitAnimationType, std::string> assassinTexturePaths = {
-        {UnitAnimationType::IDLE, "character_amazon_idle"},
-        {UnitAnimationType::WALK, "character_amazon_jump"},
-        {UnitAnimationType::ATTACK, "character_amazon_attack"},
-        {UnitAnimationType::CHARGED_ATTACK, "character_amazon_charged_attack"},
-        {UnitAnimationType::JUMP, "character_amazon_jump"},
-        {UnitAnimationType::DAMAGE, "character_amazon_dmg"},
-        {UnitAnimationType::DIE, "character_amazon_die"}
-
-    };
-    std::unordered_map<UnitAnimationType, std::string> assassinShadowTexturePaths = {
-        {UnitAnimationType::IDLE, "character_amazon_idle_shadow"},
-        {UnitAnimationType::WALK, "character_amazon_jump_shadow"},
-        {UnitAnimationType::ATTACK, "character_amazon_attack_shadow"},
-        {UnitAnimationType::CHARGED_ATTACK, "character_amazon_charged_attack_shadow"},
-        {UnitAnimationType::JUMP, "character_amazon_jump_shadow"},
-        {UnitAnimationType::DAMAGE, "character_amazon_dmg_shadow"},
-        {UnitAnimationType::DIE, "character_amazon_die_shadow"}
+    std::unordered_map<UnitAnimationType, std::string> orcTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_orc_idle"},
+        {UnitAnimationType::WALK, "mob_orc_walk"},
+        {UnitAnimationType::ATTACK, "mob_orc_attack"},
+        {UnitAnimationType::JUMP, "mob_orc_jump"},
+        {UnitAnimationType::DAMAGE, "mob_orc_dmg"},
+        {UnitAnimationType::DIE, "mob_orc_die"}
 
     };
+    std::unordered_map<UnitAnimationType, std::string> orcShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_orc_idle_shadow"},
+        {UnitAnimationType::WALK, "mob_orc_walk_shadow"},
+        {UnitAnimationType::ATTACK, "mob_orc_attack_shadow"},
+        {UnitAnimationType::JUMP, "mob_orc_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "mob_orc_dmg_shadow"},
+        {UnitAnimationType::DIE, "mob_orc_die_shadow"}
 
-    std::unordered_map<UnitAnimationType, int> assassinFramesPerAnim = {
-        {UnitAnimationType::IDLE, 16},
-        {UnitAnimationType::WALK, 4},
-        {UnitAnimationType::ATTACK, 4},
-        {UnitAnimationType::JUMP, 4},
-        {UnitAnimationType::DAMAGE, 4},
-        {UnitAnimationType::DIE, 12}};
+    };
+    // Example frame counts (adjust these!)
+    std::unordered_map<UnitAnimationType, int> orcFramesPerAnim = {{UnitAnimationType::IDLE, 16},
+                                                                   {UnitAnimationType::WALK, 4},
+                                                                   {UnitAnimationType::ATTACK, 4},
+                                                                   {UnitAnimationType::JUMP, 4},
+                                                                   {UnitAnimationType::DAMAGE, 4},
+                                                                   {UnitAnimationType::DIE, 12}};
 
-    std::unordered_map<UnitAnimationType, float> assassinDurationPerAnim = {
+    // Example durations (in seconds, adjust these!)
+    std::unordered_map<UnitAnimationType, float> orcDurationPerAnim = {
         {UnitAnimationType::IDLE, 3.2f},
         {UnitAnimationType::WALK, 0.8f},
         {UnitAnimationType::ATTACK, 0.4f},
@@ -62,15 +64,15 @@ Assassin::Assassin(const std::string&  name,
         {UnitAnimationType::DAMAGE, 0.4f},
         {UnitAnimationType::DIE, 1.2f}};
 
-    std::unordered_map<UnitAnimationType, bool> assassinLoopingAnims = {
-        {UnitAnimationType::IDLE, true},
-        {UnitAnimationType::WALK, true},
-        {UnitAnimationType::ATTACK, false},
-        {UnitAnimationType::JUMP, false},
-        {UnitAnimationType::DAMAGE, false},
-        {UnitAnimationType::DIE, false}};
+    // Example looping status (Idle/Walk usually loop)
+    std::unordered_map<UnitAnimationType, bool> orcLoopingAnims = {{UnitAnimationType::IDLE, true},
+                                                                   {UnitAnimationType::WALK, true},
+                                                                   {UnitAnimationType::ATTACK, false},
+                                                                   {UnitAnimationType::JUMP, false},
+                                                                   {UnitAnimationType::DAMAGE, false},
+                                                                   {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, bool> assassinDirectionalAnims = {
+    std::unordered_map<UnitAnimationType, bool> orcDirectionalAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, true},
@@ -78,19 +80,19 @@ Assassin::Assassin(const std::string&  name,
         {UnitAnimationType::DAMAGE, true},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, int> assassinDefaultRows = {{UnitAnimationType::DIE, 0}};
+    std::unordered_map<UnitAnimationType, int> orcDefaultRows = {{UnitAnimationType::DIE, 0}};
 
-    LoadAnimations(assassinTexturePaths,
-                   assassinFrameSize,
-                   assassinFramesPerAnim,
-                   assassinDurationPerAnim,
-                   assassinLoopingAnims,
-                   assassinDirectionalAnims,
-                   assassinDefaultRows,
-                   assassinShadowTexturePaths);
+    LoadAnimations(orcTexturePaths,
+                   orcFrameSize,
+                   orcFramesPerAnim,
+                   orcDurationPerAnim,
+                   orcLoopingAnims,
+                   orcDirectionalAnims,
+                   orcDefaultRows,
+                   orcShadowTexturePaths);
 }
 
-void Assassin::Attack(Unit& target, ActionCompletionCallback callback)
+void Orc::Attack(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {  // Check self and target state
@@ -113,7 +115,7 @@ void Assassin::Attack(Unit& target, ActionCompletionCallback callback)
         sf::Vector2f positionInRange = animatedTarget->GetPosition() -
                                        direction * (m_attackRange * 0.9f);  // Move 90% of the way
 
-        std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
+        std::cout << GetName() << " moving to attack zirr " << target.GetName() << std::endl;  // Debug
 
         // Move, and chain the PerformAttack call as the callback for Move
         Move(positionInRange,
@@ -178,7 +180,7 @@ void Assassin::Attack(Unit& target, ActionCompletionCallback callback)
     }
 }
 
-void Assassin::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
+void Orc::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
@@ -202,7 +204,7 @@ void Assassin::PerformAttack(AnimatedUnit& target, ActionCompletionCallback call
             float        distanceToTarget =
                 std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
 
-            // Deal damage if still in range (maybe slightly larger range check here?)
+            // Deal daorc if still in range (maybe slightly larger range check here?)
             if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
             {
                 std::cout << GetName() << " deals " << m_attackDamage << " damage to "
@@ -212,7 +214,7 @@ void Assassin::PerformAttack(AnimatedUnit& target, ActionCompletionCallback call
                 AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
                 if (animatedTarget)
                 {
-                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes damage
+                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes daorc
                 }
                 else
                 {
@@ -223,13 +225,13 @@ void Assassin::PerformAttack(AnimatedUnit& target, ActionCompletionCallback call
             else
             {
                 std::cout << GetName()
-                          << " dealt no damage, target moved out of range during animation."
+                          << " dealt no daorc, target moved out of range during animation."
                           << std::endl;  // Debug
             }
         }
         else
         {
-            std::cout << GetName() << " dealt no damage, target is no longer valid."
+            std::cout << GetName() << " dealt no daorc, target is no longer valid."
                       << std::endl;  // Debug
         }
 
@@ -250,7 +252,7 @@ void Assassin::PerformAttack(AnimatedUnit& target, ActionCompletionCallback call
     });
 }
 
-void Assassin::UseSkill(Unit& target, ActionCompletionCallback callback)
+void Orc::UseSkill(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -261,7 +263,7 @@ void Assassin::UseSkill(Unit& target, ActionCompletionCallback callback)
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
-// void Assassin::RenderUI(sf::RenderWindow& window) {
+// void Orc::RenderUI(sf::RenderWindow& window) {
 //     Character::RenderUI(window); // Call base UI rendering
 //     // Add fighter-specific UI elements here (e.g., rage bar?)
 // }

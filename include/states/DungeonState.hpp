@@ -2,6 +2,8 @@
 #include <SFML/Audio/Sound.hpp>
 #include <SFML/Graphics.hpp>
 
+#include <cmath>
+#include <queue>
 #include <vector>
 
 #include "core/GameContext.hpp"
@@ -13,6 +15,7 @@
 #include "props/Portal.hpp"
 #include "states/Enums.hpp"
 #include "states/State.hpp"
+#include "units/NavigationGrid.hpp"
 
 // Include ImGuiFileDialog
 #include "external/ImGuiFileDialog.h"
@@ -58,19 +61,65 @@ private:
 
     sf::Texture m_buttonTexture;  ///< Button texture
 
-    Button m_attackButton;   ///< attack  button
+    Button m_attackButton;  ///< attack  button
+    Button m_useSkillButton;
     Button m_useItemButton;  ///< use item button
     Button m_exitButton;     ///< Start button
 
     sf::Font m_font;      ///< Font for UI text
     sf::Font m_boldFont;  ///< Font for UI text
 
+    NavigationGrid m_navGrid;  ///< Navigation grid for unit movement
+
+    bool m_isPlayerTurn     = true;
     bool m_wasInChamberExit = false;
+
+    bool m_triggerActionTurn = false;
 
     bool    m_showExitPopup = false;  ///< Flag to show exit confirmation popup
     Dungeon m_dungeon;
 
-    AnimatedUnit*              m_character;
-    std::vector<AnimatedUnit*> m_mobs;
-    State::StateChange         m_pendingStateChange;  ///< Pending state change information
+    std::queue<unsigned int> m_turnQueue;
+
+    AnimatedUnit*             m_character;
+    std::vector<unsigned int> m_mobsID;
+    State::StateChange        m_pendingStateChange;  ///< Pending state change information
+
+    void playMobTurn();
+
+    std::vector<sf::Vector2f> generateMobSpawnPoints(const sf::Vector2f& center,
+                                                     unsigned int        mobCount,
+                                                     bool                isLeftHalf);
+    template <typename UnitType>
+    UnitType* getClosestUnitOfType(const std::vector<unsigned int>& ids, const sf::Vector2f& targetPos)
+    {
+        UnitType* closest  = nullptr;
+        float     bestDist = std::numeric_limits<float>::max();
+
+        for (auto id : ids)
+        {
+            // Lookup the unit of this type
+            UnitType* unit = GetContext().GetUnitManager()->GetUnitOfType<UnitType>(id);
+
+            if (!unit || !unit->IsActive())
+                continue;
+
+            AnimatedUnit* animatedUnit =
+                GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(id);
+
+            if (animatedUnit && animatedUnit->GetZOrder() != 0)
+                continue;
+
+            sf::Vector2f diff = animatedUnit->GetPosition() - targetPos;
+            float        dist = std::sqrt(diff.x * diff.x + diff.y * diff.y);
+
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                closest  = unit;
+            }
+        }
+
+        return closest;
+    }
 };

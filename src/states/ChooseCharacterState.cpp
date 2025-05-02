@@ -179,6 +179,8 @@ State::StateChange ChooseCharacterState::Update(const sf::Time& dt)
 {
     sf::RenderWindow* window = GetContext().GetWindow();
 
+    m_confirmButton.setActive(m_selectedCharacterId != -1);
+
     if (!m_showNameModal)
     {
         m_exitButton.update(*window);
@@ -207,7 +209,6 @@ void ChooseCharacterState::Draw(sf::RenderWindow& window)
 
 void ChooseCharacterState::RenderUI()
 {
-    m_confirmButton.setActive(m_selectedCharacterId != -1);
     // 1) Full-screen character selection window (won't steal focus)
     sf::Vector2u     windowSize   = GetContext().GetWindow()->getSize();
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |

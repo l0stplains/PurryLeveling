@@ -21,7 +21,7 @@ Mage::Mage(const std::string&  name,
     m_attackDamage = 12;
     m_healthRegen  = 4;
     m_manaRegen    = 4;
-    m_moveSpeed    = 130.f;  // Maybe slightly slower, heavier armor?
+    m_moveSpeed    = 130.f;
     m_attackRange  = 48.f;
 
     sf::Vector2i mageFrameSize(32, 32);
@@ -44,7 +44,6 @@ Mage::Mage(const std::string&  name,
         {UnitAnimationType::DIE, "character_centaur_die_shadow"}
 
     };
-    // Example frame counts (adjust these!)
     std::unordered_map<UnitAnimationType, int> mageFramesPerAnim = {{UnitAnimationType::IDLE, 16},
                                                                     {UnitAnimationType::WALK, 4},
                                                                     {UnitAnimationType::ATTACK, 4},
@@ -52,7 +51,6 @@ Mage::Mage(const std::string&  name,
                                                                     {UnitAnimationType::DAMAGE, 4},
                                                                     {UnitAnimationType::DIE, 12}};
 
-    // Example durations (in seconds, adjust these!)
     std::unordered_map<UnitAnimationType, float> mageDurationPerAnim = {
         {UnitAnimationType::IDLE, 3.2f},
         {UnitAnimationType::WALK, 0.8f},
@@ -61,7 +59,6 @@ Mage::Mage(const std::string&  name,
         {UnitAnimationType::DAMAGE, 0.4f},
         {UnitAnimationType::DIE, 1.2f}};
 
-    // Example looping status (Idle/Walk usually loop)
     std::unordered_map<UnitAnimationType, bool> mageLoopingAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
@@ -98,10 +95,6 @@ void Mage::Attack(Unit& target, ActionCompletionCallback callback)
             callback();  // Cannot attack, call callback immediately
         return;
     }
-
-    // TODO: Check attack cooldown
-    // if (m_currentAttackCooldown > 0) { /* Still on cooldown */ if (callback) callback(); return;
-    // }
 
     AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
 
@@ -254,7 +247,7 @@ void Mage::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback
     });
 }
 
-void Mage::UseSkill(int skillId, ActionCompletionCallback callback)
+void Mage::UseSkill(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
     {

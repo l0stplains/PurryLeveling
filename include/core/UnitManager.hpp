@@ -55,6 +55,12 @@ public:
     void RemoveUnit(unsigned int id);
 
     /**
+     * @brief Remove a unit from the manager by name
+     * @param name The name of the unit to remove
+     */
+    void RemoveUnitExcept(unsigned int id);
+
+    /**
      * @brief Get a raw pointer to a unit by its ID
      * @param id The ID of the unit to retrieve
      * @return Unit* Pointer to the unit, or nullptr if not found. Lifetime managed by UnitManager.

@@ -92,13 +92,16 @@ public:
     int                 GetZOrder() const;
     Direction           GetDirection() const;
     const sf::Vector2f& GetVelocity() const;
+    float               GetMoveSpeed() const;
     const sf::Vector2f& GetScale() const;
+    NavigationGrid&     GetNavGrid() const;
     bool                IsMoving() const;
 
     // --- Setters (Stats setters inherited unless overridden) ---
     void SetZOrder(int zOrder);
     void SetScale(const sf::Vector2f& scale);
     void SetScale(float scaleX, float scaleY);
+    void SetNavGrid(NavigationGrid& navGrid);
     void SetMoveSpeed(float speed);
 
     virtual void SetPosition(const sf::Vector2f& position);
