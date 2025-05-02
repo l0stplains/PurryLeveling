@@ -3,6 +3,8 @@
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
 
+#include "skill/characterSkill/Mastery1/LifeSteal.hpp"
+
 Necromancer::Necromancer(const std::string&  name,
                          const sf::Vector2f& position,
                          NavigationGrid&     navGrid,
@@ -22,6 +24,8 @@ Necromancer::Necromancer(const std::string&  name,
     m_manaRegen    = 3;
     m_moveSpeed    = 180.f;
     m_attackRange  = 48.f;
+
+    m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<LifeSteal>()));
 
     sf::Vector2i                                       necromancerFrameSize(32, 32);
     std::unordered_map<UnitAnimationType, std::string> necromancerTexturePaths = {

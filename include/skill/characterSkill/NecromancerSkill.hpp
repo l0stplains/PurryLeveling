@@ -8,18 +8,26 @@ protected:
     int   summonedUnit;
 
 public:
-    NecromancerSkill(string                     name,
-                     float                      manaCost,
-                     int                        masteryCost,
-                     float                      damage,
-                     float                      effectChance,
-                     vector<unique_ptr<Effect>> effectVec,
-                     vector<unique_ptr<Skill>>  treeNodeVec,
-                     bool                       learn,
-                     bool                       activate,
-                     float                      lifeStealPercent,
-                     int                        summon)
-        : Skill(name, manaCost, masteryCost, damage, effectChance, effectVec, treeNodeVec, learn, activate)
+    NecromancerSkill(string                       name,
+                     float                        manaCost,
+                     int                          masteryCost,
+                     float                        damage,
+                     float                        effectChance,
+                     vector<unique_ptr<Effect>>&& effectVec,
+                     vector<unique_ptr<Skill>>&&  treeNodeVec,
+                     bool                         learn,
+                     bool                         activate,
+                     float                        lifeStealPercent,
+                     int                          summon)
+        : Skill(name,
+                manaCost,
+                masteryCost,
+                damage,
+                effectChance,
+                std::move(effectVec),
+                std::move(treeNodeVec),
+                learn,
+                activate)
     {
         this->lifestealPercentage = lifeStealPercent;
         this->summonedUnit        = summon;

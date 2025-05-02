@@ -278,7 +278,7 @@ public:
      * @return string The rank of the dungeon
      */
     string getRank() const;
-  
+
     /*
      * @brief Set the quest for this dungeon
      *

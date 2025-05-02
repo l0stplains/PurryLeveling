@@ -9,14 +9,16 @@
 #include "states/ChooseCharacterState.hpp"
 #include "states/DungeonState.hpp"
 #include "states/InventoryMenuState.hpp"
-#include "units/characters/Character.hpp"  // Include Character header
 #include "states/ShopState.hpp"
-#include "units/AnimatedUnit.hpp"  // Include AnimatedUnit header
+#include "units/AnimatedUnit.hpp"          // Include AnimatedUnit header
+#include "units/characters/Character.hpp"  // Include Character header
 
 // Constructor
 WorldState::WorldState(GameContext& context)
     : State(context),
-      m_dungeonFactory(*context.GetItemManager(), *context.GetMobLootConfigParser()),
+      m_dungeonFactory(*context.GetItemManager(),
+                       *context.GetMobLootConfigParser(),
+                       *context.GetQuestGenerator()),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
       m_buttonHoverSound(GetContext().GetResourceManager()->GetSoundBuffer("button_hover")),

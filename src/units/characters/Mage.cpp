@@ -4,6 +4,8 @@
 #include <iostream>  // For debug output
 #include <limits>
 
+#include "skill/characterSkill/Mastery1/Focus.hpp"
+
 Mage::Mage(const std::string&  name,
            const sf::Vector2f& position,
            NavigationGrid&     navGrid,
@@ -23,6 +25,8 @@ Mage::Mage(const std::string&  name,
     m_manaRegen    = 4;
     m_moveSpeed    = 130.f;
     m_attackRange  = 48.f;
+
+    m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<Focus>()));
 
     sf::Vector2i mageFrameSize(32, 32);
 

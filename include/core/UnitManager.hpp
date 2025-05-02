@@ -56,7 +56,7 @@ public:
 
     /**
      * @brief Remove a unit from the manager by name
-     * @param name The name of the unit to remove
+     * @param id The ID of the unit to exclude
      */
     void RemoveUnitExcept(unsigned int id);
 

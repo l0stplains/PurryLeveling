@@ -3,6 +3,8 @@
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
 
+#include "skill/characterSkill/Mastery1/Stealth.hpp"
+
 Assassin::Assassin(const std::string&  name,
                    const sf::Vector2f& position,
                    NavigationGrid&     navGrid,
@@ -22,6 +24,8 @@ Assassin::Assassin(const std::string&  name,
     m_manaRegen    = 3;
     m_moveSpeed    = 180.f;
     m_attackRange  = 48.f;
+
+    m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<Stealth>()));
 
     sf::Vector2i assassinFrameSize(32, 32);
 

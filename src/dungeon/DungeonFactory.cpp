@@ -2,14 +2,6 @@
 
 #include "rng/rng.hpp"
 
-const string Dungeon::RANK_S       = "S";
-const string Dungeon::RANK_A       = "A";
-const string Dungeon::RANK_B       = "B";
-const string Dungeon::RANK_C       = "C";
-const string Dungeon::RANK_D       = "D";
-const string Dungeon::RANK_E       = "E";
-const string Dungeon::RANK_SPECIAL = "SPECIAL";
-
 DungeonFactory::DungeonFactory(ItemManager&         itemManager,
                                MobLootConfigParser& mobLootConfigParser,
                                QuestGenerator&      questGenerator)

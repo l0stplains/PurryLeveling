@@ -3,7 +3,7 @@
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
 
-#include "skill/characterSkill/Bravery.hpp"
+#include "skill/characterSkill/Mastery1/Bravery.hpp"
 
 Fighter::Fighter(const std::string&  name,
                  const sf::Vector2f& position,

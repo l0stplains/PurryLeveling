@@ -9,6 +9,7 @@
 #include "inventory/Equipment.hpp"
 #include "items/ItemManager.hpp"
 #include "parser/MobLootConfigParser.hpp"
+#include "quest/QuestGenerator.hpp"
 #include "units/NavigationGrid.hpp"
 
 class StateManager;  // forward declaration
@@ -76,6 +77,8 @@ public:
     ItemManager* GetItemManager() const;
 
     MobLootConfigParser* GetMobLootConfigParser() const;
+
+    QuestGenerator* GetQuestGenerator() const;
 
     /**
      * @brief Get the window
@@ -150,6 +153,8 @@ public:
 
     void SetMobLootConfigParser(MobLootConfigParser* mobLootConfigParser);
 
+    void SetQuestGenerator(QuestGenerator* questGenerator);
+
     /**
      * @brief Set the window
      *
@@ -190,6 +195,7 @@ private:
     StateManager*        m_stateManager;     ///< Pointer to the state manager
     ItemManager*         m_itemManager;
     MobLootConfigParser* m_mobLootConfigParser;
+    QuestGenerator*      m_questGenerator;
 
     Backpack*  m_backpack;
     Equipment* m_equipment;

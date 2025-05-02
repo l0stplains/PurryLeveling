@@ -10,6 +10,7 @@
 #include "inventory/Equipment.hpp"
 #include "items/ItemManager.hpp"
 #include "parser/MobLootConfigParser.hpp"
+#include "quest/QuestGenerator.hpp"
 
 /**
  * @class Game
@@ -53,6 +54,7 @@ private:
     StateManager    m_stateManager;     ///< State manager for handling game states
     ItemManager     m_itemManager;
     MobLootConfigParser m_mobLootConfigParser;
+    QuestGenerator      m_questGenerator;
     Backpack            m_backpack;
     Equipment           m_equipment;
     ImGuiManager        m_gui;  ///< ImGui backend manager for rendering UI
