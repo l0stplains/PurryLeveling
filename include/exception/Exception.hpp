@@ -3,6 +3,8 @@
 #include <exception>
 #include <string>
 
+/* Inventory Exceptions */
+
 class OutOfBoundsException : public std::exception
 {
 public:
@@ -66,17 +68,15 @@ public:
     }
 };
 
-class InsufficientGoldException : public std::exception
-{
-public:
-    const char* what() const noexcept override { return "Not enough money to buy the item"; }
-};
+/* Shop Exceptions */
 
 class InsufficientGoldException : public std::exception
 {
 public:
     const char* what() const noexcept override { return "Not enough money to buy the item"; }
 };
+
+/* File Processing Exceptions */
 
 class FileNotFoundException : public std::exception
 {
@@ -88,4 +88,16 @@ class LineTooShortException : public std::exception
 {
 public:
     const char* what() const noexcept override { return "Line has too few columns"; }
+};
+
+class InvalidFormatException : public std::exception
+{
+public:
+    const char* what() const noexcept override { return "Invalid format"; }
+};
+
+class ResourceNotFoundException : public std::exception
+{
+public:
+    const char* what() const noexcept override { return "Resource not found"; }
 };

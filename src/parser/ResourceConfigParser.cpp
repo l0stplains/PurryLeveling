@@ -1,5 +1,6 @@
 
 #include "parser/ResourceConfigParser.hpp"
+#include "exception/Exception.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -21,7 +22,7 @@ std::string ResourceConfigParser::Trim(const std::string& str) const
     return str.substr(first, last - first + 1);
 }
 
-bool ResourceConfigParser::ParseFromFile(const std::string& filename)
+void ResourceConfigParser::ParseFromFile(const std::string& filename)
 {
     // Clear any previous data
     m_resources.clear();
@@ -31,7 +32,7 @@ bool ResourceConfigParser::ParseFromFile(const std::string& filename)
     if (!file.is_open())
     {
         m_lastError = "Failed to open resource config file: " + filename;
-        return false;
+        throw FileNotFoundException();
     }
 
     std::string line;
@@ -74,7 +75,7 @@ bool ResourceConfigParser::ParseFromFile(const std::string& filename)
                 if (entry.id.empty())
                 {
                     m_lastError = "Line " + std::to_string(lineNumber) + ": Empty resource ID";
-                    return false;
+                    
                 }
 
                 // Extract and trim path
@@ -83,7 +84,7 @@ bool ResourceConfigParser::ParseFromFile(const std::string& filename)
                 {
                     m_lastError = "Line " + std::to_string(lineNumber) +
                                   ": Empty resource path for ID '" + entry.id + "'";
-                    return false;
+                    throw ResourceNotFoundException();
                 }
 
                 // Add to resources
@@ -94,17 +95,14 @@ bool ResourceConfigParser::ParseFromFile(const std::string& filename)
                 // Line doesn't contain an equal sign
                 m_lastError =
                     "Line " + std::to_string(lineNumber) + ": Invalid format, expected 'id = path'";
-                return false;
+                throw LineTooShortException();
             }
         }
-
-        // Successful parsing
-        return true;
     }
     catch (const std::exception& e)
     {
         m_lastError = "Error parsing line " + std::to_string(lineNumber) + ": " + e.what();
-        return false;
+        throw InvalidFormatException();
     }
 }
 

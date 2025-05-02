@@ -38,7 +38,7 @@ public:
      * @param filename Path to the configuration file
      * @return true if parsing was successful, false otherwise
      */
-    bool ParseFromFile(const std::string& filename) override;
+    void ParseFromFile(const std::string& filename) override;
 
     /**
      * @brief Get all resources belonging to a category
