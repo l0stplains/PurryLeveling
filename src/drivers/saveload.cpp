@@ -25,7 +25,8 @@ int main()
     // 1) parse
     ItemConfigParser itemParser;
     itemParser.ParseFromFile("data/configtest/item.txt");
-    ItemManager        itemMgr(itemParser.GetData());
+    ItemManager itemMgr();
+    itemMgr.setItemDatabase(itemParser.GetData());
     PlayerConfigParser parser(itemMgr);
     std::string        err;
     if (!parser.ParseFromFile(inBase + "/" + name))
