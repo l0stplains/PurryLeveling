@@ -13,7 +13,7 @@
 class ShopConfigParser : public ConfigParser
 {
 public:
-    bool ParseFromFile(const std::string& filename) override;
+    void ParseFromFile(const std::string& filename) override;
 
     /**
      * @brief Data rows: {ItemName, Rarity, BasePrice, Stock}

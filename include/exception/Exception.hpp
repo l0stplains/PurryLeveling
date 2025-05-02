@@ -71,3 +71,21 @@ class InsufficientGoldException : public std::exception
 public:
     const char* what() const noexcept override { return "Not enough money to buy the item"; }
 };
+
+class InsufficientGoldException : public std::exception
+{
+public:
+    const char* what() const noexcept override { return "Not enough money to buy the item"; }
+};
+
+class FileNotFoundException : public std::exception
+{
+public:
+    const char* what() const noexcept override { return "File not found"; }
+};
+
+class LineTooShortException : public std::exception
+{
+public:
+    const char* what() const noexcept override { return "Line has too few columns"; }
+};

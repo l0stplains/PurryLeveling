@@ -20,7 +20,7 @@ public:
      * @param filename Path to the mob loot configuration file
      * @return true if parsing was successful, false otherwise
      */
-    bool ParseFromFile(const std::string& filename) override;
+    void ParseFromFile(const std::string& filename) override;
 
     /**
      * @brief Data rows: {MobName, ItemID, Probability}

@@ -20,7 +20,7 @@ public:
      * @param filename Path to the item configuration file
      * @return true if parsing was successful, false otherwise
      */
-    bool ParseFromFile(const std::string& filename) override;
+    void ParseFromFile(const std::string& filename) override;
 
     /**
      * @brief Retrieved data as rows of tokens: {ID, Name, Type, Rarity, BaseAtk, Effect1, Effect2,

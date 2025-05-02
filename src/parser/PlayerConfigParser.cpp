@@ -3,16 +3,16 @@
 #include <algorithm>  // for std::max
 #include <cstdlib>    // for std::stoul, std::stoi
 
-bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
+void PlayerConfigParser::ParseFromFile(const std::string& basePath)
 {
     if (!ConfigParserUtils::ReadTokensFile(
             basePath + "/equipment.txt", m_equipmentData, 2, 5, m_lastError))
-        return false;
+        throw FileNotFoundException();
 
     // 2) backpack: n×4 → raw tokens
     std::vector<std::vector<std::string>> backpackRecs;
     if (!ConfigParserUtils::ReadTokensFile(basePath + "/backpack.txt", backpackRecs, 4, m_lastError))
-        return false;
+        throw FileNotFoundException();
 
     // convert to grid of <Item, count>
     m_backpackData.clear();
@@ -29,7 +29,13 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
                                            statsRecs,
                                            /*expectedCols=*/2,
                                            m_lastError))
-        return false;
+        throw FileNotFoundException();
+    if (statsRecs.size() < 20)
+    {
+        m_lastError =
+            "stats.txt has too few rows: expected >=20, got " + std::to_string(statsRecs.size());
+        throw LineTooShortException();
+    }
 
     m_charstats.clear();
     m_unitstats.clear();
@@ -66,7 +72,7 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
                                                /*expectedCols=*/1,
                                                m_lastError))
         {
-            return false;
+            throw FileNotFoundException();
         }
 
         m_skilltree.clear();
@@ -76,6 +82,4 @@ bool PlayerConfigParser::ParseFromFile(const std::string& basePath)
             m_skilltree.insert(rec[0]);
         }
     }
-
-    return true;
 }

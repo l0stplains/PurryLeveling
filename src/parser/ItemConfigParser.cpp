@@ -5,12 +5,12 @@
 #include "effects/Effect.hpp"
 #include "parser/ConfigParserUtils.hpp"
 
-bool ItemConfigParser::ParseFromFile(const std::string& filename)
+void ItemConfigParser::ParseFromFile(const std::string& filename)
 {
     // 1) read raw tokens, no fixed column count
     std::vector<std::vector<std::string>> raw;
     if (!ConfigParserUtils::ReadTokensFile(filename, raw, m_lastError))
-        return false;
+        throw FileNotFoundException();
 
     m_data.clear();
     m_data.reserve(raw.size());
@@ -20,7 +20,7 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename)
         if (rec.size() < 8)
         {
             m_lastError = "Line has too few columns: expected >=8, got " + std::to_string(rec.size());
-            return false;
+            throw LineTooShortException();
         }
 
         const std::string& id     = rec[0];
@@ -58,6 +58,4 @@ bool ItemConfigParser::ParseFromFile(const std::string& filename)
         // 4) construct the Item
         m_data.emplace_back(id, name, type, rarity, effects, description);
     }
-
-    return true;
 }

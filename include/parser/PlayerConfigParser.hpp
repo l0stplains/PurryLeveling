@@ -8,25 +8,22 @@
 #include "effects/Stats.hpp"
 #include "items/Item.hpp"
 #include "items/ItemManager.hpp"
-#include "parser/ConfigParser.hpp"
+#include "parser/ConfigParser.hpp" 
 #include "parser/ConfigParserUtils.hpp"
 
 class PlayerConfigParser : public ConfigParser
 {
 public:
-
     /// @brief Default constructor
-    /// @details This constructor initializes the PlayerConfigParser with a default ItemManager instance.
+    /// @details This constructor initializes the PlayerConfigParser with a default ItemManager
+    /// instance.
     PlayerConfigParser();
 
-    bool ParseFromFile(const std::string& basePath) override;
+    void ParseFromFile(const std::string& basePath) override;
 
     /// @brief Sets the item manager.
-    void SetItemManager(ItemManager& itemManager)
-    {
-        m_itemManager = itemManager;
-    }
-    
+    void SetItemManager(ItemManager& itemManager) { m_itemManager = itemManager; }
+
     /// @brief Gets the equipment data.
     const std::vector<std::vector<std::string>>& GetEquipmentData() const
     {

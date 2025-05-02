@@ -14,7 +14,7 @@ public:
      * @param filename Path to the configuration file
      * @return true if parsing was successful, false otherwise
      */
-    bool ParseFromFile(const std::string& filename) override;
+    void ParseFromFile(const std::string& filename) override;
     /*
      * Example of a quest configuration file:
      * # <Dungeon Rank> <Quest Type> <Damage Dealt/Mobs Killed> <Gold Reward> <Exp Reward> <Item
