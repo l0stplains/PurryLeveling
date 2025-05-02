@@ -4,7 +4,6 @@
 #include "effects/useEffects/Bloodthirst.hpp"
 #include "effects/useEffects/GladiatorMight.hpp"
 #include "skill/characterSkill/AssassinSkill.hpp"
-using namespace std;
 
 // Skill Mastery3 Assassin
 class SwiftStrikes : public AssassinSkill

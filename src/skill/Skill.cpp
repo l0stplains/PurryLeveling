@@ -6,7 +6,11 @@ Skill::Skill(string                     name,
              float                      damage,
              float                      effectChance,
              vector<unique_ptr<Effect>> effectVec,
+<<<<<<< HEAD
              vector<unique_ptr<Skill>>  treeNodeVec,
+=======
+             vector<Skill*>             treeNodeVec,
+>>>>>>> main
              bool                       learn,
              bool                       activate)
 {
@@ -25,6 +29,10 @@ Skill::~Skill() {}
 
 bool Skill::learn(int* masteryPoint)
 {
+<<<<<<< HEAD
+=======
+    // If there are no children, nothing to learn
+>>>>>>> main
     if (children.empty())
     {
         return false;
@@ -54,6 +62,10 @@ bool Skill::learn(int* masteryPoint)
         }
         else
         {
+<<<<<<< HEAD
+=======
+            // Try to learn child's children
+>>>>>>> main
             if (child->learn(masteryPoint))
             {
                 anySkillLearned = true;

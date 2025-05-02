@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "effects/useEffects/BattleFocus.hpp"
 #include "effects/useEffects/HarmoniousEmpowerment.hpp"
 #include "skill/characterSkill/Mastery3/Annihilation.hpp"

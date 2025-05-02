@@ -9,7 +9,7 @@ CXXFLAGS_COMMON := -std=c++17 -Wall -Wextra -Wpedantic \
 	-Iinclude \
 	-I/usr/local/include \
 	$(shell pkg-config --cflags sfml-graphics sfml-window sfml-system)
-CXXFLAGS_DEBUG := -g -DDEBUG -O0
+CXXFLAGS_DEBUG := -g -DDEBUG -O3
 CXXFLAGS_RELEASE := -O3 -DNDEBUG
 
 # default release build, use DEBUG=1 for debug build
@@ -23,7 +23,7 @@ endif
 
 # linker: look in /usr/local/lib for ImGui-SFML
 LDFLAGS := -L/usr/local/lib -Wl,-rpath=/usr/local/lib \
-  $(shell pkg-config --libs sfml-graphics sfml-window sfml-system) \
+  $(shell pkg-config --libs sfml-graphics sfml-window sfml-audio sfml-system) \
   -lImGui-SFML
 
 SRCDIR := src

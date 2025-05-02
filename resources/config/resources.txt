@@ -1,0 +1,304 @@
+# Resources configuration file
+# Format: [category] id = path
+
+[fonts]
+main_font = resources/fonts/m5x7.ttf
+main_bold_font = resources/fonts/m6x11.ttf
+
+[textures]
+main_menu_background = resources/textures/ui/main_menu_background.jpg
+choose_character_menu_background = resources/textures/ui/choose_character_menu_background.jpg
+main_logo_shadow = resources/textures/ui/main_logo_shadow.png
+main_menu_button = resources/textures/ui/main_menu_button.png
+square_button = resources/textures/ui/square_button.png
+
+normal_button = resources/textures/ui/normal_button.png
+misty_button = resources/textures/ui/misty_button.png
+lava_button = resources/textures/ui/lava_button.png
+crystal_button = resources/textures/ui/crystal_button.png
+world_background = resources/textures/ui/world_background.jpg
+inventory_background = resources/textures/ui/inventory_background.jpg
+
+# Items
+ice_potion = resources/textures/items/ice_potion.png
+
+# Dungeons Background
+normal_base = resources/textures/ui/normal_base.jpg
+normal_boss = resources/textures/ui/normal_boss.jpg
+misty_base = resources/textures/ui/misty_base.jpg
+misty_boss = resources/textures/ui/misty_boss.jpg
+lava_base = resources/textures/ui/lava_base.jpg
+lava_boss = resources/textures/ui/lava_boss.jpg
+crystal_base = resources/textures/ui/crystal_base.jpg
+crystal_boss = resources/textures/ui/crystal_boss.jpg
+
+# Props
+empty_prop = resources/textures/props/empty.png
+portal_e = resources/textures/props/portal_e.png
+portal_d = resources/textures/props/portal_d.png
+portal_c = resources/textures/props/portal_c.png
+portal_b = resources/textures/props/portal_b.png
+portal_a = resources/textures/props/portal_a.png
+portal_s = resources/textures/props/portal_s.png
+portal_special = resources/textures/props/portal_special.png
+
+# Centaur
+character_centaur_attack = resources/textures/characters/Centaur/CentaurAttack.png
+character_centaur_die = resources/textures/characters/Centaur/CentaurDie.png
+character_centaur_dmg = resources/textures/characters/Centaur/CentaurDmg.png
+character_centaur_idle = resources/textures/characters/Centaur/CentaurIdle.png
+character_centaur_jump = resources/textures/characters/Centaur/CentaurJump.png
+character_centaur_walk = resources/textures/characters/Centaur/CentaurWalk.png
+
+# Cyclop
+character_cyclop_attack = resources/textures/characters/Cyclop/CyclopAttack.png
+character_cyclop_die = resources/textures/characters/Cyclop/CyclopDie.png
+character_cyclop_dmg = resources/textures/characters/Cyclop/CyclopDmg.png
+character_cyclop_idle = resources/textures/characters/Cyclop/CyclopIdle.png
+character_cyclop_jump = resources/textures/characters/Cyclop/CyclopJump.png
+character_cyclop_walk = resources/textures/characters/Cyclop/CyclopWalk.png
+
+# Dwarf Yellow Beard
+character_dwarf_attack = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearAttack.png
+character_dwarf_charged_attack = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearChargedAttack.png
+character_dwarf_dmg = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearDmg.png
+character_dwarf_idle = resources/textures/characters/Dwarf_Yellow_Beard/YellowBeardIdle.png
+character_dwarf_jump = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearJump.png
+character_dwarf_die = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearSpinDie.png
+character_dwarf_walk = resources/textures/characters/Dwarf_Yellow_Beard/YellowBearWalk.png
+
+# Elf
+character_elf_attack = resources/textures/characters/Elf/ElfAttack.png
+character_elf_charged_attack = resources/textures/characters/Elf/ElfChargedAttack.png
+character_elf_dmg = resources/textures/characters/Elf/ElfDmg.png
+character_elf_idle = resources/textures/characters/Elf/ElfIdle.png
+character_elf_jump = resources/textures/characters/Elf/ElfJump.png
+character_elf_die_spin = resources/textures/characters/Elf/ElfSpinDie.png
+character_elf_walk = resources/textures/characters/Elf/ElfWalk.png
+
+# Human Amazon
+character_amazon_attack = resources/textures/characters/Human_Amazon/AmazonAttack.png
+character_amazon_charged_attack = resources/textures/characters/Human_Amazon/AmazonChargedAttack.png
+character_amazon_die = resources/textures/characters/Human_Amazon/AmazonDie.png
+character_amazon_dmg = resources/textures/characters/Human_Amazon/AmazonDmg.png
+character_amazon_idle = resources/textures/characters/Human_Amazon/AmazonIdle.png
+character_amazon_jump = resources/textures/characters/Human_Amazon/AmazonJump.png
+character_amazon_walk = resources/textures/characters/Human_Amazon/AmazonWalk.png
+
+# Goblin
+mob_goblin_attack = resources/textures/mobs/Goblin/GoblinAttack.png
+mob_goblin_charged_attack = resources/textures/mobs/Goblin/GoblinChargedAttack.png
+mob_goblin_dmg = resources/textures/mobs/Goblin/GoblinDmg.png
+mob_goblin_idle = resources/textures/mobs/Goblin/GoblinIdle.png
+mob_goblin_jump = resources/textures/mobs/Goblin/GoblinJump.png
+mob_goblin_die = resources/textures/mobs/Goblin/GoblinSpinDie.png
+mob_goblin_walk = resources/textures/mobs/Goblin/GoblinWalk.png
+
+
+# Green Slime
+mob_slime_attack = resources/textures/mobs/Green_Slime/SlimeGreenJumpAttack.png
+mob_slime_dmg = resources/textures/mobs/Green_Slime/SlimeGreenDmg.png
+mob_slime_idle = resources/textures/mobs/Green_Slime/SlimeGreenIdle.png
+mob_slime_die = resources/textures/mobs/Green_Slime/SlimeGreenDie.png
+mob_slime_jump = resources/textures/mobs/Green_Slime/SlimeGreenJumpAttack.png
+mob_slime_walk = resources/textures/mobs/Green_Slime/SlimeGreenJumpAttack.png
+
+# Human Townsfolk
+mob_townsfolk_attack = resources/textures/mobs/Human_Townsfolk/HumanTownsfolkAttack.png
+mob_townsfolk_charged_attack = resources/textures/mobs/Human_Townsfolk/HumanTownsfolkChargedAttack.png
+mob_townsfolk_dmg = resources/textures/mobs/Human_Townsfolk/HumanTownsfolkDmg.png
+mob_townsfolk_idle = resources/textures/mobs/Human_Townsfolk/HumanTownsfolkIdle.png
+mob_townsfolk_jump = resources/textures/mobs/Human_Townsfolk/HumanTownsfolkJump.png
+mob_townsfolk_die = resources/textures/mobs/Human_Townsfolk/HumanTownsfolkSpinDie.png
+mob_townsfolk_walk = resources/textures/mobs/Human_Townsfolk/HumanTownsfolkWalk.png
+
+# Minotaur
+mob_minotaur_attack = resources/textures/mobs/Minotaur/MinotaurAttack.png
+mob_minotaur_die = resources/textures/mobs/Minotaur/MinotaurDie.png
+mob_minotaur_dmg = resources/textures/mobs/Minotaur/MinotaurDmg.png
+mob_minotaur_idle = resources/textures/mobs/Minotaur/MinotaurIdle.png
+mob_minotaur_jump = resources/textures/mobs/Minotaur/MinotaurJump.png
+mob_minotaur_walk = resources/textures/mobs/Minotaur/MinotaurWalk.png
+
+# Skeleton
+mob_skeleton_attack = resources/textures/mobs/Skeleton/SkeletonAttack.png
+mob_skeleton_die = resources/textures/mobs/Skeleton/SkeletonDie.png
+mob_skeleton_dmg = resources/textures/mobs/Skeleton/SkeletonDmg.png
+mob_skeleton_idle = resources/textures/mobs/Skeleton/SkeletonIdle.png
+mob_skeleton_jump = resources/textures/mobs/Skeleton/SkeletonIdle.png
+mob_skeleton_walk = resources/textures/mobs/Skeleton/SkeletonWalk.png
+
+# Troll
+mob_troll_attack = resources/textures/mobs/Troll/TrollAttack.png
+mob_troll_die = resources/textures/mobs/Troll/TrollDie.png
+mob_troll_dmg = resources/textures/mobs/Troll/TrollDmg.png
+mob_troll_idle = resources/textures/mobs/Troll/TrollIdle.png
+mob_troll_jump = resources/textures/mobs/Troll/TrollJump.png
+mob_troll_walk = resources/textures/mobs/Troll/TrollWalk.png
+
+# Wild Orc
+mob_orc_attack = resources/textures/mobs/Wild_Orc/WildOrcAttack.png
+mob_orc_charged_attack = resources/textures/mobs/Wild_Orc/WildOrcChargedAttack.png
+mob_orc_die = resources/textures/mobs/Wild_Orc/WildOrcDie.png
+mob_orc_dmg = resources/textures/mobs/Wild_Orc/WildOrcDmg.png
+mob_orc_idle = resources/textures/mobs/Wild_Orc/WildOrcIdle.png
+mob_orc_jump = resources/textures/mobs/Wild_Orc/WildOrcJump.png
+mob_orc_walk = resources/textures/mobs/Wild_Orc/WildOrcWalk.png
+
+# Wildfire
+mob_wildfire_attack = resources/textures/mobs/Wildfire/WildfireDie.png
+mob_wildfire_die = resources/textures/mobs/Wildfire/WildfireDie.png
+mob_wildfire_dmg = resources/textures/mobs/Wildfire/WildfireDmg.png
+mob_wildfire_walk = resources/textures/mobs/Wildfire/WildfireFly.png
+mob_wildfire_idle = resources/textures/mobs/Wildfire/WildfireIdle.png
+mob_wildfire_jump = resources/textures/mobs/Wildfire/WildfireIdle.png
+
+# Yeti
+mob_yeti_attack = resources/textures/mobs/Yeti/YetiAttack.png
+mob_yeti_die = resources/textures/mobs/Yeti/YetiDie.png
+mob_yeti_dmg = resources/textures/mobs/Yeti/YetiDmg.png
+mob_yeti_idle = resources/textures/mobs/Yeti/YetiIdle.png
+mob_yeti_jump = resources/textures/mobs/Yeti/YetiJump.png
+mob_yeti_walk = resources/textures/mobs/Yeti/YetiWalk.png
+
+# Zombie
+mob_zombie_attack = resources/textures/mobs/Zombie/ZombieAttack.png
+mob_zombie_die = resources/textures/mobs/Zombie/ZombieDie.png
+mob_zombie_dmg = resources/textures/mobs/Zombie/ZombieDmg.png
+mob_zombie_idle = resources/textures/mobs/Zombie/ZombieIdle.png
+mob_zombie_walk = resources/textures/mobs/Zombie/ZombieWalk.png
+mob_zombie_jump = resources/textures/mobs/Zombie/ZombieIdle.png
+
+# Centaur Shadows
+character_centaur_attack_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurAttack.png
+character_centaur_die_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurDie.png
+character_centaur_dmg_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurDmg.png
+character_centaur_idle_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurIdle.png
+character_centaur_jump_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurJump.png
+character_centaur_walk_shadow = resources/textures/characters/Centaur/_Shadow/ShadowCentaurWalk.png
+
+# Cyclop Shadows
+character_cyclop_attack_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowAttack.png
+character_cyclop_die_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowDie.png
+character_cyclop_dmg_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowDmg.png
+character_cyclop_idle_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowIdle.png
+character_cyclop_jump_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowJump.png
+character_cyclop_walk_shadow = resources/textures/characters/Cyclop/_Shadows/ShadowWalk.png
+
+# Dwarf Yellow Beard Shadows
+character_dwarf_attack_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfAttack.png
+character_dwarf_charged_attack_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfChargedAttack.png
+character_dwarf_dmg_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfDmg.png
+character_dwarf_idle_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarfIdle.png
+character_dwarf_jump_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarJump.png
+character_dwarf_die_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarSpinDie.png
+character_dwarf_walk_shadow = resources/textures/characters/Dwarf_Yellow_Beard/_Shadows/ShadowDwarWalk.png
+
+# Elf Shadows
+character_elf_attack_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidAttack.png
+character_elf_charged_attack_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidChargedAttack.png
+character_elf_dmg_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidDmg.png
+character_elf_idle_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidIdle.png
+character_elf_jump_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidJump.png
+character_elf_die_soul_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidSoulDie.png
+character_elf_die_spin_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidSpinDie.png
+character_elf_walk_shadow = resources/textures/characters/Elf/_Shadows/ShadowHumanoidWalk.png
+
+# Human Amazon Shadows
+character_amazon_attack_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidAttack.png
+character_amazon_charged_attack_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidChargedAttack.png
+character_amazon_dmg_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidDmg.png
+character_amazon_idle_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidIdle.png
+character_amazon_jump_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidJump.png
+# character_amazon_die_soul_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidSoulDie.png
+character_amazon_die_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidSpinDie.png
+character_amazon_walk_shadow = resources/textures/characters/Human_Amazon/_Shadows/ShadowHumanoidWalk.png
+
+# Goblin Shadows
+mob_goblin_attack_shadow = resources/textures/mobs/Goblin/_Shadows/ShadowHumanoidAttack.png
+mob_goblin_charged_attack_shadow = resources/textures/mobs/Goblin/_Shadows/ShadowHumanoidChargedAttack.png
+mob_goblin_dmg_shadow = resources/textures/mobs/Goblin/_Shadows/ShadowHumanoidDmg.png
+mob_goblin_idle_shadow = resources/textures/mobs/Goblin/_Shadows/ShadowHumanoidIdle.png
+mob_goblin_jump_shadow = resources/textures/mobs/Goblin/_Shadows/ShadowHumanoidJump.png
+mob_goblin_die_shadow = resources/textures/mobs/Goblin/_Shadows/ShadowHumanoidSpinDie.png
+mob_goblin_walk_shadow = resources/textures/mobs/Goblin/_Shadows/ShadowHumanoidWalk.png
+
+# Green Slime Shadows
+mob_slime_attack_shadow = resources/textures/mobs/Green_Slime/_Shadows/ShadowSlimeJump.png
+mob_slime_dmg_shadow    = resources/textures/mobs/Green_Slime/_Shadows/ShadowSlimeDmg.png
+mob_slime_idle_shadow   = resources/textures/mobs/Green_Slime/_Shadows/ShadowSlimeIdle.png
+mob_slime_die_shadow    = resources/textures/mobs/Green_Slime/_Shadows/ShadowSlimeDie.png
+mob_slime_jump_shadow   = resources/textures/mobs/Green_Slime/_Shadows/ShadowSlimeJump.png
+mob_slime_walk_shadow   = resources/textures/mobs/Green_Slime/_Shadows/ShadowSlimeJump.png
+
+# Human Townsfolk Shadows
+mob_townsfolk_attack_shadow         = resources/textures/mobs/Human_Townsfolk/_Shadows/ShadowHumanoidAttack.png
+mob_townsfolk_charged_attack_shadow = resources/textures/mobs/Human_Townsfolk/_Shadows/ShadowHumanoidChargedAttack.png
+mob_townsfolk_dmg_shadow            = resources/textures/mobs/Human_Townsfolk/_Shadows/ShadowHumanoidDmg.png
+mob_townsfolk_idle_shadow           = resources/textures/mobs/Human_Townsfolk/_Shadows/ShadowHumanoidIdle.png
+mob_townsfolk_jump_shadow           = resources/textures/mobs/Human_Townsfolk/_Shadows/ShadowHumanoidJump.png
+mob_townsfolk_die_shadow            = resources/textures/mobs/Human_Townsfolk/_Shadows/ShadowHumanoidSpinDie.png
+mob_townsfolk_walk_shadow           = resources/textures/mobs/Human_Townsfolk/_Shadows/ShadowHumanoidWalk.png
+
+# Minotaur Shadows
+mob_minotaur_attack_shadow = resources/textures/mobs/Minotaur/_Shadows/ShadowAttack.png
+mob_minotaur_die_shadow    = resources/textures/mobs/Minotaur/_Shadows/ShadowDie.png
+mob_minotaur_dmg_shadow    = resources/textures/mobs/Minotaur/_Shadows/ShadowDmg.png
+mob_minotaur_idle_shadow   = resources/textures/mobs/Minotaur/_Shadows/ShadowIdle.png
+mob_minotaur_jump_shadow   = resources/textures/mobs/Minotaur/_Shadows/ShadowJump.png
+mob_minotaur_walk_shadow   = resources/textures/mobs/Minotaur/_Shadows/ShadowWalk.png
+
+# Skeleton Shadows
+mob_skeleton_attack_shadow = resources/textures/mobs/Skeleton/_Shadows/ShadowSkeletonAttack.png
+mob_skeleton_die_shadow    = resources/textures/mobs/Skeleton/_Shadows/ShadowSkeletonDie.png
+mob_skeleton_dmg_shadow    = resources/textures/mobs/Skeleton/_Shadows/ShadowSkeletonDmg.png
+mob_skeleton_idle_shadow   = resources/textures/mobs/Skeleton/_Shadows/ShadowSkeletonIdle.png
+mob_skeleton_jump_shadow   = resources/textures/mobs/Skeleton/_Shadows/ShadowSkeletonIdle.png
+mob_skeleton_walk_shadow   = resources/textures/mobs/Skeleton/_Shadows/ShadowSkeletonWalk.png
+
+# Troll Shadows
+mob_troll_attack_shadow = resources/textures/mobs/Troll/_Shadows/ShadowAttack.png
+mob_troll_die_shadow    = resources/textures/mobs/Troll/_Shadows/ShadowDie.png
+mob_troll_dmg_shadow    = resources/textures/mobs/Troll/_Shadows/ShadowDmg.png
+mob_troll_idle_shadow   = resources/textures/mobs/Troll/_Shadows/ShadowIdle.png
+mob_troll_jump_shadow   = resources/textures/mobs/Troll/_Shadows/ShadowJump.png
+mob_troll_walk_shadow   = resources/textures/mobs/Troll/_Shadows/ShadowWalk.png
+
+# Wild Orc Shadows
+mob_orc_attack_shadow          = resources/textures/mobs/Wild_Orc/_Shadows/ShadowHumanoidAttack.png
+mob_orc_charged_attack_shadow  = resources/textures/mobs/Wild_Orc/_Shadows/ShadowHumanoidChargedAttack.png
+mob_orc_die_shadow             = resources/textures/mobs/Wild_Orc/_Shadows/ShadowHumanoidSpinDie.png
+mob_orc_dmg_shadow             = resources/textures/mobs/Wild_Orc/_Shadows/ShadowHumanoidDmg.png
+mob_orc_idle_shadow            = resources/textures/mobs/Wild_Orc/_Shadows/ShadowHumanoidIdle.png
+mob_orc_jump_shadow            = resources/textures/mobs/Wild_Orc/_Shadows/ShadowHumanoidJump.png
+mob_orc_walk_shadow            = resources/textures/mobs/Wild_Orc/_Shadows/ShadowHumanoidWalk.png
+
+# Wildfire Shadows
+mob_wildfire_attack_shadow = resources/textures/mobs/Wildfire/_Shadows/ShadowWildfireDie.png
+mob_wildfire_die_shadow    = resources/textures/mobs/Wildfire/_Shadows/ShadowWildfireDie.png
+mob_wildfire_dmg_shadow    = resources/textures/mobs/Wildfire/_Shadows/ShadowWildfireDmg.png
+mob_wildfire_walk_shadow   = resources/textures/mobs/Wildfire/_Shadows/ShadowWildfireFly.png
+mob_wildfire_idle_shadow   = resources/textures/mobs/Wildfire/_Shadows/ShadowWildfireIdle.png
+mob_wildfire_jump_shadow   = resources/textures/mobs/Wildfire/_Shadows/ShadowWildfireIdle.png
+
+# Yeti Shadows
+mob_yeti_attack_shadow = resources/textures/mobs/Yeti/_Shadows/ShadowAttack.png
+mob_yeti_die_shadow    = resources/textures/mobs/Yeti/_Shadows/ShadowDie.png
+mob_yeti_dmg_shadow    = resources/textures/mobs/Yeti/_Shadows/ShadowDmg.png
+mob_yeti_idle_shadow   = resources/textures/mobs/Yeti/_Shadows/ShadowIdle.png
+mob_yeti_jump_shadow   = resources/textures/mobs/Yeti/_Shadows/ShadowJump.png
+mob_yeti_walk_shadow   = resources/textures/mobs/Yeti/_Shadows/ShadowWalk.png
+
+# Zombie Shadows
+mob_zombie_attack_shadow = resources/textures/mobs/Zombie/_Shadows/ZombieAttackShadow.png
+mob_zombie_die_shadow    = resources/textures/mobs/Zombie/_Shadows/ZombieDieShadow.png
+mob_zombie_dmg_shadow    = resources/textures/mobs/Zombie/_Shadows/ZombieDmgShadow.png
+mob_zombie_idle_shadow   = resources/textures/mobs/Zombie/_Shadows/ZombieIdleShadow.png
+mob_zombie_walk_shadow   = resources/textures/mobs/Zombie/_Shadows/ZombieWalkShadow.png
+mob_zombie_jump_shadow   = resources/textures/mobs/Zombie/_Shadows/ZombieIdleShadow.png
+
+
+[audio]
+menu_backsound = resources/audio/music/main_menu_theme.mp3
+button_hover = resources/audio/sfx/cursor_style_2.ogg
+button_click = resources/audio/sfx/confirm_style_4_001.ogg

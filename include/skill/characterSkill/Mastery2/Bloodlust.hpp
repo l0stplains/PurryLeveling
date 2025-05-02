@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "effects/useEffects/Bloodthirst.hpp"
 #include "effects/useEffects/HarmoniousEmpowerment.hpp"
 #include "skill/characterSkill/BerserkerSkill.hpp"
