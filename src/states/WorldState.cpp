@@ -7,6 +7,7 @@
 #include "imgui.h"
 #include "states/ChooseCharacterState.hpp"
 #include "states/InventoryMenuState.hpp"
+#include "states/ShopState.hpp"
 #include "units/AnimatedUnit.hpp"  // Include AnimatedUnit header
 
 // Constructor
@@ -253,9 +254,11 @@ void WorldState::RenderUI()
         {
             if (character)
                 character->SetControlledByPlayer(true);
-            m_showPortalEnterModal = false;
-            m_currentPortalId      = -1;
+            m_showShopEnterModal = false;
             ImGui::CloseCurrentPopup();
+            GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId())->SetActive(false);
+            m_pendingStateChange =
+                StateChange {StateAction::PUSH, std::make_unique<ShopState>(GetContext())};
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel", ImVec2(100, 0)))

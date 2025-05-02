@@ -15,24 +15,26 @@ InventoryMenu::InventoryMenu(GameContext& gameContext)
       m_backpack(*gameContext.GetBackpack()),
       m_equipment(*gameContext.GetEquipment())
 {
-    m_draggedItem = std::make_unique<std::pair<Item, int>>(Item("", "", "", 'C', {}), 0);
+    std::vector<std::shared_ptr<Effect>> effects;
+    m_draggedItem = std::make_unique<std::pair<Item, int>>(Item("", "", "", 'C', effects, ""), 0);
     m_isDraggingFromEquipment = false;
     m_equipmentSlotType       = "";
 
     // Initialize some sample items in m_backpack
     // Using proper Item constructor: Item(itemID, name, type, rarity, effects)
-    m_backpack.addItem(Item("diamond_ore", "Diamond", "resource", 'S', {}), 5);
-    m_backpack.addItem(Item("iron_ore", "Iron", "resource", 'C', {}), 45);
-    m_backpack.addItem(Item("gold_ore", "Gold", "resource", 'B', {}), 12);
-    m_backpack.addItem(Item("wood", "Wood", "resource", 'C', {}), 32);
-    m_backpack.addItem(Item("stone", "Stone", "resource", 'C', {}), 64);
+    m_backpack.addItem(Item("ice_potion", "Ice Potion", "Potion", 'A', effects, ""), 10);
+    m_backpack.addItem(Item("diamond_ore", "Diamond", "resource", 'S', effects, ""), 5);
+    m_backpack.addItem(Item("iron_ore", "Iron", "resource", 'C', effects, ""), 45);
+    m_backpack.addItem(Item("gold_ore", "Gold", "resource", 'B', effects, ""), 12);
+    m_backpack.addItem(Item("wood", "Wood", "resource", 'C', effects, ""), 32);
+    m_backpack.addItem(Item("stone", "Stone", "resource", 'C', effects, ""), 64);
 
     // Add some m_equipment items
-    m_backpack.addItem(Item("iron_sword", "Iron Sword", "Weapon", 'B', {}), 5);
-    m_backpack.addItem(Item("leather_helmet", "Leather Helmet", "HeadArmor", 'C', {}), 1);
-    m_backpack.addItem(Item("chain_mail", "Chain Mail", "BodyArmor", 'B', {}), 1);
-    m_backpack.addItem(Item("leather_boots", "Leather Boots", "FootArmor", 'C', {}), 1);
-    m_backpack.addItem(Item("magic_amulet", "Magic Amulet", "Pendant", 'A', {}), 1);
+    m_backpack.addItem(Item("iron_sword", "Iron Sword", "Weapon", 'B', effects, ""), 5);
+    m_backpack.addItem(Item("leather_helmet", "Leather Helmet", "HeadArmor", 'C', effects, ""), 1);
+    m_backpack.addItem(Item("chain_mail", "Chain Mail", "BodyArmor", 'B', effects, ""), 1);
+    m_backpack.addItem(Item("leather_boots", "Leather Boots", "FootArmor", 'C', effects, ""), 1);
+    m_backpack.addItem(Item("magic_amulet", "Magic Amulet", "Pendant", 'A', effects, ""), 1);
 }
 
 void InventoryMenu::Render()
