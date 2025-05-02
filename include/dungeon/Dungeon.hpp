@@ -7,6 +7,7 @@
 #include "items/Item.hpp"
 #include "items/ItemManager.hpp"
 #include "parser/MobLootConfigParser.hpp"
+#include "quest/Quest.hpp"
 
 using namespace std;
 
@@ -30,6 +31,7 @@ private:
     double          goldMultiplier;            // Gold multiplier for this dungeon
     ItemManager&    itemManager;               // Pointer to the ItemManager
     MobLootConfigParser& mobLootConfigParser;  // Pointer to the MobLootConfigParser
+    Quest                quest;                // Quest associated with this dungeon
 
     /**
      * @brief Initialize dungeon properties based on rank
@@ -91,6 +93,14 @@ private:
      * @param item The item to add
      */
     void addMobLoot(const Item& item);
+
+    /**
+     * @brief Get the item reward ID from the quest
+     * Only valid if quest is completed and dungeon is cleared
+     *
+     * @return std::string Quest item reward ID, or empty string if conditions not met
+     */
+    string getQuestItemRewardId() const;
 
 public:
     // Constants for dungeon ranks
@@ -268,4 +278,75 @@ public:
      * @return string The rank of the dungeon
      */
     string getRank() const;
+  
+    /*
+     * @brief Set the quest for this dungeon
+     *
+     * @param newQuest The quest to associate with this dungeon
+     */
+    void setQuest(const Quest& newQuest);
+
+    /**
+     * @brief Get the quest associated with this dungeon
+     *
+     * @return Quest& Reference to the quest
+     */
+    Quest& getQuest();
+
+    /**
+     * @brief Get the quest associated with this dungeon (const version)
+     *
+     * @return const Quest& Const reference to the quest
+     */
+    const Quest& getQuest() const;
+
+    /**
+     * @brief Check if the quest is completed and all chambers are cleared
+     *
+     * @return true If quest is completed and dungeon is cleared
+     * @return false Otherwise
+     */
+    bool isQuestCompleted() const;
+
+    /**
+     * @brief Update quest progress for KILL type quests
+     *
+     * @param mobsKilled Number of mobs killed
+     * @return true If the quest was completed with this update
+     * @return false Otherwise
+     */
+    bool updateKillQuestProgress(int mobsKilled);
+
+    /**
+     * @brief Update quest progress for DAMAGE type quests
+     *
+     * @param damageDealt Amount of damage dealt
+     * @return true If the quest was completed with this update
+     * @return false Otherwise
+     */
+    bool updateDamageQuestProgress(int damageDealt);
+
+    /**
+     * @brief Get the gold reward from the quest
+     * Only valid if quest is completed and dungeon is cleared
+     *
+     * @return int Quest gold reward, or 0 if conditions not met
+     */
+    int getQuestGoldReward() const;
+
+    /**
+     * @brief Get the experience reward from the quest
+     * Only valid if quest is completed and dungeon is cleared
+     *
+     * @return int Quest experience reward, or 0 if conditions not met
+     */
+    int getQuestExpReward() const;
+
+    /**
+     * @brief Get the actual item reward from the quest
+     * Only valid if quest is completed and dungeon is cleared
+     *
+     * @return Item The quest reward item, or a null item if conditions not met
+     */
+    Item getQuestRewardItem() const;
 };

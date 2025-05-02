@@ -1,32 +1,24 @@
 #pragma once
-#include <memory>
-
 #include "effects/useEffects/Chronoflux.hpp"
-#include "skill/Skill.hpp"
+#include "skill/characterSkill/MageSkill.hpp"
 #include "skill/characterSkill/Mastery3/EtherealBond.hpp"
 
 // Mage Mastery 2
-class SpiritualConnection : public Skill
+class SpiritualConnection : public MageSkill
 {
-private:
-    float intelligenceMultiplier = 0.14f;  // Moderate intelligence boost
-    int   manaRegenBonus         = 30;     // Mana regeneration
-
 public:
     SpiritualConnection(bool isLearned = false, bool isActivated = false)
-        : Skill("Spiritual Connection", 8, 3, 0, 1.0f, {}, {}, isLearned, isActivated)
+        : MageSkill("Spiritual Connection", 8, 3, 0, 1.0f, {}, {}, isLearned, isActivated, 0.14f, 30)
     {
-        vector<Skill*> thirdSkill;
-
-        EtherealBond* etherealBond = new EtherealBond();
-        thirdSkill.push_back(etherealBond);
-        this->setChildren(thirdSkill);
+        vector<unique_ptr<Skill>> thirdSkill;
+        thirdSkill.push_back(std::make_unique<EtherealBond>());
+        this->setChildren(std::move(thirdSkill));
 
         vector<unique_ptr<Effect>> effectVec;
-        effectVec.push_back(make_unique<Chronoflux>(0, 0.3, 3));
+        effectVec.push_back(std::make_unique<Chronoflux>(0, 0.3, 3));
         this->setEffects(std::move(effectVec));
     }
 
-    float getIntelligenceMultiplier() const { return intelligenceMultiplier; }
-    int   getManaRegenBonus() const { return manaRegenBonus; }
+    float getIntelligenceMultiplier() const override { return intelligenceMultiplier; }
+    int   getManaRegenBonus() const override { return manaRegenBonus; }
 };

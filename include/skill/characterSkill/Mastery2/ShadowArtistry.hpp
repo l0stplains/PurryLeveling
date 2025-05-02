@@ -2,39 +2,28 @@
 #include <memory>
 
 #include "effects/useEffects/BattleFocus.hpp"
-#include "skill/Skill.hpp"
+#include "skill/characterSkill/AssassinSkill.hpp"
 #include "skill/characterSkill/Mastery3/PhantomStrike.hpp"
 #include "skill/characterSkill/Mastery3/SwiftStrikes.hpp"
 #include "skill/characterSkill/Mastery3/Vanish.hpp"
 
 // Assassin Mastery 2
-class ShadowArtistry : public Skill
+class ShadowArtistry : public AssassinSkill
 {
-private:
-    // Maintain same attributes as Stealth
-    float agilityMultiplier = 0.17f;
-
 public:
     ShadowArtistry(bool isLearned = false, bool isActivated = false)
-        : Skill("Shadow Artistry", 6, 3, 0, 0.5f, {}, {}, isLearned, isActivated)
+        : AssassinSkill("Shadow Artistry", 6, 3, 0, 0.5f, {}, {}, isLearned, isActivated, 0.17f)
     {
-        vector<Skill*> childSkills;
-
-        // Create child skills
-        Vanish*        vanish        = new Vanish();
-        PhantomStrike* phantomStrike = new PhantomStrike();
-        SwiftStrikes*  swiftStrikes  = new SwiftStrikes();
-
-        childSkills.push_back(vanish);
-        childSkills.push_back(phantomStrike);
-        childSkills.push_back(swiftStrikes);
-
-        this->setChildren(childSkills);
+        vector<unique_ptr<Skill>> childSkills;
+        childSkills.push_back(std::make_unique<Vanish>());
+        childSkills.push_back(std::make_unique<PhantomStrike>());
+        childSkills.push_back(std::make_unique<SwiftStrikes>());
+        this->setChildren(std::move(childSkills));
 
         vector<unique_ptr<Effect>> effectVec;
-        effectVec.push_back(make_unique<BattleFocus>(0.25f, 0.35f, 0.1f, 3));
+        effectVec.push_back(std::make_unique<BattleFocus>(0.25f, 0.35f, 0.1f, 3));
         this->setEffects(std::move(effectVec));
     }
 
-    float getAgilityMultiplier() const { return agilityMultiplier; }
+    float getAgilityMultiplier() const override { return this->agilityMultiplier; }
 };

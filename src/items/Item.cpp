@@ -1,13 +1,14 @@
 #include "items/Item.hpp"
 
-Item::Item() : itemID(""), name(""), type(""), rarity(' '), effects({}) {}
+Item::Item() : itemID(""), name(""), type(""), rarity(' '), effects({}), description("") {}
 
 Item::Item(std::string                                itemID,
            const std::string&                         name,
            const std::string&                         type,
            char                                       rarity,
-           const std::vector<std::shared_ptr<Effect>> effects)
-    : itemID(itemID), name(name), type(type), rarity(rarity), effects(effects)
+           const std::vector<std::shared_ptr<Effect>> effects,
+           const std::string&                         description)
+    : itemID(itemID), name(name), type(type), rarity(rarity), effects(effects), description(description)
 {}
 
 Item::Item(const Item& other)
@@ -15,7 +16,8 @@ Item::Item(const Item& other)
       name(other.name),
       type(other.type),
       rarity(other.rarity),
-      effects(other.effects)
+      effects(other.effects),
+      description(other.description)
 {}
 
 Item& Item::operator=(const Item& other)
@@ -65,6 +67,11 @@ char Item::getRarity() const
 std::vector<std::shared_ptr<Effect>> Item::getEffects() const
 {
     return effects;
+}
+
+std::string Item::getDescription() const
+{
+    return description;
 }
 
 bool Item::isNull() const
