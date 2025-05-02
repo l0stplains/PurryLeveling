@@ -12,9 +12,9 @@ public:
     {
         vector<unique_ptr<Effect>> effectVec;
         effectVec.push_back(make_unique<FortunesCall>(20, 0.15f, 6));
-        effectVec.push_back(make_unique<Chronoflux>(0, 0.2, 3)); 
+        effectVec.push_back(make_unique<Chronoflux>(0, 0.2, 3));
         this->setEffects(std::move(effectVec));
     }
     float getIntelligenceMultiplier() const override { return intelligenceMultiplier; }
-    int getManaRegenBonus() const override { return manaRegenBonus; }
+    int   getManaRegenBonus() const override { return manaRegenBonus; }
 };

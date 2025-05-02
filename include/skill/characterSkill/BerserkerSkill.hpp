@@ -15,7 +15,7 @@ public:
                    float                      damage,
                    float                      effectChance,
                    vector<unique_ptr<Effect>> effectVec,
-                   vector<Skill*>             treeNodeVec,
+                   vector<unique_ptr<Skill>>  treeNodeVec,
                    bool                       learn,
                    bool                       activate,
                    float                      furMul,

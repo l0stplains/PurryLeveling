@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+
 #include "effects/useEffects/Shadowstep.hpp"
 #include "effects/useEffects/TimeWarp.hpp"
 #include "skill/characterSkill/NecromancerSkill.hpp"
@@ -17,5 +18,5 @@ public:
     }
 
     float getLifestealPercentage() const override { return lifestealPercentage; }
-    int getSummonedUnit() const override { return summonedUnit; }
+    int   getSummonedUnit() const override { return summonedUnit; }
 };

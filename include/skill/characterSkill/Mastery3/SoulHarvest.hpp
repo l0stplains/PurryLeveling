@@ -8,7 +8,6 @@
 // Skill Mastery3 Necromancer
 class SoulHarvest : public NecromancerSkill
 {
-
 public:
     SoulHarvest(bool isLearned = false, bool isActive = false)
         : NecromancerSkill("Soul Harvest", 12, 5, 0, 0, {}, {}, isLearned, isActive, 0.4f, 1)
@@ -19,5 +18,5 @@ public:
     }
 
     float getLifestealPercentage() const override { return lifestealPercentage; }
-    int getSummonedUnit() const override { return summonedUnit; }
+    int   getSummonedUnit() const override { return summonedUnit; }
 };

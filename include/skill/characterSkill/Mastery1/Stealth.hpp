@@ -1,7 +1,4 @@
 #pragma once
-
-#include <memory>
-
 #include "skill/characterSkill/AssassinSkill.hpp"
 #include "skill/characterSkill/Mastery2/ShadowArtistry.hpp"
 
@@ -12,13 +9,10 @@ public:
     Stealth(bool isLearned = true, bool isActivated = true)
         : AssassinSkill("Stealth", 3, 1, 0, 0, {}, {}, isLearned, isActivated, 0.17f)
     {
-        vector<Skill*> secondSkill;
+        vector<unique_ptr<Skill>> secondSkill;
+        secondSkill.push_back(std::make_unique<ShadowArtistry>());
+        this->setChildren(std::move(secondSkill));
+    }
 
-        ShadowArtistry* shadowArtistry = new ShadowArtistry();
-
-        secondSkill.push_back(shadowArtistry);
-        this->setChildren(secondSkill);
-    };
-
-    float getAgilityMultiplier() const { return agilityMultiplier; }
+    float getAgilityMultiplier() const override { return agilityMultiplier; }
 };

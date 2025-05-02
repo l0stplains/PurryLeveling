@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+
 #include "effects/useEffects/Chronoflux.hpp"
 #include "effects/useEffects/MysticBarrier.hpp"
 #include "skill/characterSkill/MageSkill.hpp"
@@ -17,5 +18,5 @@ public:
         this->setEffects(std::move(effectVec));
     }
     float getIntelligenceMultiplier() const override { return intelligenceMultiplier; }
-    int getManaRegenBonus() const override { return manaRegenBonus; }
+    int   getManaRegenBonus() const override { return manaRegenBonus; }
 };
