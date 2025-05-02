@@ -20,6 +20,10 @@ public:
      */
     const std::vector<std::vector<std::string>>& GetData() const { return m_data; }
 
+    /**
+     * @brief Get the last error message
+     * @return Last error message
+     */
     std::string GetLastError() const override { return m_lastError; }
 
 private:

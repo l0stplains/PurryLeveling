@@ -14,6 +14,12 @@
 class ItemConfigParser : public ConfigParser
 {
 public:
+    /**
+     * @brief Parse item configuration from a file
+     *
+     * @param filename Path to the item configuration file
+     * @return true if parsing was successful, false otherwise
+     */
     bool ParseFromFile(const std::string& filename) override;
 
     /**
