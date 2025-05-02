@@ -1,23 +1,14 @@
 #pragma once
-#include <memory>
-
-#include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery2/ArcaneInsight.hpp"
 #include "skill/characterSkill/Mastery2/MentalClarity.hpp"
 #include "skill/characterSkill/Mastery2/SpiritualConnection.hpp"
 
 // Root Skill Untuk Mage
-class Focus : public Skill
+class Focus : public MageSkill
 {
-    // Mengurangi manacost dan meningkatkan mana berdasarkan intelligence
-private:
-    float intelligenceMultiplier = 0.15f;  // Massive intelligence boost
-    int   manaRegenBonus         = 0;
-
 public:
-    // Cuma iniialize stats untuk multiplier
     Focus(bool isLearned = true, bool isActivated = true)
-        : Skill("Focus", 5, 3, 0, 0, {}, {}, isLearned, isActivated)
+        : MageSkill("Focus", 5, 3, 0, 0, {}, {}, isLearned, isActivated, 0.15f, 0)
     {
         vector<Skill*> secondSkill;
 
@@ -29,12 +20,8 @@ public:
         secondSkill.push_back(spiritualConnection);
         secondSkill.push_back(mentalClarity);
         this->setChildren(secondSkill);
-
-        // No effects currently added, but would use the following pattern if needed:
-        // this->addEffect(std::make_unique<EffectType>(parameters));
     };
 
-    // Getters
-    float getIntelligenceMultiplier() const { return intelligenceMultiplier; }
-    int   getManaRegenBonus() const { return manaRegenBonus; }
+    float getIntelligenceMultiplier() const override { return intelligenceMultiplier; }
+    int getManaRegenBonus() const override { return manaRegenBonus; }
 };
