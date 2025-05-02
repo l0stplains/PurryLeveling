@@ -1,8 +1,8 @@
-#<Item ID> <Item Name> <Item Type> <Rarity> <Base Atk> <Effect1> <Effect2> <Effect3>
-EXC Excalibur Weapon S 500 Critical_Strike - -
-HEA Helmet HeadArmor S 500 Damage_Reduction Reflect -
-BOD Dragon_Armor BodyArmor A 200 Damage_Reduction Reflect -
-FOT Foot_Armor FootArmor A 200 Damage_Reduction Reflect -
-MNP Mana_Potion Potion C 0 Mana_Regeneration - -
-HPP Health_Potion Potion C 0 Health_Regeneration - -
-PHP Phoenix_Pendant Pendant B 0 Health_Regeneration - -
+#<Item ID> <Item Name> <Item Type> <Rarity> <Base Atk> <Effect1> <Effect2> <Effect3> <Deskripsi>
+EXC Excalibur Weapon S 500 Critical_Strike - The legendary sword of Artoria
+HEA Helmet HeadArmor S 500 Damage_Reduction Reflect Sigma A level 1 helmet from PUBG
+BOD Dragon_Armor BodyArmor A 200 Damage_Reduction Reflect - Armor made from dragon scales
+FOT Foot_Armor FootArmor A 200 Damage_Reduction Reflect - A leather shoes to withstand various weathers
+MNP Mana_Potion Potion C 0 Mana_Regeneration - Restores mana
+HPP Health_Potion Potion C 0 Health_Regeneration - Restores health
+PHP Phoenix_Pendant Pendant B 0 Health_Regeneration - Rise from the ashes!

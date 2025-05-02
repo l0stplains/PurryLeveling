@@ -88,10 +88,11 @@ void ShopMenu::Render()
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.5f, 0.2f, 1.0f));  // Green
                                                                                             // when
                                                                                             // hovered
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.25f, 0.6f, 0.25f, 1.0f));  // Brighter
-                                                                                             // green
-                                                                                             // when
-                                                                                             // active
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                                  ImVec4(0.25f, 0.6f, 0.25f, 1.0f));                    // Brighter
+                                                                                        // green
+                                                                                        // when
+                                                                                        // active
             ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));  // Slightly
                                                                                         // lighter
                                                                                         // brown
@@ -113,7 +114,8 @@ void ShopMenu::Render()
             // Generate item data for this slot
             try
             {
-                Item item("ice_potion", "Azure_Sword", "Weapon", 'S', {});
+                std::vector<std::shared_ptr<Effect>> effects;
+                Item item("ice_potion", "Azure_Sword", "Weapon", 'S', effects, "");
 
                 stock = rng.generateInRange(1, 64);
                 price = rng.generateInRange(1, 1000);
