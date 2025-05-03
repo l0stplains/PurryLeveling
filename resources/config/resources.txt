@@ -22,6 +22,62 @@ shop_background = resources/textures/ui/shop_background.png
 
 # Items
 ice_potion = resources/textures/items/ice_potion.png
+NOL = resources/textures/items/NOL.png
+HPS = resources/textures/items/HPS.png
+PPS = resources/textures/items/PPS.png
+IPS = resources/textures/items/IPS.png
+FPA = resources/textures/items/FPA.png
+RPD = resources/textures/items/RPD.png
+MPB = resources/textures/items/MPB.png
+WPD = resources/textures/items/WPD.png
+HPE = resources/textures/items/HPE.png
+ASS = resources/textures/items/ASS.png
+FSS = resources/textures/items/FSS.png
+AAS = resources/textures/items/AAS.png
+AAA = resources/textures/items/AAA.png
+SSA = resources/textures/items/SSA.png
+FPB = resources/textures/items/FPB.png
+SAB = resources/textures/items/SAB.png
+WPC = resources/textures/items/WPC.png
+BKC = resources/textures/items/BKC.png
+BND = resources/textures/items/BND.png
+BTD = resources/textures/items/BTD.png
+WSD = resources/textures/items/WSD.png
+DNE = resources/textures/items/DNE.png
+WSE = resources/textures/items/WSE.png
+PHS = resources/textures/items/PHS.png
+CHA = resources/textures/items/CHA.png
+DHB = resources/textures/items/DHB.png
+GHC = resources/textures/items/GHC.png
+SHD = resources/textures/items/SHD.png
+BPE = resources/textures/items/BPE.png
+ABS = resources/textures/items/ABS.png
+FBS = resources/textures/items/FBS.png
+ABA = resources/textures/items/ABA.png
+GBA = resources/textures/items/GBA.png
+ABB = resources/textures/items/ABB.png
+SBC = resources/textures/items/SBC.png
+CBD = resources/textures/items/CBD.png
+TBE = resources/textures/items/TBE.png
+FFS = resources/textures/items/FFS.png
+SFS = resources/textures/items/SFS.png
+IFA = resources/textures/items/IFA.png
+DFB = resources/textures/items/DFB.png
+GFC = resources/textures/items/GFC.png
+LFD = resources/textures/items/LFD.png
+RFE = resources/textures/items/RFE.png
+
+TPS = resources/textures/items/TPS.png
+FRS = resources/textures/items/FRS.png
+IBA = resources/textures/items/IBA.png
+FBA = resources/textures/items/FBA.png
+DRA = resources/textures/items/DRA.png
+JRB = resources/textures/items/JRB.png
+ABC = resources/textures/items/ABC.png
+LBC = resources/textures/items/LBC.png
+LBD = resources/textures/items/LBD.png
+SRE = resources/textures/items/SRE.png
+
 
 # Dungeons Background
 normal_base = resources/textures/ui/normal_base.jpg
