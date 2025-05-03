@@ -22,11 +22,12 @@ Item::Item(const Item& other)
 
 Item& Item::operator=(const Item& other)
 {
-    itemID  = other.itemID;
-    name    = other.name;
-    type    = other.type;
-    rarity  = other.rarity;
-    effects = other.effects;
+    itemID      = other.itemID;
+    name        = other.name;
+    type        = other.type;
+    rarity      = other.rarity;
+    effects     = other.effects;
+    description = other.description;
     return *this;
 }
 
