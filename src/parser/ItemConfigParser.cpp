@@ -9,8 +9,8 @@ void ItemConfigParser::ParseFromFile(const std::string& filename)
 {
     // 1) read raw tokens, no fixed column count
     std::vector<std::vector<std::string>> raw;
-    if (!ConfigParserUtils::ReadTokensFile(filename, raw, m_lastError))
-        throw FileNotFoundException();
+    if (!ConfigParserUtils::ReadTokensFile(filename + "/item.txt", raw, m_lastError))
+        throw FileNotFoundException(filename, m_lastError);
 
     m_data.clear();
     m_data.reserve(raw.size());
@@ -20,7 +20,7 @@ void ItemConfigParser::ParseFromFile(const std::string& filename)
         if (rec.size() < 8)
         {
             m_lastError = "Line has too few columns: expected >=8, got " + std::to_string(rec.size());
-            throw LineTooShortException();
+            throw LineTooShortException(filename, m_lastError);
         }
 
         const std::string& id     = rec[0];

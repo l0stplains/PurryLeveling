@@ -1,10 +1,11 @@
 
 #include "parser/ResourceConfigParser.hpp"
-#include "exception/Exception.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
+
+#include "exception/Exception.hpp"
 
 // Initialize static member
 std::vector<ResourceConfigParser::ResourceEntry> ResourceConfigParser::m_emptyVector;
@@ -32,7 +33,7 @@ void ResourceConfigParser::ParseFromFile(const std::string& filename)
     if (!file.is_open())
     {
         m_lastError = "Failed to open resource config file: " + filename;
-        throw FileNotFoundException();
+        throw FileNotFoundException(filename, m_lastError);
     }
 
     std::string line;
@@ -75,7 +76,6 @@ void ResourceConfigParser::ParseFromFile(const std::string& filename)
                 if (entry.id.empty())
                 {
                     m_lastError = "Line " + std::to_string(lineNumber) + ": Empty resource ID";
-                    
                 }
 
                 // Extract and trim path
@@ -84,7 +84,7 @@ void ResourceConfigParser::ParseFromFile(const std::string& filename)
                 {
                     m_lastError = "Line " + std::to_string(lineNumber) +
                                   ": Empty resource path for ID '" + entry.id + "'";
-                    throw ResourceNotFoundException();
+                    throw ResourceNotFoundException(filename, m_lastError);
                 }
 
                 // Add to resources
@@ -95,14 +95,14 @@ void ResourceConfigParser::ParseFromFile(const std::string& filename)
                 // Line doesn't contain an equal sign
                 m_lastError =
                     "Line " + std::to_string(lineNumber) + ": Invalid format, expected 'id = path'";
-                throw LineTooShortException();
+                throw LineTooShortException(filename, m_lastError);
             }
         }
     }
     catch (const std::exception& e)
     {
         m_lastError = "Error parsing line " + std::to_string(lineNumber) + ": " + e.what();
-        throw InvalidFormatException();
+        throw InvalidFormatException(filename, m_lastError);
     }
 }
 

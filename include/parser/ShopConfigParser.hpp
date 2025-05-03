@@ -13,6 +13,10 @@
 class ShopConfigParser : public ConfigParser
 {
 public:
+    /**
+     * @brief Parse shop configuration from a file
+     * @param filename Path to the shop configuration file
+     */
     void ParseFromFile(const std::string& filename) override;
 
     /**

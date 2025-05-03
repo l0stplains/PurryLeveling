@@ -9,12 +9,12 @@ void QuestConfigParser::ParseFromFile(const std::string& filename)
 {
     // 1) read raw tokens: 6 columns per line
     std::vector<std::vector<std::string>> raw;
-    if (!ConfigParserUtils::ReadTokensFile(filename,
+    if (!ConfigParserUtils::ReadTokensFile(filename + "/quest.txt",
                                            raw,
                                            /* expectedCols = */ 6,
                                            m_lastError))
     {
-        throw FileNotFoundException();
+        throw FileNotFoundException(filename, m_lastError);
     }
 
     // 2) build m_questData: rank → list of (type, count, gold, exp, itemID)
@@ -23,7 +23,7 @@ void QuestConfigParser::ParseFromFile(const std::string& filename)
     {
         if (rec.size() < 6)
         {
-            throw LineTooShortException();
+            throw LineTooShortException(filename, m_lastError);
         }
         const std::string& rank       = rec[0];
         const std::string& qtype      = rec[1];

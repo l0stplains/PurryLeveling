@@ -10,12 +10,12 @@ void MobLootConfigParser::ParseFromFile(const std::string& filename)
 {
     // 1) read raw tokens: 3 columns per line
     std::vector<std::vector<std::string>> raw;
-    if (!ConfigParserUtils::ReadTokensFile(filename,
+    if (!ConfigParserUtils::ReadTokensFile(filename + "/mobloot.txt",
                                            raw,
                                            /*expectedCols=*/3,
                                            m_lastError))
     {
-        throw FileNotFoundException();
+        throw FileNotFoundException(filename, m_lastError);
     }
 
     // 2) build nested map: mob → (itemID → probability)
@@ -24,7 +24,7 @@ void MobLootConfigParser::ParseFromFile(const std::string& filename)
     {
         if (rec.size() < 3)
         {
-            throw LineTooShortException();
+            throw LineTooShortException(filename, m_lastError);
         }
         const auto& mob     = rec[0];
         const auto& itemID  = rec[1];

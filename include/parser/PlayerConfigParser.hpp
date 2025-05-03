@@ -8,52 +8,70 @@
 #include "effects/Stats.hpp"
 #include "items/Item.hpp"
 #include "items/ItemManager.hpp"
-#include "parser/ConfigParser.hpp" 
+#include "parser/ConfigParser.hpp"
 #include "parser/ConfigParserUtils.hpp"
 
 class PlayerConfigParser : public ConfigParser
 {
 public:
-    /// @brief Default constructor
-    /// @details This constructor initializes the PlayerConfigParser with a default ItemManager
-    /// instance.
-    PlayerConfigParser();
+    /**
+     * @brief Constructor for PlayerConfigParser
+     * @param itemManager Reference to the ItemManager instance
+     */
+    PlayerConfigParser(ItemManager& itemManager);
 
+    /**
+     * @brief Parse item configuration from a file
+     * @param filename Path to the item configuration file
+     */
     void ParseFromFile(const std::string& basePath) override;
 
-    /// @brief Sets the item manager.
-    void SetItemManager(ItemManager& itemManager) { m_itemManager = itemManager; }
-
-    /// @brief Gets the equipment data.
+    /**
+     * @brief Get the equipment data
+     * @return A vector of vectors containing the equipment data
+     */
     const std::vector<std::vector<std::string>>& GetEquipmentData() const
     {
         return m_equipmentData;
     }
 
-    /// @brief Gets the backpack data.
+    /**
+     * @brief Get the backpack data
+     * @return A vector of pairs containing the backpack data
+     */
     const std::vector<std::pair<Item, int>>& GetBackpackData() const { return m_backpackData; }
 
-    /// @brief Gets the stats for character
-    /// @return a map consisting of LEVEL, EXP, GOLD, and MASTERY
+    /**
+     * @brief Gets the stats for character
+     * @return a map consisting of LEVEL, EXP, GOLD, and MASTERY
+     */
     const std::map<std::string, std::string>& GetCharStats() const { return m_charstats; }
 
-    /// @brief Gets the stats for unit
-    /// @return a map consisting of NAME, STRENGTH, INTELLIGENCE, AGILITY,
-    /// BUFF_MULTIPLIER, CRITICAL_STRIKE_MULTIPLIER, CRITICAL_STRIKE_CHANCE, SKIPTURNCHANCE,
-    /// LUCK, PHYSICAL_DEFENSE, MAGIC_DEFENSE, DODGE_CHANCE, ACCURACY, STATUS_RESISTANCE,
-    /// HASTE_MULTIPLIER, RESOURCE_COST_MULTIPLIER
+    /**
+     * @brief Gets the stats for unit
+     * @return a map consisting of NAME, STRENGTH, INTELLIGENCE, AGILITY,
+     * BUFF_MULTIPLIER, CRITICAL_STRIKE_MULTIPLIER, CRITICAL_STRIKE_CHANCE, SKIPTURNCHANCE,
+     * LUCK, PHYSICAL_DEFENSE, MAGIC_DEFENSE, DODGE_CHANCE, ACCURACY, STATUS_RESISTANCE,
+     * HASTE_MULTIPLIER, RESOURCE_COST_MULTIPLIER
+     */
     const std::map<std::string, std::string>& GetUnitStats() const { return m_unitstats; }
 
-    /// @brief Gets the stats for type
-    /// @return a map consisting of character type-specific stats
+    /**
+     * @brief Gets the stats for type
+     * @return a map consisting of character type-specific stats
+     */
     const std::map<std::string, std::string>& GetTypeStats() const { return m_typestats; }
 
-    /// @brief Gets the skill tree
-    /// @return A set of strings consisting of the learned skills
+    /**
+     * @brief Gets the skill tree
+     * @return A set of strings consisting of the learned skills
+     */
     const std::set<std::string>& GetSkillTree() const { return m_skilltree; }
 
-    /// @brief Gets the last error message
-    /// @return The last error message that occurred during parsing
+    /**
+     * @brief Gets the last error message
+     * @return The last error message that occurred during parsing
+     */
     std::string GetLastError() const override { return m_lastError; }
 
 private:

@@ -21,7 +21,6 @@ public:
 
     /**
      * @brief Parse configuration from a file
-     *
      * @param filename Path to the configuration file
      * @return true if parsing was successful, false otherwise
      */
@@ -29,14 +28,12 @@ public:
 
     /**
      * @brief Get the last error message
-     *
      * @return The last error message that occurred during parsing
      */
     virtual std::string GetLastError() const = 0;
 
     /**
      * @brief Set the last error message
-     *
      * @param error The error message to set
      */
     void SetLastError(const std::string& error) { m_lastError = error; }

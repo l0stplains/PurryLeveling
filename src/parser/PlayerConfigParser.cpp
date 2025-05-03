@@ -3,16 +3,18 @@
 #include <algorithm>  // for std::max
 #include <cstdlib>    // for std::stoul, std::stoi
 
+PlayerConfigParser::PlayerConfigParser(ItemManager& itemManager) : m_itemManager(itemManager) {}
+
 void PlayerConfigParser::ParseFromFile(const std::string& basePath)
 {
     if (!ConfigParserUtils::ReadTokensFile(
             basePath + "/equipment.txt", m_equipmentData, 2, 5, m_lastError))
-        throw FileNotFoundException();
+        throw FileNotFoundException(basePath, m_lastError);
 
     // 2) backpack: n×4 → raw tokens
     std::vector<std::vector<std::string>> backpackRecs;
     if (!ConfigParserUtils::ReadTokensFile(basePath + "/backpack.txt", backpackRecs, 4, m_lastError))
-        throw FileNotFoundException();
+        throw FileNotFoundException(basePath, m_lastError);
 
     // convert to grid of <Item, count>
     m_backpackData.clear();
@@ -29,12 +31,12 @@ void PlayerConfigParser::ParseFromFile(const std::string& basePath)
                                            statsRecs,
                                            /*expectedCols=*/2,
                                            m_lastError))
-        throw FileNotFoundException();
+        throw FileNotFoundException(basePath, m_lastError);
     if (statsRecs.size() < 20)
     {
         m_lastError =
             "stats.txt has too few rows: expected >=20, got " + std::to_string(statsRecs.size());
-        throw LineTooShortException();
+        throw LineTooShortException(basePath, m_lastError);
     }
 
     m_charstats.clear();
@@ -72,7 +74,7 @@ void PlayerConfigParser::ParseFromFile(const std::string& basePath)
                                                /*expectedCols=*/1,
                                                m_lastError))
         {
-            throw FileNotFoundException();
+            throw FileNotFoundException(basePath, m_lastError);
         }
 
         m_skilltree.clear();

@@ -28,21 +28,16 @@ public:
     };
 
     /**
-     * @brief Parse a resource configuration file
-     *
+     * @brief Parse a resource configuration file.
      * Format:
      * # Comments start with #
      * [category]
      * id = path
-     *
-     * @param filename Path to the configuration file
-     * @return true if parsing was successful, false otherwise
      */
     void ParseFromFile(const std::string& filename) override;
 
     /**
      * @brief Get all resources belonging to a category
-     *
      * @param category The category to retrieve resources for
      * @return const reference to vector of resource entries
      */
@@ -50,7 +45,6 @@ public:
 
     /**
      * @brief Check if a category exists in the parsed configuration
-     *
      * @param category The category name to check
      * @return true if the category exists, false otherwise
      */
@@ -58,7 +52,6 @@ public:
 
     /**
      * @brief Get the last error message
-     *
      * @return The last error message that occurred during parsing
      */
     std::string GetLastError() const override { return m_lastError; }
