@@ -11,11 +11,11 @@ private:
 public:
     // -- 4 Sekawan
     SkillTree(std::unique_ptr<Skill> rootNode);
-    SkillTree(const SkillTree&) = delete;
+    SkillTree(const SkillTree&)            = delete;
     SkillTree& operator=(const SkillTree&) = delete;
-    SkillTree(SkillTree&&) = default;
-    SkillTree& operator=(SkillTree&&) = default;
-    ~SkillTree() = default; // let unique_ptr do the work
+    SkillTree(SkillTree&&)                 = default;
+    SkillTree& operator=(SkillTree&&)      = default;
+    ~SkillTree()                           = default;  // let unique_ptr do the work
 
     // - Getter
     const std::unique_ptr<Skill>& getSkill() const { return this->skill; }

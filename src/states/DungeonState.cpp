@@ -141,7 +141,6 @@ void DungeonState::Init()
         m_character->SetControlledByPlayer(false);
         m_character->SetNavGrid(m_navGrid);
         m_character->SetMoveSpeed(m_character->GetMoveSpeed() * 1.5f);
-
     }
     else
     {
@@ -311,7 +310,7 @@ void DungeonState::Resume() {}
 
 void DungeonState::Exit()
 {
-    for(auto id : m_mobsID)
+    for (auto id : m_mobsID)
     {
         GetContext().GetUnitManager()->RemoveUnit(id);
     }
