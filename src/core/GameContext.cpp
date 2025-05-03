@@ -90,6 +90,10 @@ NavigationGrid& GameContext::GetNavigationGrid()
     return m_navigationGrid;
 }
 
+std::string GameContext::GetCurrentFolderName() const
+{
+    return m_currentFolderName;
+}
 void GameContext::SetResourceManager(ResourceManager* resourceManager)
 {
     m_resourceManager = resourceManager;
@@ -162,6 +166,11 @@ void GameContext::SetCharacterId(unsigned int characterId)
 void GameContext::SetNavigationGrid(NavigationGrid navGrid)
 {
     m_navigationGrid = navGrid;
+}
+
+void GameContext::SetCurrentFolderName(std::string folderName)
+{
+    m_currentFolderName = std::move(folderName);
 }
 
 void GameContext::UpdateFPS(const sf::Time& dt)

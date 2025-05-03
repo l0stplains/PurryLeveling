@@ -6,6 +6,7 @@
 
 #include "imgui.h"
 #include "rng/rng.hpp"
+#include "skill/characterSkill/Mastery1/Fury.hpp"
 #include "states/ChooseCharacterState.hpp"
 #include "states/DungeonState.hpp"
 #include "states/InventoryMenuState.hpp"
@@ -387,7 +388,7 @@ void WorldState::RenderUI()
                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
     {
-        ImGui::Text("Do you want to save before you exit?");
+        ImGui::Text("Are you sure you want to exit?");
         ImGui::Dummy(ImVec2(0, 4.0f));  // Add some space
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0, 4.0f));  // Add some space
@@ -402,6 +403,20 @@ void WorldState::RenderUI()
         if (ImGui::Button("Yes", ImVec2(buttonWidth, 0)))
         {
             ImGui::CloseCurrentPopup();
+            std::string folder(m_saveFolderBuf);
+            std::string err;
+            Fury        fury;  // Dummy skill tree for now
+
+            // grab your models out of GameContext
+            auto* charPtr = GetContext().GetUnitManager()->GetUnitOfType<Character>(
+                GetContext().GetCharacterId());
+            PlayerConfigSaver::SaveToFolder("data/" + GetContext().GetCurrentFolderName(),
+                                            *charPtr,
+                                            *GetContext().GetEquipment(),
+                                            *GetContext().GetBackpack(),
+                                            fury,  // use dummy skill tree
+                                            err);
+
             m_pendingStateChange = StateChange {StateAction::POP};
         }
         // ImGui::PopStyleColor(3);

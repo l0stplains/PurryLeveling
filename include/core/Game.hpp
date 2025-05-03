@@ -11,10 +11,10 @@
 #include "items/ItemManager.hpp"
 #include "parser/ItemConfigParser.hpp"
 #include "parser/MobLootConfigParser.hpp"
-#include "quest/QuestGenerator.hpp"
 #include "parser/PlayerConfigParser.hpp"
 #include "parser/QuestConfigParser.hpp"
 #include "parser/ShopConfigParser.hpp"
+#include "quest/QuestGenerator.hpp"
 #include "shop/Shop.hpp"
 
 /**
