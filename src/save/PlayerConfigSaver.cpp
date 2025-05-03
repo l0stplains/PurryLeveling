@@ -157,8 +157,8 @@ bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
         // helper to walk the tree
         std::function<void(const Skill*)> dump = [&](const Skill* s) {
             sk << (s->getName()) << "\n";
-            for (Skill* child : s->getChildren())
-                dump(child);
+            for (const auto& childPtr : s->getChildren())
+                dump(childPtr.get());
         };
 
         // start at the root skill
