@@ -128,7 +128,7 @@ public:
 
     unsigned int GetCharacterId() const;
 
-    NavigationGrid& GetNavigationGrid();
+    NavigationGrid* GetNavigationGrid() const;
 
     // Setters
 
@@ -206,7 +206,7 @@ public:
 
     void SetCharacterId(unsigned int characterId);
 
-    void SetNavigationGrid(NavigationGrid navGrid);
+    void SetNavigationGrid(NavigationGrid* navGrid);
 
     // FPS tracking
 
@@ -238,7 +238,7 @@ private:
     Equipment* m_equipment;
 
     sf::RenderWindow* m_window;          ///< Pointer to the SFML render window
-    NavigationGrid    m_navigationGrid;  ///< Navigation grid for movement restrictions
+    NavigationGrid*   m_navigationGrid;  ///< Navigation grid for movement restrictions
 
     // FPS tracking
     unsigned int m_frameCounter = 0;  ///< Frame counter

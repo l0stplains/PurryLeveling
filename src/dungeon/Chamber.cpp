@@ -114,24 +114,26 @@ void Chamber::generateMobs(bool isBossRoom)
             {
                 case 0:
                     mob = std::make_unique<Slime>(
-                        "Slime", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
+                        "Slime", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                     break;
                 case 1:
                     mob = std::make_unique<Goblin>(
-                        "Goblin", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
+                        "Goblin", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                     break;
                 case 2:
-                    mob = std::make_unique<Skeleton>(
-                        "Skeleton", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
+                    mob = std::make_unique<Skeleton>("Skeleton",
+                                                     sf::Vector2f(0, 0),
+                                                     *gameContext.GetNavigationGrid(),
+                                                     gameContext);
                     break;
                 case 3:
                     mob = std::make_unique<Orc>(
-                        "Orc", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
+                        "Orc", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                     break;
                 default:
                     // it should never reach here
                     mob = std::make_unique<Slime>(
-                        "Slime", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
+                        "Slime", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
             }
 
             // Set mob stats based on chamber difficulty

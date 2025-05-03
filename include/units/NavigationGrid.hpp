@@ -36,7 +36,7 @@ public:
      * @return true if newGrid had exactly the same dimensions as this grid and was accepted;
      *         false otherwise (and leaves the old grid untouched).
      */
-    bool SetGrid(const std::vector<std::vector<bool>>& newGrid);
+    bool SetGrid(const std::vector<std::vector<bool>> newGrid);
 
     /**
      * @brief Checks if a specific world position is walkable.
@@ -67,6 +67,8 @@ public:
      * @brief Gets the width of a single tile.
      */
     unsigned int GetTileWidth() const { return m_tileWidth; }
+
+    std::vector<std::vector<bool>> GetGrid() const { return m_grid; }
 
     /**
      * @brief Gets the height of a single tile.

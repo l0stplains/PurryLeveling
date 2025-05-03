@@ -599,7 +599,9 @@ void WorldState::Resume()
     if (animatedCharacter)
     {
         animatedCharacter->Reset();
-        animatedCharacter->SetNavGrid(GetContext().GetNavigationGrid());
+        animatedCharacter->SetNavGrid(*GetContext().GetNavigationGrid());
+        NavigationGrid* nav     = GetContext().GetNavigationGrid();
+        auto            navGrid = nav->GetGrid();
         animatedCharacter->SetActive(true);
         animatedCharacter->SetScale({4.0f, 4.0f});
         animatedCharacter->SetPosition(m_lastPosition);
