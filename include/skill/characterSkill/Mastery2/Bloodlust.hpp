@@ -3,29 +3,22 @@
 
 #include "effects/useEffects/Bloodthirst.hpp"
 #include "effects/useEffects/HarmoniousEmpowerment.hpp"
-#include "skill/Skill.hpp"
+#include "skill/characterSkill/BerserkerSkill.hpp"
 
 // Berserker Mastery 2
-class Bloodlust : public Skill
+class Bloodlust : public BerserkerSkill
 {
-private:
-    // Same set of attributes as parent but with updated values
-    float rageMultiplier  = 0.18f;  // Enhanced rage multiplier
-    float lifeStealFactor = 0.15f;  // Adds life steal
-    float selfDamage      = 0.0f;   // No self damage
-
 public:
     Bloodlust(bool isLearned = false, bool isActivated = false)
-        : Skill("Bloodlust", 7, 2, 6, 1.0f, {}, {}, isLearned, isActivated)
+        : BerserkerSkill("Bloodlust", 7, 2, 6, 1.0f, {}, {}, isLearned, isActivated, 0.18f, 0.15f, 0.0f)
     {
         vector<unique_ptr<Effect>> effectVec;
-        effectVec.push_back(make_unique<Bloodthirst>(5, 0.10f, 0.05f, 3));  // +5 Str, +10% crit, 5%
-                                                                            // skip chance
-        effectVec.push_back(make_unique<HarmoniousEmpowerment>(15, 5, rageMultiplier, 4));
+        effectVec.push_back(make_unique<Bloodthirst>(5, 0.10f, 0.05f, 3));
+        effectVec.push_back(make_unique<HarmoniousEmpowerment>(15, 5, 0.18f, 4));
         this->setEffects(std::move(effectVec));
     }
 
-    float getRageMultiplier() const { return rageMultiplier; }
-    float getLifeStealFactor() const { return lifeStealFactor; }
-    float getSelfDamage() const { return selfDamage; }
+    float getFuryMultiplier() const override { return furyMultiplier; }
+    float getLifeStealFactor() const override { return lifeStealFactor; }
+    float getSelfDamage() const override { return selfDamage; }
 };

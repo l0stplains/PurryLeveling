@@ -1,6 +1,4 @@
 #pragma once
-
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -18,7 +16,7 @@ private:
     float                      damage;
     float                      effectChance;
     vector<unique_ptr<Effect>> effects;
-    vector<Skill*>             children;
+    vector<unique_ptr<Skill>>  children;
     bool                       isLearned;
     bool                       activated;
 
@@ -38,7 +36,7 @@ public:
           float                      damage,
           float                      effectChance,
           vector<unique_ptr<Effect>> effectVec,
-          vector<Skill*>             treeNodeVec,
+          vector<unique_ptr<Skill>>  treeNodeVec,
           bool                       learn,
           bool                       activate);
 
@@ -58,12 +56,12 @@ public:
     float                             getEffectChance() const { return effectChance; }
     const vector<unique_ptr<Effect>>& getEffects() const { return effects; }
     void setEffects(vector<unique_ptr<Effect>>&& effectVec) { effects = std::move(effectVec); }
-    vector<Skill*> getChildren() const { return children; }
-    void           setChildren(vector<Skill*> treeNodeVec) { children = treeNodeVec; }
-    bool           getIsLearned() const { return isLearned; }
-    bool           getActivated() const { return activated; }
-    void           setActivated(bool state) { activated = state; }
-    void           setIsLearned(bool state) { isLearned = state; }
+    const vector<unique_ptr<Skill>>& getChildren() const { return children; }
+    void setChildren(vector<unique_ptr<Skill>>&& treeNodeVec) { children = std::move(treeNodeVec); }
+    bool getIsLearned() const { return isLearned; }
+    bool getActivated() const { return activated; }
+    void setActivated(bool state) { activated = state; }
+    void setIsLearned(bool state) { isLearned = state; }
 
     /* @brief Learn the skill by activating the child skilTreeNode and deactivate the parent Skill
      * and change the isLearned state

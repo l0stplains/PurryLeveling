@@ -1,25 +1,19 @@
 #pragma once
-#include "skill/Skill.hpp"
 #include "skill/characterSkill/Mastery3/SoulHarvest.hpp"
+#include "skill/characterSkill/NecromancerSkill.hpp"
 
-// Necromancer Mster 2
-class BloodRitual : public Skill
+// Necromancer Mastery 2
+class BloodRitual : public NecromancerSkill
 {
-private:
-    float damageMultiplier = 0.17f;
-    int   summonedUnit     = 0;
-
 public:
     BloodRitual(bool isLearned = false, bool isActivated = false)
-        : Skill("Blood Ritual", 8, 3, 0, 0, {}, {}, isLearned, isActivated)
+        : NecromancerSkill("Blood Ritual", 8, 3, 0, 0, {}, {}, isLearned, isActivated, 0.30f, 0)
     {
-        vector<Skill*> thirdSkill;
-
-        SoulHarvest* soulHarvest = new SoulHarvest();
-        thirdSkill.push_back(soulHarvest);
-        this->setChildren(thirdSkill);
+        vector<unique_ptr<Skill>> thirdSkill;
+        thirdSkill.push_back(std::make_unique<SoulHarvest>());
+        this->setChildren(std::move(thirdSkill));
     }
 
-    float getDamageMultiplier() const { return damageMultiplier; }
-    int   getSummonedUnit() const { return summonedUnit; }
+    float getLifestealPercentage() const override { return lifestealPercentage; }
+    int   getSummonedUnit() const override { return summonedUnit; }
 };

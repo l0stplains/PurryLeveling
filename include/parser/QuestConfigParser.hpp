@@ -28,7 +28,7 @@ public:
      * @return The last error message that occurred during parsing
      */
     const std::map<std::string, std::vector<std::tuple<std::string, int, int, int, std::string>>>&
-    GetQuestEData() const
+    GetQuestData() const
     {
         return m_questData;
     }

@@ -447,12 +447,75 @@ int Dungeon::countDoubleChambers() const
     return count;
 }
 
-int Dungeon::getInitGold() const
+void Dungeon::setQuest(const Quest& newQuest)
 {
-    return initGold;
+    quest = newQuest;
 }
 
-int Dungeon::getInitExp() const
+Quest& Dungeon::getQuest()
 {
-    return initExp;
+    return quest;
+}
+
+const Quest& Dungeon::getQuest() const
+{
+    return quest;
+}
+
+bool Dungeon::isQuestCompleted() const
+{
+    return quest.getIsCompleted() && areAllChambersCleared();
+}
+
+bool Dungeon::updateKillQuestProgress(int mobsKilled)
+{
+    return quest.updateKillProgress(mobsKilled);
+}
+
+bool Dungeon::updateDamageQuestProgress(int damageDealt)
+{
+    return quest.updateDamageProgress(damageDealt);
+}
+
+int Dungeon::getQuestGoldReward() const
+{
+    if (isQuestCompleted())
+    {
+        return quest.getGoldReward();
+    }
+    return 0;
+}
+
+int Dungeon::getQuestExpReward() const
+{
+    if (isQuestCompleted())
+    {
+        return quest.getExpReward();
+    }
+    return 0;
+}
+
+string Dungeon::getQuestItemRewardId() const
+{
+    if (isQuestCompleted())
+    {
+        return quest.getItemRewardId();
+    }
+    return "";
+}
+
+Item Dungeon::getQuestRewardItem() const
+{
+    if (isQuestCompleted())
+    {
+        try
+        {
+            return itemManager.getItem(getQuestItemRewardId());
+        }
+        catch (const char* error)
+        {
+            return Item();
+        }
+    }
+    return Item();
 }
