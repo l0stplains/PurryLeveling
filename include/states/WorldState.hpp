@@ -9,6 +9,7 @@
 #include "ui/Button.hpp"
 
 #include "props/Portal.hpp"
+#include "save/PlayerConfigSaver.hpp"
 #include "states/State.hpp"
 
 // Include ImGuiFileDialog
@@ -70,6 +71,8 @@ private:
     bool m_showPortalEnterModal = false;  ///< Flag for showing portal enter modal
     bool m_showShopEnterModal   = false;  ///< Flag for showing shop enter modal
     bool m_showExitPopup        = false;  ///< Flag to show exit confirmation popup
+    bool m_showSaveAsPopup      = false;  ///< Flag to show save as popup
+    char m_saveFolderBuf[256]   = {0};    ///< Buffer for save folder input
     bool m_wasInShop            = false;  ///< Flag for showing shop enter modal
     bool m_wasInPortal          = false;
 
@@ -99,6 +102,8 @@ private:
      * @param message The error message to display
      */
     void showError(const std::string& message);
+
+    void generatePortals();
 
     vector<std::string> generateDungeonRank(int level);
 

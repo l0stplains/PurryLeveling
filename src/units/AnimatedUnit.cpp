@@ -730,6 +730,16 @@ const NavigationGrid& AnimatedUnit::GetNavGrid() const
     return m_navGrid;
 }
 
+const sf::Texture& AnimatedUnit::GetTextures(UnitAnimationType animationType) const
+{
+    auto it = m_textures.find(animationType);
+    if (it != m_textures.end())
+    {
+        return it->second;
+    }
+    throw std::runtime_error("Texture not found for animation type");
+}
+
 bool AnimatedUnit::IsMoving() const
 {
     return m_isMoving;

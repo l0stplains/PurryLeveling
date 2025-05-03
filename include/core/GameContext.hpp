@@ -130,6 +130,8 @@ public:
 
     NavigationGrid* GetNavigationGrid() const;
 
+    std::string GetCurrentFolderName() const;
+
     // Setters
 
     /**
@@ -208,6 +210,8 @@ public:
 
     void SetNavigationGrid(NavigationGrid* navGrid);
 
+    void SetCurrentFolderName(std::string folderName);
+
     // FPS tracking
 
     /**
@@ -232,7 +236,9 @@ private:
     ItemManager*     m_itemManager;
 
     MobLootConfigParser* m_mobLootConfigParser;
-    QuestGenerator*      m_questGenerator;
+
+    std::string     m_currentFolderName;  ///< Folder name for saving/loading
+    QuestGenerator* m_questGenerator;
 
     Backpack*  m_backpack;
     Equipment* m_equipment;

@@ -96,6 +96,7 @@ public:
     float                 GetMoveSpeed() const;
     const sf::Vector2f&   GetScale() const;
     const NavigationGrid& GetNavGrid() const;
+    const sf::Texture&    GetTextures(UnitAnimationType animationType) const;
     bool                  IsMoving() const;
 
     // --- Setters (Stats setters inherited unless overridden) ---
