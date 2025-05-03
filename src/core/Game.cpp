@@ -7,6 +7,7 @@
 
 Game::Game()
     : m_window(sf::VideoMode({1280, 720}), "Purry Leveling", sf::Style::None),  // Non-resizable
+      m_navigationGrid(1280, 720, 51, 51),
       m_context {},
       m_stateManager(),
       m_shop(),
@@ -40,6 +41,7 @@ Game::Game()
     m_context.SetItemManager(&m_itemManager);
     m_context.SetMobLootConfigParser(&m_mobLootConfigParser);
     m_context.SetQuestGenerator(&m_questGenerator);
+    m_context.SetNavigationGrid(&m_navigationGrid);
 
     m_context.SetVSyncEnabled(false);
 

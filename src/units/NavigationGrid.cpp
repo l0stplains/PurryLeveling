@@ -33,7 +33,7 @@ void NavigationGrid::SetTileWalkable(unsigned int gridX, unsigned int gridY, boo
     // Optionally add logging or error handling for out-of-bounds access
 }
 
-bool NavigationGrid::SetGrid(const std::vector<std::vector<bool>>& newGrid)
+bool NavigationGrid::SetGrid(const std::vector<std::vector<bool>> newGrid)
 {
     // check number of rows
     if (newGrid.size() != m_gridHeight)
