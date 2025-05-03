@@ -15,7 +15,15 @@ public:
      * @param rows    Number of rows in the grid.
      * @param cols    Number of columns in the grid.
      */
-    Backpack(const std::vector<std::pair<Item, int>>& initial, int rows, int cols);
+    Backpack(int rows, int cols);
+
+    /**
+     * @brief get Backpack data
+     * @return Backpack data
+     */
+    std::vector<std::vector<std::pair<Item, int>>> getBackpackData() const;
+
+    void setBackpackData(const std::vector<std::pair<Item, int>>& initial, int rows, int cols);
 
     /**
      * @brief Backpack destructor
@@ -75,6 +83,9 @@ public:
      * @param y y coordinate
      */
     int getQuantityAtTile(int x, int y) const;
+
+    int getBackpackRows() const;
+    int getBackpackCols() const;
 
     /**
      * @brief Filter items by type

@@ -53,7 +53,6 @@ bool LoadingState::LoadResourcesFromConfig(const std::string& configPath)
 {
     try
     {
-        
         m_resourceParser->ParseFromFile(configPath);
 
         const auto& resourceManager = GetContext().GetResourceManager();

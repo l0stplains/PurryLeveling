@@ -9,58 +9,33 @@ Equipment::Equipment()
     this->pendant   = Item();
 }
 
-Equipment::Equipment(ItemManager&       itemManager,
-                     const std::string& weaponID,
-                     const std::string& headArmorID,
-                     const std::string& bodyArmorID,
-                     const std::string& footArmorID,
-                     const std::string& pendantID)
-    : Equipment()
+void Equipment::setEquipmentData(ItemManager&                                 itemManager,
+                                 const std::vector<std::vector<std::string>>& equipmentData)
 {
-    // Call default constructor to initialize all items as null
-    // Try to find and equip each item if the ID is not empty
-    if (!weaponID.empty())
+    for (int i = 0; i < equipmentData.size(); ++i)
     {
-        Item weaponItem = itemManager.getItem(weaponID);
-        if (weaponItem.getType() == "Weapon")
-        {
-            this->weapon = weaponItem;
-        }
-    }
+        const auto& slot   = equipmentData[i][0];
+        const auto& itemID = equipmentData[i][1];
 
-    if (!headArmorID.empty())
-    {
-        Item headItem = itemManager.getItem(headArmorID);
-        if (headItem.getType() == "HeadArmor")
+        if (slot == "WEAPON")
         {
-            this->headArmor = headItem;
+            weapon = itemManager.getItem(itemID);
         }
-    }
-
-    if (!bodyArmorID.empty())
-    {
-        Item bodyItem = itemManager.getItem(bodyArmorID);
-        if (bodyItem.getType() == "BodyArmor")
+        else if (slot == "ARMOR_HEAD")
         {
-            this->bodyArmor = bodyItem;
+            headArmor = itemManager.getItem(itemID);
         }
-    }
-
-    if (!footArmorID.empty())
-    {
-        Item footItem = itemManager.getItem(footArmorID);
-        if (footItem.getType() == "FootArmor")
+        else if (slot == "ARMOR_BODY")
         {
-            this->footArmor = footItem;
+            bodyArmor = itemManager.getItem(itemID);
         }
-    }
-
-    if (!pendantID.empty())
-    {
-        Item pendantItem = itemManager.getItem(pendantID);
-        if (pendantItem.getType() == "Pendant")
+        else if (slot == "ARMOR_FOOT")
         {
-            this->pendant = pendantItem;
+            footArmor = itemManager.getItem(itemID);
+        }
+        else if (slot == "PENDANT")
+        {
+            pendant = itemManager.getItem(itemID);
         }
     }
 }

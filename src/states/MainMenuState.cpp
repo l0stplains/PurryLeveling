@@ -4,8 +4,10 @@
 
 #include "core/ResourceManager.hpp"
 
+#include "exception/Exception.hpp"
 #include "imgui.h"
 #include "states/ChooseCharacterState.hpp"
+#include "states/WorldState.hpp"
 
 // Constructor
 MainMenuState::MainMenuState(GameContext& context)
@@ -88,7 +90,8 @@ void MainMenuState::Init()
     // Set button callbacks
     m_startButton.setOnClickCallback([this]() {
         std::cout << "Continue button clicked" << std::endl;
-        // m_pendingStateChange = StateChange{StateAction::PUSH, nullptr};
+        m_pendingStateChange =
+            StateChange {StateAction::PUSH, std::make_unique<WorldState>(GetContext())};
     });
 
     m_newGameButton.setOnClickCallback([this]() {
@@ -210,17 +213,75 @@ void MainMenuState::RenderUI()
             {
                 m_selectedFolder = ImGuiFileDialog::Instance()->GetCurrentPath();
 
-                // Validate the folder
-                if (validateFolder(m_selectedFolder))
+                try
                 {
-                    // Valid folder - enable the start button
+                    validateFolder(m_selectedFolder);
                     m_startButton.setActive(true);
                     std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
                 }
-                else
+                catch (const FileNotFoundException& e)
                 {
-                    // Invalid folder - show error
-                    showError("Selected folder is missing required save files!");
+                    std::string message = "File not found: " + e.getFilename();
+                    if (!e.getErrorMessage().empty())
+                    {
+                        message += " - " + e.getErrorMessage();
+                    }
+                    std::cout << message << std::endl;
+                    showError(message);
+                }
+                catch (const LineTooShortException& e)
+                {
+                    std::string message = "Line too short in file: " + e.getFilename();
+                    if (!e.getErrorMessage().empty())
+                    {
+                        message += " - " + e.getErrorMessage();
+                    }
+                    std::cout << message << std::endl;
+                    showError(message);
+                }
+                catch (const InvalidFormatException& e)
+                {
+                    std::string message = "Invalid format in file: " + e.getFilename();
+                    if (!e.getErrorMessage().empty())
+                    {
+                        message += " - " + e.getErrorMessage();
+                    }
+                    std::cout << message << std::endl;
+                    showError(message);
+                }
+                catch (const ResourceNotFoundException& e)
+                {
+                    std::string message = "Resource not found: " + e.getFilename();
+                    if (!e.getErrorMessage().empty())
+                    {
+                        message += " - " + e.getErrorMessage();
+                    }
+                    std::cout << message << std::endl;
+                    showError(message);
+                }
+                catch (const MissingFileException& e)
+                {
+                    std::string message = "Missing file: " + e.getFilename();
+                    if (!e.getErrorMessage().empty())
+                    {
+                        message += " - " + e.getErrorMessage();
+                    }
+                    std::cout << message << std::endl;
+                    showError(message);
+                }
+                catch (const InvalidCharacterTypeException& e)
+                {
+                    // Create a new string with the message to ensure proper lifetime
+                    std::string message = std::string("Invalid character type: ") + e.what();
+                    std::cout << message << std::endl;
+                    showError(message);
+                }
+                catch (const std::exception& e)
+                {
+                    // Create a new string with the message to ensure proper lifetime
+                    std::string message = std::string("An error occurred: ") + e.what();
+                    std::cout << message << std::endl;
+                    showError(message);
                 }
             }
 
@@ -299,24 +360,351 @@ void MainMenuState::RenderUI()
     }
 }
 
-bool MainMenuState::validateFolder(const std::string& folderPath)
+void MainMenuState::validateFolder(const std::string& folderPath)
 {
-    // Check if all required files exist in the folder
-    for (const auto& requiredFile : m_requiredFiles)
+    m_requiredFiles = {"backpack.txt",
+                       "equipment.txt",
+                       "item.txt",
+                       "mobloot.txt",
+                       "quest.txt",
+                       "shop.txt",
+                       "skills.txt",
+                       "stats.txt"};
+
+    try
     {
-        std::filesystem::path filePath = std::filesystem::path(folderPath) / requiredFile;
-
-        if (!std::filesystem::exists(filePath))
+        // Check if all required files exist in the folder
+        for (const auto& requiredFile : m_requiredFiles)
         {
-            std::cout << "Missing required file: " << requiredFile << std::endl;
-            return false;
+            std::filesystem::path filePath = std::filesystem::path(folderPath) / requiredFile;
+
+            if (!std::filesystem::exists(filePath))
+            {
+                throw MissingFileException(requiredFile,
+                                           "Required file not found: " + filePath.string());
+            }
         }
+
+        std::cout << "All required files are present in the folder." << std::endl;
+
+        // Wrap each major operation in its own try-catch block to isolate the issue
+        ItemConfigParser itemConfigParser;
+        try
+        {
+            itemConfigParser.ParseFromFile(folderPath);
+            std::cout << "ItemConfigParser done" << std::endl;
+        }
+        catch (const std::exception& e)
+        {
+            std::string error = "ItemConfigParser error: " + std::string(e.what());
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+        catch (const char* msg)
+        {
+            std::string error = "ItemConfigParser error: ";
+            if (msg)
+                error += msg;
+            else
+                error += "(null message)";
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+        catch (...)
+        {
+            std::string error = "Unknown exception in ItemConfigParser";
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+
+        try
+        {
+            GetContext().GetItemManager()->setItemDatabase(itemConfigParser.GetData());
+            std::cout << "ItemManager set" << std::endl;
+        }
+        catch (const std::exception& e)
+        {
+            std::string error = "ItemManager error: " + std::string(e.what());
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+        catch (const char* msg)
+        {
+            std::string error = "ItemManager error: ";
+            if (msg)
+                error += msg;
+            else
+                error += "(null message)";
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+        catch (...)
+        {
+            std::string error = "Unknown exception in ItemManager";
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+
+        PlayerConfigParser playerConfigParser(*GetContext().GetItemManager());
+        try
+        {
+            playerConfigParser.ParseFromFile(folderPath);
+            std::cout << "PlayerConfigParser done" << std::endl;
+        }
+        catch (const std::exception& e)
+        {
+            std::string error = "PlayerConfigParser error: " + std::string(e.what());
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+        catch (const char* msg)
+        {
+            std::string error = "PlayerConfigParser error: ";
+            if (msg)
+                error += msg;
+            else
+                error += "(null message)";
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+        catch (...)
+        {
+            std::string error = "Unknown exception in PlayerConfigParser";
+            std::cout << error << std::endl;
+            showError(error);
+            return;
+        }
+
+        GetContext().GetEquipment()->setEquipmentData(*GetContext().GetItemManager(),
+                                                      playerConfigParser.GetEquipmentData());
+
+        GetContext().GetBackpack()->setBackpackData(playerConfigParser.GetBackpackData(), 8, 4);
+
+        // std::cout << "Character Stats:" << std::endl;
+        // for (const auto& stat : playerConfigParser.GetCharStats())
+        // {
+        //     std::cout << stat.first << ": " << stat.second << std::endl;
+        // }
+
+        // std::cout << "Unit Stats:" << std::endl;
+        // for (const auto& stat : playerConfigParser.GetUnitStats())
+        // {
+        //     std::cout << stat.first << ": " << stat.second << std::endl;
+        // }
+
+        // std::cout << "Type Stats:" << std::endl;
+        // for (const auto& stat : playerConfigParser.GetTypeStats())
+        // {
+        //     std::cout << stat.first << ": " << stat.second << std::endl;
+        // }
+
+        // std::cout << "Skill Tree:" << std::endl;
+        // for (const auto& skill : playerConfigParser.GetSkillTree())
+        // {
+        //     std::cout << skill << std::endl;
+        // }
+
+        std::cout << "PlayerConfigParser done" << std::endl;
+
+        // Rest of the code...
+        std::string charType = playerConfigParser.GetTypeStats().at("TYPE");
+
+        std::cout << "Character type: " << charType << std::endl;
+
+        sf::Vector2u   windowSize = GetContext().GetWindow()->getSize();
+        NavigationGrid tempNavGrid(windowSize.x, windowSize.y, 51, 51);
+
+        std::cout << "NavigationGrid created" << std::endl;
+
+        std::vector<std::vector<bool>> grid = {
+            {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+            {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+            {1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+            {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0},
+            {1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0},
+            {1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0},
+            {1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0},
+            {1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0},
+            {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0},
+            {1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0},
+            {1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0},
+            {1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0},
+            {1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0},
+            {1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+
+        if (!tempNavGrid.SetGrid(grid))
+        {
+            unsigned int passedH = static_cast<unsigned int>(grid.size());
+            unsigned int passedW = passedH > 0 ? static_cast<unsigned int>(grid[0].size()) : 0;
+
+            // expected dims from the NavigationGrid
+            unsigned int expectedH = tempNavGrid.GetGridHeight();
+            unsigned int expectedW = tempNavGrid.GetGridWidth();
+            std::cerr << "NavigationGrid::SetGrid failed!\n"
+                      << "  expected grid size = " << expectedH << " rows × " << expectedW
+                      << " cols\n"
+                      << "  passed   grid size = " << passedH << " rows × " << passedW << " cols\n";
+        }
+
+        GetContext().SetNavigationGrid(tempNavGrid);
+        NavigationGrid& navGrid = GetContext().GetNavigationGrid();
+
+        if (charType == "Fighter")
+        {
+            auto fighter = std::make_unique<Fighter>("Fighter",
+                                                     sf::Vector2f(windowSize.x * (1.0f / 6),
+                                                                  windowSize.y * 0.76f),
+                                                     navGrid,
+                                                     false,
+                                                     GetContext());
+
+            fighter->SetScale(10.f, 10.f);
+
+            GetContext().SetCharacterId(fighter->GetId());
+
+            GetContext().GetUnitManager()->AddUnit(std::move(fighter));
+        }
+        else if (charType == "Mage")
+        {
+            auto mage =
+                std::make_unique<Mage>("Mage",
+                                       sf::Vector2f(windowSize.x * (2.0f / 6), windowSize.y * 0.76f),
+                                       navGrid,
+                                       false,
+                                       GetContext());
+
+            mage->SetScale(10.f, 10.f);
+            GetContext().SetCharacterId(mage->GetId());
+            GetContext().GetUnitManager()->AddUnit(std::move(mage));
+        }
+        else if (charType == "Assassin")
+        {
+            auto assassin = std::make_unique<Assassin>("Assassin",
+                                                       sf::Vector2f(windowSize.x * (3.0f / 6),
+                                                                    windowSize.y * 0.76f),
+                                                       navGrid,
+                                                       false,
+                                                       GetContext());
+
+            assassin->SetScale(10.f, 10.f);
+            GetContext().SetCharacterId(assassin->GetId());
+            GetContext().GetUnitManager()->AddUnit(std::move(assassin));
+        }
+        else if (charType == "Necromancer")
+        {
+            auto necromancer = std::make_unique<Necromancer>("Necromancer",
+                                                             sf::Vector2f(windowSize.x * (4.0f / 6),
+                                                                          windowSize.y * 0.76f),
+                                                             navGrid,
+                                                             false,
+                                                             GetContext());
+
+            necromancer->SetScale(10.f, 10.f);
+            GetContext().SetCharacterId(necromancer->GetId());
+            GetContext().GetUnitManager()->AddUnit(std::move(necromancer));
+        }
+        else if (charType == "Berserker")
+        {
+            auto berseker = std::make_unique<Berseker>("Berserker",
+                                                       sf::Vector2f(windowSize.x * (5.0f / 6),
+                                                                    windowSize.y * 0.76f),
+                                                       navGrid,
+                                                       false,
+                                                       GetContext());
+
+            berseker->SetScale(10.f, 10.f);
+            GetContext().SetCharacterId(berseker->GetId());
+            GetContext().GetUnitManager()->AddUnit(std::move(berseker));
+        }
+        else
+        {
+            throw InvalidCharacterTypeException(charType);
+        }
+
+        GetContext()
+            .GetUnitManager()
+            ->GetUnit(GetContext().GetCharacterId())
+            ->SetName(playerConfigParser.GetUnitStats().at("NAME"));
+
+        GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId())->SetActive(false);
+
+        std::cout << "Unit created and added to UnitManager" << std::endl;
+
+        MobLootConfigParser mobLootConfigParser;
+        mobLootConfigParser.ParseFromFile(folderPath);
+
+        std::cout << "MobLootConfigParser done" << std::endl;
+
+        // TODO: Insert the mob loot data into the game context
+
+        QuestConfigParser questConfigParser;
+        questConfigParser.ParseFromFile(folderPath);
+
+        std::cout << "QuestConfigParser done" << std::endl;
+
+        // TODO: Insert the quest data into the game context
+
+        ShopConfigParser shopConfigParser;
+        shopConfigParser.ParseFromFile(folderPath);
+
+        std::cout << "ShopConfigParser done" << std::endl;
+
+        GetContext().GetShop()->SetShopData(shopConfigParser.GetData());
+        GetContext().GetShop()->SetMasterItems(itemConfigParser.GetData());
+        GetContext().GetShop()->restock();
     }
-
-    // TODO: Check if the files are valid (e.g., correct format, not corrupted)
-    // TODO: Load the files to GameContext
-
-    return true;
+    catch (const FileNotFoundException& e)
+    {
+        std::string message = "File not found: " + e.getFilename();
+        if (!e.getErrorMessage().empty())
+        {
+            message += " - " + e.getErrorMessage();
+        }
+        std::cout << message << std::endl;
+        showError(message);
+    }
+    catch (const MissingFileException& e)
+    {
+        std::string message = "Missing file: " + e.getFilename();
+        if (!e.getErrorMessage().empty())
+        {
+            message += " - " + e.getErrorMessage();
+        }
+        std::cout << message << std::endl;
+        showError(message);
+    }
+    // Other specific exceptions...
+    catch (const std::exception& e)
+    {
+        std::string error = "Standard exception: " + std::string(e.what());
+        std::cout << error << std::endl;
+        showError(error);
+    }
+    catch (const char* msg)
+    {
+        std::string error = "String exception: ";
+        if (msg)
+            error += msg;
+        else
+            error += "(null message)";
+        std::cout << error << std::endl;
+        showError(error);
+    }
+    catch (...)
+    {
+        std::string error = "Unknown exception type caught";
+        std::cout << error << std::endl;
+        showError(error);
+    }
 }
 
 void MainMenuState::showError(const std::string& message)

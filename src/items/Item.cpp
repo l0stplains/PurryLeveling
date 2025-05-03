@@ -1,6 +1,6 @@
 #include "items/Item.hpp"
 
-Item::Item() : itemID(""), name(""), type(""), rarity(' '), effects({}), description("") {}
+Item::Item() : itemID("NOL"), name(""), type(""), rarity(' '), effects({}), description("") {}
 
 Item::Item(std::string                                itemID,
            const std::string&                         name,
@@ -76,5 +76,5 @@ std::string Item::getDescription() const
 
 bool Item::isNull() const
 {
-    return itemID.empty();
+    return itemID == "NOL";
 }

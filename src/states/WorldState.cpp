@@ -106,6 +106,7 @@ void WorldState::Init()
         character->SetScale({4.0f, 4.0f});
         character->SetPosition({windowSize.x / 2.0f + 10.f, windowSize.y / 2.0f + 69.0f});
         character->SetControlledByPlayer(true);
+        character->SetActive(true);
     }
     else
     {
