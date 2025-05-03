@@ -5,6 +5,13 @@
 class Stats
 {
 public:
+    Stats()                              = default;
+    Stats(const Stats& other)            = default;
+    Stats& operator=(const Stats& other) = default;
+    Stats(Stats&& other)                 = default;
+    Stats& operator=(Stats&& other)      = default;
+    ~Stats()                             = default;
+
     // — Primary attributes —
     int strength     = 0;
     int intelligence = 0;
@@ -12,8 +19,8 @@ public:
 
     // — Multipliers & chances —
     float buffMultiplier           = 1.0f;  // scales positive buffs
-    float criticalStrikeMultiplier = 1.2f;  // damage × this on crit
-    float criticalStrikeChance     = 0.2f;  // 0.0–1.0
+    float criticalStrikeMultiplier = 1.0f;  // damage × this on crit
+    float criticalStrikeChance     = 0.0f;  // 0.0–1.0
     float skipTurnChance           = 0.0f;  // 0.0–1.0
 
     // — Extra stats for more depth —

@@ -7,7 +7,7 @@ GameContext::GameContext()
       m_shop(nullptr),
       m_backpack(nullptr),
       m_equipment(nullptr),
-      m_navigationGrid(1280, 720, 32, 32)
+      m_navigationGrid(nullptr)
 {}
 
 GameContext::~GameContext()
@@ -85,7 +85,7 @@ unsigned int GameContext::GetCharacterId() const
     return m_characterId;
 }
 
-NavigationGrid& GameContext::GetNavigationGrid()
+NavigationGrid* GameContext::GetNavigationGrid() const
 {
     return m_navigationGrid;
 }
@@ -170,7 +170,7 @@ void GameContext::SetCharacterId(unsigned int characterId)
     m_characterId = characterId;
 }
 
-void GameContext::SetNavigationGrid(NavigationGrid navGrid)
+void GameContext::SetNavigationGrid(NavigationGrid* navGrid)
 {
     m_navigationGrid = navGrid;
 }

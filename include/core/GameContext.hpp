@@ -128,7 +128,7 @@ public:
 
     unsigned int GetCharacterId() const;
 
-    NavigationGrid& GetNavigationGrid();
+    NavigationGrid* GetNavigationGrid() const;
 
     std::string GetCurrentFolderName() const;
 
@@ -210,7 +210,7 @@ public:
 
     void SetCharacterId(unsigned int characterId);
 
-    void SetNavigationGrid(NavigationGrid navGrid);
+    void SetNavigationGrid(NavigationGrid* navGrid);
 
     void SetCurrentFolderName(std::string folderName);
 
@@ -249,7 +249,7 @@ private:
     bool m_firstSave = true;
 
     sf::RenderWindow* m_window;          ///< Pointer to the SFML render window
-    NavigationGrid    m_navigationGrid;  ///< Navigation grid for movement restrictions
+    NavigationGrid*   m_navigationGrid;  ///< Navigation grid for movement restrictions
 
     // FPS tracking
     unsigned int m_frameCounter = 0;  ///< Frame counter

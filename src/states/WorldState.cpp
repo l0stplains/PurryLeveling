@@ -41,62 +41,8 @@ WorldState::WorldState(GameContext& context)
 
 void WorldState::Init()
 {
-    Character* character =
-        GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+    generatePortals();
 
-    vector<std::string> distributedRank = generateDungeonRank(character->GetLevel());
-
-    Dungeon e = m_dungeonFactory.createDungeon(distributedRank[0], character->GetLevel(), 1000, 1000);
-    Dungeon d =
-        m_dungeonFactory.createDungeon(distributedRank[1], character->GetLevel(), 510000, 1000);
-    Dungeon b =
-        m_dungeonFactory.createDungeon(distributedRank[2], character->GetLevel(), 100000, 1000);
-    Dungeon c =
-        m_dungeonFactory.createDungeon(distributedRank[3], character->GetLevel(), 100000, 1000);
-
-    std::map<string, string> portalAssets = {{"E", "portal_e"},
-                                             {"D", "portal_d"},
-                                             {"C", "portal_c"},
-                                             {"B", "portal_b"},
-                                             {"A", "portal_a"},
-                                             {"S", "portal_s"},
-                                             {"SPECIAL", "portal_special"}};
-
-    // In order: Top left - bottom left - bottom right - top right
-    std::unique_ptr<Portal> portal = std::make_unique<Portal>(
-        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[0]]),
-        sf::Vector2f(265.0f * 0.7f, 305.0f * 0.7f),
-        sf::Vector2f(1.0f, 1.0f),
-        e,
-        DimensionType::CRYSTAL);
-
-    m_portals.emplace_back(std::move(portal));
-    portal = std::make_unique<Portal>(
-        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[1]]),
-        sf::Vector2f(265.0f * 0.7f, 825.0f * 0.7f),
-        sf::Vector2f(1.0f, 1.0f),
-        d,
-        DimensionType::NORMAL);
-
-    m_portals.emplace_back(std::move(portal));
-
-    portal = std::make_unique<Portal>(
-        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[2]]),
-        sf::Vector2f(1412.0f * 0.7f, 790.0f * 0.7f),
-        sf::Vector2f(1.0f, 1.0f),
-        b,
-        DimensionType::MISTY);
-
-    m_portals.emplace_back(std::move(portal));
-
-    portal = std::make_unique<Portal>(
-        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[3]]),
-        sf::Vector2f(1450.0f * 0.7f, 310.0f * 0.7f),
-        sf::Vector2f(1.0f, 1.0f),
-        c,
-        DimensionType::LAVA);
-
-    m_portals.emplace_back(std::move(portal));
     // Background setup
     m_backgroundSprite.setOrigin({0, 0});
     sf::Vector2u windowSize = GetContext().GetWindow()->getSize();
@@ -488,6 +434,67 @@ void WorldState::showError(const std::string& message)
     m_errorMessage   = message;
 }
 
+void WorldState::generatePortals()
+{
+    m_portals.clear();
+    Character* character =
+        GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+
+    vector<std::string> distributedRank = generateDungeonRank(character->GetLevel());
+
+    Dungeon e = m_dungeonFactory.createDungeon(distributedRank[0], character->GetLevel(), 1000, 1000);
+    Dungeon d =
+        m_dungeonFactory.createDungeon(distributedRank[1], character->GetLevel(), 510000, 1000);
+    Dungeon b =
+        m_dungeonFactory.createDungeon(distributedRank[2], character->GetLevel(), 100000, 1000);
+    Dungeon c =
+        m_dungeonFactory.createDungeon(distributedRank[3], character->GetLevel(), 100000, 1000);
+
+    std::map<string, string> portalAssets = {{"E", "portal_e"},
+                                             {"D", "portal_d"},
+                                             {"C", "portal_c"},
+                                             {"B", "portal_b"},
+                                             {"A", "portal_a"},
+                                             {"S", "portal_s"},
+                                             {"SPECIAL", "portal_special"}};
+
+    // In order: Top left - bottom left - bottom right - top right
+    std::unique_ptr<Portal> portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[0]]),
+        sf::Vector2f(265.0f * 0.7f, 305.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        e,
+        DimensionType::CRYSTAL);
+
+    m_portals.emplace_back(std::move(portal));
+    portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[1]]),
+        sf::Vector2f(265.0f * 0.7f, 825.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        d,
+        DimensionType::NORMAL);
+
+    m_portals.emplace_back(std::move(portal));
+
+    portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[2]]),
+        sf::Vector2f(1412.0f * 0.7f, 790.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        b,
+        DimensionType::MISTY);
+
+    m_portals.emplace_back(std::move(portal));
+
+    portal = std::make_unique<Portal>(
+        GetContext().GetResourceManager()->GetTexture(portalAssets[distributedRank[3]]),
+        sf::Vector2f(1450.0f * 0.7f, 310.0f * 0.7f),
+        sf::Vector2f(1.0f, 1.0f),
+        c,
+        DimensionType::LAVA);
+
+    m_portals.emplace_back(std::move(portal));
+}
+
 vector<std::string> WorldState::generateDungeonRank(int level)
 {
     // Initialize RNG
@@ -637,6 +644,7 @@ void WorldState::Pause()
 
 void WorldState::Resume()
 {
+    generatePortals();
     sf::Vector2u  windowSize  = GetContext().GetWindow()->getSize();
     unsigned int  characterId = GetContext().GetCharacterId();
     AnimatedUnit* animatedCharacter =
@@ -645,7 +653,9 @@ void WorldState::Resume()
     if (animatedCharacter)
     {
         animatedCharacter->Reset();
-        animatedCharacter->SetNavGrid(GetContext().GetNavigationGrid());
+        animatedCharacter->SetNavGrid(*GetContext().GetNavigationGrid());
+        NavigationGrid* nav     = GetContext().GetNavigationGrid();
+        auto            navGrid = nav->GetGrid();
         animatedCharacter->SetActive(true);
         animatedCharacter->SetScale({4.0f, 4.0f});
         animatedCharacter->SetPosition(m_lastPosition);

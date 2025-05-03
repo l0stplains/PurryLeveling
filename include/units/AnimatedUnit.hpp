@@ -89,14 +89,15 @@ public:
     virtual void Reset();
 
     // --- Getters (Stats are inherited from Unit) ---
-    const sf::Vector2f& GetPosition() const;
-    int                 GetZOrder() const;
-    Direction           GetDirection() const;
-    const sf::Vector2f& GetVelocity() const;
-    float               GetMoveSpeed() const;
-    const sf::Vector2f& GetScale() const;
-    NavigationGrid&     GetNavGrid() const;
-    bool                IsMoving() const;
+    const sf::Vector2f&   GetPosition() const;
+    int                   GetZOrder() const;
+    Direction             GetDirection() const;
+    const sf::Vector2f&   GetVelocity() const;
+    float                 GetMoveSpeed() const;
+    const sf::Vector2f&   GetScale() const;
+    const NavigationGrid& GetNavGrid() const;
+    const sf::Texture&    GetTextures(UnitAnimationType animationType) const;
+    bool                  IsMoving() const;
 
     // --- Setters (Stats setters inherited unless overridden) ---
     void SetZOrder(int zOrder);
@@ -139,11 +140,11 @@ protected:
     sf::Vector2f m_position;
 
     // --- Movement & Position ---
-    sf::Vector2f    m_velocity  = {0.f, 0.f};
-    float           m_moveSpeed = 100.f;  // Pixels per second
-    sf::Vector2f    m_targetPosition;
-    bool            m_isMoving = false;
-    NavigationGrid& m_navGrid;
+    sf::Vector2f   m_velocity  = {0.f, 0.f};
+    float          m_moveSpeed = 100.f;  // Pixels per second
+    sf::Vector2f   m_targetPosition;
+    bool           m_isMoving = false;
+    NavigationGrid m_navGrid;
 
     const GameContext& m_gameContext;  ///< Reference to the game context for resource management
 

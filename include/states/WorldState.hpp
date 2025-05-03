@@ -103,6 +103,8 @@ private:
      */
     void showError(const std::string& message);
 
+    void generatePortals();
+
     vector<std::string> generateDungeonRank(int level);
 
     unsigned int m_currentPortalId = -1;  ///< ID of the current portal
