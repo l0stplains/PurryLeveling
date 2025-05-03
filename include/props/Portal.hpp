@@ -5,16 +5,24 @@
 #include <optional>
 
 #include "dungeon/Dungeon.hpp"
+#include "states/Enums.hpp"
 #include "units/Animation.hpp"
 
 class Portal
 {
 public:
-    Portal(sf::Texture texture, sf::Vector2f position, sf::Vector2f scale, Dungeon dungeon);
+    Portal(sf::Texture   texture,
+           sf::Vector2f  position,
+           sf::Vector2f  scale,
+           Dungeon       dungeon,
+           DimensionType dimension);
     ~Portal() = default;
 
     void Draw(sf::RenderWindow& window);
     void Update(const sf::Time dt);
+
+    Dungeon&      GetDungeon();
+    DimensionType GetDimensionType();
 
     void SetPosition(const sf::Vector2f& position);
     void SetScale(const sf::Vector2f& scale);
@@ -24,10 +32,11 @@ public:
     bool isInBounds(const sf::Vector2f& point) const;
 
 private:
-    Dungeon      m_dungeon;
-    unsigned int m_portalId;
-    sf::Vector2f m_position;
-    sf::Vector2f m_scale;
+    Dungeon       m_dungeon;
+    DimensionType m_dimensionType;
+    unsigned int  m_portalId;
+    sf::Vector2f  m_position;
+    sf::Vector2f  m_scale;
 
     sf::Vector2i m_frameSize = {64, 64};  //  each frame is 64x64 pixels
 

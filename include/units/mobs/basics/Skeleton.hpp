@@ -4,25 +4,25 @@
 
 #include "core/GameContext.hpp"
 
-#include "skill/mobSkill/AcidityCorrosion.hpp"
+#include "skill/mobSkill/BoneShard.hpp"
 #include "units/AnimatedUnit.hpp"
 #include "units/mobs/basics/BasicMob.hpp"
 
-class Slime : public BasicMob, public AnimatedUnit
+class Skeleton : public BasicMob, public AnimatedUnit
 {
 public:
-    Slime(const std::string&  name,
-          const sf::Vector2f& position,
-          NavigationGrid&     navGrid,  // Pass grid to base
-          const GameContext&  gameContext);
+    Skeleton(const std::string&  name,
+             const sf::Vector2f& position,
+             NavigationGrid&     navGrid,  // Pass grid to base
+             const GameContext&  gameContext);
 
-    ~Slime() override = default;
+    ~Skeleton() override = default;
 
     // Prevent copying, allow moving
-    Slime(const Slime&)            = delete;
-    Slime& operator=(const Slime&) = delete;
-    Slime(Slime&&)                 = default;
-    Slime& operator=(Slime&&)      = default;
+    Skeleton(const Skeleton&)            = delete;
+    Skeleton& operator=(const Skeleton&) = delete;
+    Skeleton(Skeleton&&)                 = default;
+    Skeleton& operator=(Skeleton&&)      = default;
 
     // --- Action Overrides ---
     void Attack(Unit& target, ActionCompletionCallback callback = nullptr) override;
@@ -40,7 +40,7 @@ private:
      */
     void PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback);
 
-    AcidityCorrosion m_acidityCorrossion;
+    BoneShard m_boneShard;
 
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
 };

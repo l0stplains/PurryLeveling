@@ -54,6 +54,12 @@ MobLootConfigParser* GameContext::GetMobLootConfigParser() const
 {
     return m_mobLootConfigParser;
 }
+
+QuestGenerator* GameContext::GetQuestGenerator() const
+{
+    return m_questGenerator;
+}
+
 sf::RenderWindow* GameContext::GetWindow() const
 {
     return m_window;
@@ -122,6 +128,11 @@ void GameContext::SetItemManager(ItemManager* itemManager)
 void GameContext::SetMobLootConfigParser(MobLootConfigParser* mobLootConfig)
 {
     m_mobLootConfigParser = mobLootConfig;
+}
+
+void GameContext::SetQuestGenerator(QuestGenerator* questGenerator)
+{
+    m_questGenerator = questGenerator;
 }
 
 void GameContext::SetWindow(sf::RenderWindow* window)

@@ -36,7 +36,7 @@ public:
     /**
      * @brief Fighter's skill implementation.
      */
-    void UseSkill(int skillId, ActionCompletionCallback callback = nullptr) override;
+    void UseSkill(Unit& target, ActionCompletionCallback callback = nullptr) override;
 
     // void TakeDamage(int damage, ActionCompletionCallback callback = nullptr) override;
 

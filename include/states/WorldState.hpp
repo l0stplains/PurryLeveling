@@ -65,6 +65,8 @@ private:
     sf::Font m_font;      ///< Font for UI text
     sf::Font m_boldFont;  ///< Font for UI text
 
+    sf::Vector2f m_lastPosition;  ///< Last player position
+
     bool m_showPortalEnterModal = false;  ///< Flag for showing portal enter modal
     bool m_showShopEnterModal   = false;  ///< Flag for showing shop enter modal
     bool m_showExitPopup        = false;  ///< Flag to show exit confirmation popup
@@ -97,6 +99,8 @@ private:
      * @param message The error message to display
      */
     void showError(const std::string& message);
+
+    vector<std::string> generateDungeonRank(int level);
 
     unsigned int m_currentPortalId = -1;  ///< ID of the current portal
 

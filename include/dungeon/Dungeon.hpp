@@ -95,13 +95,6 @@ private:
     void addMobLoot(const Item& item);
 
     /**
-     * @brief Get the rank of the dungeon
-     *
-     * @return string The rank of the dungeon
-     */
-    string getRank() const;
-
-    /**
      * @brief Get the item reward ID from the quest
      * Only valid if quest is completed and dungeon is cleared
      *
@@ -280,6 +273,13 @@ public:
     int getInitExp() const;
 
     /**
+     * @brief Get the rank of the dungeon
+     *
+     * @return string The rank of the dungeon
+     */
+    string getRank() const;
+
+    /*
      * @brief Set the quest for this dungeon
      *
      * @param newQuest The quest to associate with this dungeon

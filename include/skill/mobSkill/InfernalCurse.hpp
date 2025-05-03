@@ -8,8 +8,9 @@ public:
     InfernalCurse(bool isLearned = false, bool isActivated = false)
         : Skill("Infernal Curse", 0, 0, 0, 0.0f, {}, {}, isLearned, isActivated)
     {
-        vector<Effect> effectVec;
-        effectVec.push_back(CurseOfFragilityEffect(30, 0.45f, 5));  // Example values
-        this->setEffects(effectVec);
+        vector<std::unique_ptr<Effect>> effectVec;
+        effectVec.push_back(std::make_unique<CurseOfFragilityEffect>(30, 0.45f, 5));  // Example
+                                                                                      // values
+        this->setEffects(std::move(effectVec));
     };
 };

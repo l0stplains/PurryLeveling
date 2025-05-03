@@ -5,9 +5,9 @@
 
 #include <iostream>  // For debug
 
-Mob::Mob(const std::string& name, Skill& healSkill)
+Mob::Mob(const std::string& name)
     : Unit(name),  // Call base constructor
-      m_healSkill(healSkill)
+      m_healSkill(true, true)
 {
     // Mob specific stat initialization (can override AnimatedUnit defaults)
     m_maxHealth = 120;  // Example: Mobs slightly tougher
@@ -27,7 +27,7 @@ void Mob::SetLevel(int level)
     m_level = level;
 }
 
-const Skill& Mob::GetHealSkill() const
+const Healing& Mob::GetHealSkill() const
 {
     return m_healSkill;
 }

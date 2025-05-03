@@ -9,6 +9,7 @@
 #include "inventory/Equipment.hpp"
 #include "items/ItemManager.hpp"
 #include "parser/MobLootConfigParser.hpp"
+#include "quest/QuestGenerator.hpp"
 #include "shop/Shop.hpp"
 #include "units/NavigationGrid.hpp"
 
@@ -94,6 +95,8 @@ public:
      * @return MobLootConfigParser* Pointer to the mob loot config parser
      */
     MobLootConfigParser* GetMobLootConfigParser() const;
+
+    QuestGenerator* GetQuestGenerator() const;
 
     /**
      * @brief Get the window
@@ -185,6 +188,8 @@ public:
      */
     void SetMobLootConfigParser(MobLootConfigParser* mobLootConfigParser);
 
+    void SetQuestGenerator(QuestGenerator* questGenerator);
+
     /**
      * @brief Set the window
      *
@@ -227,6 +232,7 @@ private:
     ItemManager*     m_itemManager;
 
     MobLootConfigParser* m_mobLootConfigParser;
+    QuestGenerator*      m_questGenerator;
 
     Backpack*  m_backpack;
     Equipment* m_equipment;

@@ -4,8 +4,13 @@
 
 unsigned int Portal::s_portalIdCounter = 0;
 
-Portal::Portal(sf::Texture texture, sf::Vector2f position, sf::Vector2f scale, Dungeon dungeon)
+Portal::Portal(sf::Texture   texture,
+               sf::Vector2f  position,
+               sf::Vector2f  scale,
+               Dungeon       dungeon,
+               DimensionType dimension)
     : m_dungeon(dungeon),
+      m_dimensionType(dimension),
       m_portalId(s_portalIdCounter++),
       m_position(position),
       m_scale(scale),
@@ -41,6 +46,16 @@ void Portal::Update(const sf::Time dt)
         m_animation->Update(dt);
         m_animation->ApplyToSprite(m_sprite);
     }
+}
+
+Dungeon& Portal::GetDungeon()
+{
+    return m_dungeon;
+}
+
+DimensionType Portal::GetDimensionType()
+{
+    return m_dimensionType;
 }
 
 void Portal::SetPosition(const sf::Vector2f& position)

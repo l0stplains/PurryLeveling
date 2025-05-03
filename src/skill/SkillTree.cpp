@@ -1,11 +1,6 @@
 #include "skill/SkillTree.hpp"
 
-SkillTree::SkillTree(Skill* rootNode)
+SkillTree::SkillTree(std::unique_ptr<Skill> rootNode)
 {
-    this->skill = rootNode;
-}
-
-SkillTree::~SkillTree()
-{
-    delete skill;
+    this->skill = std::move(rootNode);
 }

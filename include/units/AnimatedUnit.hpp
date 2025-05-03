@@ -80,7 +80,8 @@ public:
     /**
      * @brief Overrides Unit::Heal potentially to add a visual effect.
      */
-    void Heal(int amount) override;  // Override if visual needed
+    void Heal(int amount, ActionCompletionCallback callback = nullptr) override;  // Override if
+                                                                                  // visual needed
 
     /**
      * @brief Resets unit state (health, mana, position, animation).
@@ -92,13 +93,16 @@ public:
     int                 GetZOrder() const;
     Direction           GetDirection() const;
     const sf::Vector2f& GetVelocity() const;
+    float               GetMoveSpeed() const;
     const sf::Vector2f& GetScale() const;
+    NavigationGrid&     GetNavGrid() const;
     bool                IsMoving() const;
 
     // --- Setters (Stats setters inherited unless overridden) ---
     void SetZOrder(int zOrder);
     void SetScale(const sf::Vector2f& scale);
     void SetScale(float scaleX, float scaleY);
+    void SetNavGrid(NavigationGrid& navGrid);
     void SetMoveSpeed(float speed);
 
     virtual void SetPosition(const sf::Vector2f& position);
