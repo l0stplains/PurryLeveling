@@ -27,6 +27,7 @@ Item& Item::operator=(const Item& other)
     type    = other.type;
     rarity  = other.rarity;
     effects = other.effects;
+    description = other.description;
     return *this;
 }
 
