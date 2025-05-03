@@ -33,10 +33,14 @@ InventoryMenu::InventoryMenu(GameContext& gameContext)
 
     // Add some m_equipment items
     m_backpack.addItem(Item("ASS", "Iron Sword", "Weapon", 'B', effects, "A sharp blade"), 5);
-    m_backpack.addItem(Item("LFD", "Leather Helmet", "HeadArmor", 'C', effects, "Protective headgear"), 1);
-    m_backpack.addItem(Item("CBD", "Chain Mail", "BodyArmor", 'B', effects, "Heavy armor for protection"), 1);
-    m_backpack.addItem(Item("LBD", "Leather Boots", "FootArmor", 'C', effects, "Comfortable footwear"), 1);
-    m_backpack.addItem(Item("FRS", "Magic Amulet", "Pendant", 'A', effects, "Grants magical protection"), 1);
+    m_backpack.addItem(
+        Item("LFD", "Leather Helmet", "HeadArmor", 'C', effects, "Protective headgear"), 1);
+    m_backpack.addItem(
+        Item("CBD", "Chain Mail", "BodyArmor", 'B', effects, "Heavy armor for protection"), 1);
+    m_backpack.addItem(
+        Item("LBD", "Leather Boots", "FootArmor", 'C', effects, "Comfortable footwear"), 1);
+    m_backpack.addItem(
+        Item("FRS", "Magic Amulet", "Pendant", 'A', effects, "Grants magical protection"), 1);
 }
 
 void InventoryMenu::Render()
@@ -47,6 +51,11 @@ void InventoryMenu::Render()
     m_hoveredDescription.clear();
 
     // Start the inventory window
+    // —— shop-style: no window/item padding ——
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
     ImGui::Begin("Inventory",
                  nullptr,
                  ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar |
@@ -57,7 +66,8 @@ void InventoryMenu::Render()
     // Set window size to fit both inventory and m_equipment
     ImGui::SetWindowSize(
         ImVec2(GRID_WIDTH * EQUIPMENT_SLOT_SIZE + SLOT_PADDING * 2 + EQUIPMENT_SLOT_SIZE * 2,
-               GRID_HEIGHT * EQUIPMENT_SLOT_SIZE + SLOT_PADDING * 2 + EQUIP_SLOTS * EQUIPMENT_SLOT_SIZE + 40));
+               GRID_HEIGHT * EQUIPMENT_SLOT_SIZE + SLOT_PADDING * 2 +
+                   EQUIP_SLOTS * EQUIPMENT_SLOT_SIZE + 40));
 
     // Calculate positions for grid
     ImVec2 curPos = {125.f, 150.f};
@@ -85,22 +95,35 @@ void InventoryMenu::Render()
         ClearInventory();
     }
         */
-    
 
     ImGui::SetCursorScreenPos(
-        ImVec2(startX - 31,
-               startY + GRID_HEIGHT * BACKPACK_SLOT_SIZE + SLOT_PADDING));
+        ImVec2(startX - 32, startY + GRID_HEIGHT * BACKPACK_SLOT_SIZE + SLOT_PADDING - 10));
+    float descW = GRID_WIDTH * BACKPACK_SLOT_SIZE;
+    float descH = 30.0f;
+    // pick up whatever description or fallback
+    std::string txt = m_hoveredDescription.empty() ? "Hover over an item to see its description."
+                                                   : m_hoveredDescription;
+
+    // begin child w/ border
+    ImGui::SetCursorScreenPos(ImVec2(startX - 32, startY + GRID_HEIGHT * BACKPACK_SLOT_SIZE + 4));
     ImGui::BeginChild("ItemDescription",
-                      ImVec2(GRID_WIDTH * BACKPACK_SLOT_SIZE, 80),
-                      /*border=*/true);
-    if (!m_hoveredDescription.empty()) {
-        ImGui::TextWrapped("%s", m_hoveredDescription.c_str());
-        std::cout << m_hoveredDescription << " blabla" << std::endl;
-    }
-    else
-        ImGui::TextWrapped("Hover over an item to see its description.");
+                      ImVec2(descW, descH),
+                      /*border=*/false);
+
+    // figure out available region and text size
+    ImVec2 avail = ImGui::GetContentRegionAvail();
+    ImVec2 tsize = ImGui::CalcTextSize(txt.c_str());
+
+    // center in X and Y
+    float offX = (avail.x - tsize.x) * 0.5f;
+    float offY = (avail.y - tsize.y) * 0.5f;
+    ImGui::SetCursorPos(ImVec2(offX, offY));
+
+    // draw the one‐liner (no wrap, since it’s short)
+    ImGui::TextUnformatted(txt.c_str());
+
+    ImGui::PopStyleVar(4);  // pop WindowPadding, ItemSpacing, ItemInnerSpacing, FramePadding
     ImGui::EndChild();
-    
     ImGui::End();
 }
 
@@ -111,7 +134,8 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
         for (int x = 0; x < GRID_WIDTH; x++)
         {
             // Set position for this slot
-            ImGui::SetCursorScreenPos(ImVec2(startX - 31 + x * BACKPACK_SLOT_SIZE, startY + y * BACKPACK_SLOT_SIZE));
+            ImGui::SetCursorScreenPos(
+                ImVec2(startX - 31 + x * BACKPACK_SLOT_SIZE, startY + y * BACKPACK_SLOT_SIZE));
 
             // Create a selectable area for the slot
             ImGui::PushID(y * GRID_WIDTH + x);
@@ -119,11 +143,20 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
 
-            if (ImGui::Button("", ImVec2(BACKPACK_SLOT_SIZE - 8, BACKPACK_SLOT_SIZE - 8)))
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+            ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetStyle().Colors[ImGuiCol_Border]);
+
+            bool slotClicked =
+                ImGui::Button("", ImVec2(BACKPACK_SLOT_SIZE - 2, BACKPACK_SLOT_SIZE - 2));
+            ImGui::PopStyleColor();
+            ImGui::PopStyleVar(3);
+
+            if (slotClicked)
             {
-                // Handle single-click on m_backpack slot
+                std::cout << "Slot clicked at: " << y << ", " << x << std::endl;
             }
-            
 
             // Render item in m_backpack slot if it exists
             try
@@ -169,11 +202,12 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                 }
 
                 // Render the item
-                ImGui::SetCursorScreenPos(
-                    ImVec2(startX + x * BACKPACK_SLOT_SIZE - 31 + 4, startY + y * BACKPACK_SLOT_SIZE + 4));
+                ImGui::SetCursorScreenPos(ImVec2(startX + x * BACKPACK_SLOT_SIZE - 31 + 7,
+                                                 startY + y * BACKPACK_SLOT_SIZE + 7));
 
                 sf::Texture* texture =
-                    &m_gameContext.GetResourceManager()->GetTexture(item.getItemID());  // Get texture
+                    &m_gameContext.GetResourceManager()->GetTexture(item.getItemID());  // Get
+                                                                                        // texture
                 if (texture)
                 {
                     ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
@@ -185,17 +219,18 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                     ImGui::PushStyleColor(ImGuiCol_Button,
                                           GetItemColor(item.getName(), item.getType()));
 
-                    ImGui::Button(item.getName().c_str(), ImVec2(BACKPACK_SLOT_SIZE - 16, BACKPACK_SLOT_SIZE - 16));
+                    ImGui::Button(item.getName().c_str(),
+                                  ImVec2(BACKPACK_SLOT_SIZE - 16, BACKPACK_SLOT_SIZE - 16));
                     ImGui::PopStyleColor();
                 }
-                
+
                 /**
                 // Current implementation using colored buttons
                 ImGui::PushStyleColor(ImGuiCol_Button, GetItemColor(item.getName(),
                 item.getType()));
 
-                ImGui::Button(item.getName().c_str(), ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
-                ImGui::PopStyleColor();
+                ImGui::Button(item.getName().c_str(), ImVec2(EQUIPMENT_SLOT_SIZE - 16,
+                EQUIPMENT_SLOT_SIZE - 16)); ImGui::PopStyleColor();
 
                 */
 
@@ -204,8 +239,9 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                 {
                     std::string countText = std::to_string(count);
                     ImVec2      textSize  = ImGui::CalcTextSize(countText.c_str());
-                    ImVec2      textPos   = ImVec2(startX - 31 + (x + 1) * BACKPACK_SLOT_SIZE - textSize.x - 15,
-                                            startY + (y + 1) * BACKPACK_SLOT_SIZE - textSize.y - 15);
+                    ImVec2      textPos =
+                        ImVec2(startX - 31 + 3 + (x + 1) * BACKPACK_SLOT_SIZE - textSize.x - 15,
+                               startY + (y + 1) * BACKPACK_SLOT_SIZE - textSize.y - 15 + 3);
 
                     // draw it directly—does NOT create a new ImGui item!
                     ImGui::GetWindowDrawList()->AddText(textPos,
@@ -217,7 +253,8 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                 char        r = item.getRarity();
                 std::string rarityText(1, r);
                 ImVec2      rarityTextSize = ImGui::CalcTextSize(rarityText.c_str());
-                ImVec2 textPos = ImVec2(startX - 31 + x * BACKPACK_SLOT_SIZE + 7, startY + y * BACKPACK_SLOT_SIZE + 5);
+                ImVec2      textPos        = ImVec2(startX - 31 + 3 + x * BACKPACK_SLOT_SIZE + 7,
+                                        startY + y * BACKPACK_SLOT_SIZE + 5 + 3);
 
                 ImGui::GetWindowDrawList()->AddText(textPos,
                                                     IM_COL32(255, 255, 255, 255),  // white,
@@ -366,10 +403,18 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
 
     for (int i = 0; i < EQUIP_SLOTS; i++)
     {
-        ImGui::SetCursorScreenPos(
-            ImVec2(startX + EQUIPMENT_SLOT_SIZE + 8 + 150, startY + i * EQUIPMENT_SLOT_SIZE + EQUIPMENT_SLOT_SIZE / 2.0f - 10));
+        // compute size of the label
+        ImVec2 labelSize = ImGui::CalcTextSize(slotNames[i].c_str());
 
-        // Create a label for the m_equipment slot
+        // position it just to the right of the slot
+        float textX = startX                 // left edge of the equipment panel
+                      + EQUIPMENT_SLOT_SIZE  // width of the slot
+                      + 200;                 // small gap you can tweak
+
+        float textY = startY + i * EQUIPMENT_SLOT_SIZE               // row
+                      + (EQUIPMENT_SLOT_SIZE - labelSize.y) * 0.5f;  // vertically centered
+
+        ImGui::SetCursorScreenPos(ImVec2(textX, textY));
         ImGui::Text("%s", slotNames[i].c_str());
 
         // Position the actual slot
@@ -380,6 +425,11 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.4f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.5f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.6f, 1.0f));
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+        ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetStyle().Colors[ImGuiCol_Border]);
 
         if (ImGui::Button("", ImVec2(EQUIPMENT_SLOT_SIZE - 8, EQUIPMENT_SLOT_SIZE - 8)))
         {
@@ -436,7 +486,8 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
                 ImGui::EndDragDropSource();
             }
             // Render the equipped item
-            ImGui::SetCursorScreenPos(ImVec2(startX + 200 +4, startY + i * EQUIPMENT_SLOT_SIZE + 4));
+            ImGui::SetCursorScreenPos(
+                ImVec2(startX + 200 + 20, startY + i * EQUIPMENT_SLOT_SIZE + 20));
 
             /*
             // OPTION: To use images for m_equipment items
@@ -456,14 +507,16 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
 
             ImGui::PushStyleColor(ImGuiCol_Button,
                                   GetItemColor(equippedItem.getName(), equippedItem.getType()));
-            ImGui::Button(equippedItem.getName().c_str(), ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
+            ImGui::Button(equippedItem.getName().c_str(),
+                          ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
             ImGui::PopStyleColor();
             // capture hover description
 
             char        r = equippedItem.getRarity();
             std::string rarityText(1, r);
             ImVec2      rarityTextSize = ImGui::CalcTextSize(rarityText.c_str());
-            ImVec2      textPos        = ImVec2(startX * EQUIPMENT_SLOT_SIZE + 7, startY + (i)*EQUIPMENT_SLOT_SIZE + 5);
+            ImVec2      textPos =
+                ImVec2(startX * EQUIPMENT_SLOT_SIZE + 7, startY + (i)*EQUIPMENT_SLOT_SIZE + 5);
 
             ImGui::GetWindowDrawList()->AddText(textPos,
                                                 IM_COL32(255, 255, 255, 255),  // white,
@@ -502,7 +555,8 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
             ImGui::EndDragDropTarget();
         }
 
-        ImGui::PopStyleColor(3);
+        ImGui::PopStyleColor(4);
+        ImGui::PopStyleVar(3);  // pop FrameBorderSize, FramePadding, FrameRounding
         ImGui::PopID();
     }
 }
