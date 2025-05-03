@@ -94,6 +94,13 @@ std::string GameContext::GetCurrentFolderName() const
 {
     return m_currentFolderName;
 }
+
+bool GameContext::GetFirstSaveState()
+{
+    return m_firstSave;
+}
+
+
 void GameContext::SetResourceManager(ResourceManager* resourceManager)
 {
     m_resourceManager = resourceManager;
@@ -171,6 +178,11 @@ void GameContext::SetNavigationGrid(NavigationGrid navGrid)
 void GameContext::SetCurrentFolderName(std::string folderName)
 {
     m_currentFolderName = std::move(folderName);
+}
+
+void GameContext::SetFirstSaveState(bool firstSave)
+{
+    m_firstSave = firstSave;
 }
 
 void GameContext::UpdateFPS(const sf::Time& dt)

@@ -132,6 +132,8 @@ public:
 
     std::string GetCurrentFolderName() const;
 
+    bool GetFirstSaveState();
+
     // Setters
 
     /**
@@ -212,6 +214,8 @@ public:
 
     void SetCurrentFolderName(std::string folderName);
 
+    void SetFirstSaveState(bool firstSave);
+
     // FPS tracking
 
     /**
@@ -242,6 +246,7 @@ private:
 
     Backpack*  m_backpack;
     Equipment* m_equipment;
+    bool m_firstSave = true;
 
     sf::RenderWindow* m_window;          ///< Pointer to the SFML render window
     NavigationGrid    m_navigationGrid;  ///< Navigation grid for movement restrictions
