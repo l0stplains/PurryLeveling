@@ -18,7 +18,7 @@ class QuestGenerator
 {
 private:
     std::map<std::string, std::vector<std::tuple<std::string, int, int, int, std::string>>> questData;
-    RNG                                                                                     rng;
+    RNG rng;
 
 public:
     /**

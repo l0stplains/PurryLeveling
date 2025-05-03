@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <vector>
 using namespace std;
 
@@ -18,7 +19,7 @@ using namespace std;
 class RNG
 {
 private:
-    usl state;  ///< Current state of the random number generator
+    static usl state;  ///< Current state of the random number generator
 
     /** @brief Multiplier constant for the LCG algorithm */
     const usl multiplier = static_cast<usl>(6364136223846793005);

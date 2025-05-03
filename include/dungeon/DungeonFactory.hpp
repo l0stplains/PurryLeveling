@@ -4,6 +4,9 @@
 #include <algorithm>
 #include <string>
 
+#include "core/GameContext.hpp"
+#include "core/UnitManager.hpp"
+
 #include "dungeon/Chamber.hpp"
 #include "dungeon/Dungeon.hpp"
 #include "items/ItemManager.hpp"
@@ -28,6 +31,8 @@ private:
     MobLootConfigParser& mobLootConfigParser;  // Reference to the MobLootConfigParser for mob loot
                                                // generation
     QuestGenerator& questGenerator;  // Reference to the QuestGenerator for quest generation
+    UnitManager&    unitManager;     // Reference to the UnitManager for unit generation
+    GameContext&    gameContext;     // Reference to the GameContext for game state management
     const double    doubleDungeonActivateThreshold;  // 5% chance of activating double chamber
     bool            isDoubleDungeonYet;              // Tracks if double dungeon has been activated
     double          chance;  // Stores the result of RNG for probability checks
@@ -93,9 +98,7 @@ public:
      * @param mobLootConfigParser Reference to the MobLootConfigParser for mob loot generation
      * @param questGenerator Reference to the QuestGenerator for quest generation
      */
-    DungeonFactory(ItemManager&         itemManager,
-                   MobLootConfigParser& mobLootConfigParser,
-                   QuestGenerator&      questGenerator);
+    DungeonFactory(GameContext& gameContext);
 
     /**
      * @brief Destroys the DungeonFactory object

@@ -3,6 +3,8 @@
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
 
+#include "skill/characterSkill/Mastery1/Bravery.hpp"
+
 Fighter::Fighter(const std::string&  name,
                  const sf::Vector2f& position,
                  NavigationGrid&     navGrid,
@@ -20,8 +22,10 @@ Fighter::Fighter(const std::string&  name,
     m_attackDamage = 18;
     m_healthRegen  = 2;
     m_manaRegen    = 1;
-    m_moveSpeed    = 110.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.0f;  // Slightly longer reach? ~1.5 tiles
+    m_moveSpeed    = 110.f;
+    m_attackRange  = 48.0f;
+
+    m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<Bravery>()));
 
     sf::Vector2i fighterFrameSize(32, 32);
 
@@ -45,7 +49,7 @@ Fighter::Fighter(const std::string&  name,
         {UnitAnimationType::DIE, "character_elf_die_spin_shadow"}
 
     };
-    // Example frame counts (adjust these!)
+
     std::unordered_map<UnitAnimationType, int> fighterFramesPerAnim = {{UnitAnimationType::IDLE, 16},
                                                                        {UnitAnimationType::WALK, 4},
                                                                        {UnitAnimationType::ATTACK, 4},
@@ -53,16 +57,14 @@ Fighter::Fighter(const std::string&  name,
                                                                        {UnitAnimationType::DAMAGE, 4},
                                                                        {UnitAnimationType::DIE, 12}};
 
-    // Example durations (in seconds, adjust these!)
     std::unordered_map<UnitAnimationType, float> fighterDurationPerAnim = {
-        {UnitAnimationType::IDLE, 6.4f},
-        {UnitAnimationType::WALK, 1.6f},
-        {UnitAnimationType::ATTACK, 0.8f},
-        {UnitAnimationType::JUMP, 0.8f},
-        {UnitAnimationType::DAMAGE, 0.8f},
-        {UnitAnimationType::DIE, 4.8f}};
+        {UnitAnimationType::IDLE, 3.2f},
+        {UnitAnimationType::WALK, 0.8f},
+        {UnitAnimationType::ATTACK, 0.4f},
+        {UnitAnimationType::JUMP, 0.4f},
+        {UnitAnimationType::DAMAGE, 0.4f},
+        {UnitAnimationType::DIE, 1.2f}};
 
-    // Example looping status (Idle/Walk usually loop)
     std::unordered_map<UnitAnimationType, bool> fighterLoopingAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
@@ -237,23 +239,21 @@ void Fighter::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callb
         // Set cooldown AFTER attack attempt
         // m_currentAttackCooldown = m_attackCooldown;
 
-        std::cout << "AFTERKENA\n";
         // Default back to idle if not moving etc.
         if (!m_isMoving)
         {
             PlayAnimation(UnitAnimationType::IDLE);
         }
-        std::cout << "JAJANG123\n";
+
         // Call the original completion callback if provided
         if (cb)
         {
-            std::cout << "JAJANG6969\n";
             cb();
         }
     });
 }
 
-void Fighter::UseSkill(int skillId, ActionCompletionCallback callback)
+void Fighter::UseSkill(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
     {

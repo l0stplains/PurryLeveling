@@ -12,6 +12,7 @@ Game::Game()
       m_shop(),
       m_itemManager(),
       m_mobLootConfigParser(),
+      m_questGenerator(),
       m_backpack(4, 8),
       m_equipment()
 {
@@ -38,6 +39,7 @@ Game::Game()
     m_context.SetEquipment(&m_equipment);
     m_context.SetItemManager(&m_itemManager);
     m_context.SetMobLootConfigParser(&m_mobLootConfigParser);
+    m_context.SetQuestGenerator(&m_questGenerator);
 
     m_context.SetVSyncEnabled(false);
 

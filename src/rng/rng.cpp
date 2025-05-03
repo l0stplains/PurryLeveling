@@ -1,18 +1,28 @@
 #include "rng/rng.hpp"
 
+usl RNG::state = 0;
+
 RNG::RNG()
 {
-    setSeed(69420);
+    if (state == 0)
+    {
+        auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        state    = static_cast<usl>(now);
+    }
 }
 
 RNG::RNG(usl seed)
 {
+    if (state == 0)
+    {
+        auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        state    = static_cast<usl>(now);
+    }
     setSeed(seed);
 }
 
 void RNG::setSeed(usl seed)
 {
-    this->state = 0;
     generateNext();
     state += seed;
     generateNext();

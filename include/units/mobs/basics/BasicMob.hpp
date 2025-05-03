@@ -3,13 +3,10 @@
 #include "skill/Skill.hpp"
 #include "units/mobs/Mob.hpp"
 
-/**
- * @brief Represents an AnimatedUnit controlled by a player or with RPG stats.
- */
 class BasicMob : virtual public Mob
 {
 public:
-    BasicMob(const std::string& name, Skill& healSkill);
+    BasicMob(const std::string& name);
 
     ~BasicMob() override = default;
 

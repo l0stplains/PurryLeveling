@@ -27,7 +27,7 @@ public:
     // --- Action Overrides ---
     void Attack(Unit& target, ActionCompletionCallback callback = nullptr) override;
 
-    void UseSkill(int skillId, ActionCompletionCallback callback = nullptr) override;
+    void UseSkill(Unit& target, ActionCompletionCallback callback = nullptr) override;
 
     /**
      * @brief Override RenderUI if fighter has specific visuals.

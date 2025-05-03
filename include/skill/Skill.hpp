@@ -30,15 +30,15 @@ public:
      * @param effectVec Vector of effects associated with the skill
      * @param treeNodeVec Vector of child nodes in the skill tree
      */
-    Skill(string                     name,
-          float                      manaCost,
-          int                        masteryCost,
-          float                      damage,
-          float                      effectChance,
-          vector<unique_ptr<Effect>> effectVec,
-          vector<unique_ptr<Skill>>  treeNodeVec,
-          bool                       learn,
-          bool                       activate);
+    Skill(string                       name,
+          float                        manaCost,
+          int                          masteryCost,
+          float                        damage,
+          float                        effectChance,
+          vector<unique_ptr<Effect>>&& effectVec,
+          vector<unique_ptr<Skill>>&&  treeNodeVec,
+          bool                         learn,
+          bool                         activate);
 
     // Delete copy constructor and copy assignment operator
     Skill(const Skill&)            = delete;
@@ -46,7 +46,7 @@ public:
 
     /* @brief Destructor for Skill
      */
-    ~Skill();
+    virtual ~Skill() = default;
 
     // -- Getter --
     string                            getName() const { return name; }

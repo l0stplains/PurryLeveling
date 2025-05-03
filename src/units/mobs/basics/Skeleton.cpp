@@ -1,4 +1,4 @@
-#include "units/mobs/basics/Slime.hpp"
+#include "units/mobs/basics/Skeleton.hpp"
 
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
@@ -6,12 +6,12 @@
 
 #include "units/mobs/basics/BasicMob.hpp"
 
-Slime::Slime(const std::string&  name,
-             const sf::Vector2f& position,
-             NavigationGrid&     navGrid,
-             const GameContext&  gameContext)
+Skeleton::Skeleton(const std::string&  name,
+                   const sf::Vector2f& position,
+                   NavigationGrid&     navGrid,
+                   const GameContext&  gameContext)
     : Unit(name),
-      m_acidityCorrossion(true, true),
+      m_boneShard(true, true),
       Mob(name),
       BasicMob(name),  // ← must initialize the virtual base
       AnimatedUnit(name, position, navGrid, false, gameContext)
@@ -27,36 +27,37 @@ Slime::Slime(const std::string&  name,
     m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
-    sf::Vector2i slimeFrameSize(32, 32);
+    sf::Vector2i skeletonFrameSize(32, 32);
 
-    std::unordered_map<UnitAnimationType, std::string> slimeTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_slime_idle"},
-        {UnitAnimationType::WALK, "mob_slime_walk"},
-        {UnitAnimationType::ATTACK, "mob_slime_attack"},
-        {UnitAnimationType::JUMP, "mob_slime_jump"},
-        {UnitAnimationType::DAMAGE, "mob_slime_dmg"},
-        {UnitAnimationType::DIE, "mob_slime_die"}
+    std::unordered_map<UnitAnimationType, std::string> skeletonTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_skeleton_idle"},
+        {UnitAnimationType::WALK, "mob_skeleton_walk"},
+        {UnitAnimationType::ATTACK, "mob_skeleton_attack"},
+        {UnitAnimationType::JUMP, "mob_skeleton_jump"},
+        {UnitAnimationType::DAMAGE, "mob_skeleton_dmg"},
+        {UnitAnimationType::DIE, "mob_skeleton_die"}
 
     };
-    std::unordered_map<UnitAnimationType, std::string> slimeShadowTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_slime_idle_shadow"},
-        {UnitAnimationType::WALK, "mob_slime_walk_shadow"},
-        {UnitAnimationType::ATTACK, "mob_slime_attack_shadow"},
-        {UnitAnimationType::JUMP, "mob_slime_jump_shadow"},
-        {UnitAnimationType::DAMAGE, "mob_slime_dmg_shadow"},
-        {UnitAnimationType::DIE, "mob_slime_die_shadow"}
+    std::unordered_map<UnitAnimationType, std::string> skeletonShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_skeleton_idle_shadow"},
+        {UnitAnimationType::WALK, "mob_skeleton_walk_shadow"},
+        {UnitAnimationType::ATTACK, "mob_skeleton_attack_shadow"},
+        {UnitAnimationType::JUMP, "mob_skeleton_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "mob_skeleton_dmg_shadow"},
+        {UnitAnimationType::DIE, "mob_skeleton_die_shadow"}
 
     };
     // Example frame counts (adjust these!)
-    std::unordered_map<UnitAnimationType, int> slimeFramesPerAnim = {{UnitAnimationType::IDLE, 16},
-                                                                     {UnitAnimationType::WALK, 4},
-                                                                     {UnitAnimationType::ATTACK, 4},
-                                                                     {UnitAnimationType::JUMP, 4},
-                                                                     {UnitAnimationType::DAMAGE, 4},
-                                                                     {UnitAnimationType::DIE, 9}};
+    std::unordered_map<UnitAnimationType, int> skeletonFramesPerAnim = {
+        {UnitAnimationType::IDLE, 16},
+        {UnitAnimationType::WALK, 4},
+        {UnitAnimationType::ATTACK, 4},
+        {UnitAnimationType::JUMP, 4},
+        {UnitAnimationType::DAMAGE, 4},
+        {UnitAnimationType::DIE, 9}};
 
     // Example durations (in seconds, adjust these!)
-    std::unordered_map<UnitAnimationType, float> slimeDurationPerAnim = {
+    std::unordered_map<UnitAnimationType, float> skeletonDurationPerAnim = {
         {UnitAnimationType::IDLE, 3.2f},
         {UnitAnimationType::WALK, 0.8f},
         {UnitAnimationType::ATTACK, 0.4f},
@@ -65,7 +66,7 @@ Slime::Slime(const std::string&  name,
         {UnitAnimationType::DIE, 0.9f}};
 
     // Example looping status (Idle/Walk usually loop)
-    std::unordered_map<UnitAnimationType, bool> slimeLoopingAnims = {
+    std::unordered_map<UnitAnimationType, bool> skeletonLoopingAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, false},
@@ -73,7 +74,7 @@ Slime::Slime(const std::string&  name,
         {UnitAnimationType::DAMAGE, false},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, bool> slimeDirectionalAnims = {
+    std::unordered_map<UnitAnimationType, bool> skeletonDirectionalAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, true},
@@ -81,19 +82,19 @@ Slime::Slime(const std::string&  name,
         {UnitAnimationType::DAMAGE, true},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, int> slimeDefaultRows = {{UnitAnimationType::DIE, 0}};
+    std::unordered_map<UnitAnimationType, int> skeletonDefaultRows = {{UnitAnimationType::DIE, 0}};
 
-    LoadAnimations(slimeTexturePaths,
-                   slimeFrameSize,
-                   slimeFramesPerAnim,
-                   slimeDurationPerAnim,
-                   slimeLoopingAnims,
-                   slimeDirectionalAnims,
-                   slimeDefaultRows,
-                   slimeShadowTexturePaths);
+    LoadAnimations(skeletonTexturePaths,
+                   skeletonFrameSize,
+                   skeletonFramesPerAnim,
+                   skeletonDurationPerAnim,
+                   skeletonLoopingAnims,
+                   skeletonDirectionalAnims,
+                   skeletonDefaultRows,
+                   skeletonShadowTexturePaths);
 }
 
-void Slime::Attack(Unit& target, ActionCompletionCallback callback)
+void Skeleton::Attack(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {  // Check self and target state
@@ -181,7 +182,7 @@ void Slime::Attack(Unit& target, ActionCompletionCallback callback)
     }
 }
 
-void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
+void Skeleton::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
@@ -205,7 +206,7 @@ void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callbac
             float        distanceToTarget =
                 std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
 
-            // Deal daslime if still in range (maybe slightly larger range check here?)
+            // Deal daskeleton if still in range (maybe slightly larger range check here?)
             if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
             {
                 std::cout << GetName() << " deals " << m_attackDamage << " damage to "
@@ -215,7 +216,7 @@ void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callbac
                 AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
                 if (animatedTarget)
                 {
-                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes daslime
+                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes daskeleton
                 }
                 else
                 {
@@ -226,13 +227,13 @@ void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callbac
             else
             {
                 std::cout << GetName()
-                          << " dealt no daslime, target moved out of range during animation."
+                          << " dealt no daskeleton, target moved out of range during animation."
                           << std::endl;  // Debug
             }
         }
         else
         {
-            std::cout << GetName() << " dealt no daslime, target is no longer valid."
+            std::cout << GetName() << " dealt no daskeleton, target is no longer valid."
                       << std::endl;  // Debug
         }
 
@@ -253,7 +254,7 @@ void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callbac
     });
 }
 
-void Slime::UseSkill(Unit& target, ActionCompletionCallback callback)
+void Skeleton::UseSkill(Unit& target, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -264,7 +265,7 @@ void Slime::UseSkill(Unit& target, ActionCompletionCallback callback)
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
-// void Slime::RenderUI(sf::RenderWindow& window) {
+// void Skeleton::RenderUI(sf::RenderWindow& window) {
 //     Character::RenderUI(window); // Call base UI rendering
 //     // Add fighter-specific UI elements here (e.g., rage bar?)
 // }

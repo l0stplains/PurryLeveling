@@ -1,38 +1,27 @@
 #include "skill/Skill.hpp"
 
-Skill::Skill(string                     name,
-             float                      manaCost,
-             int                        masteryCost,
-             float                      damage,
-             float                      effectChance,
-             vector<unique_ptr<Effect>> effectVec,
-<<<<<<< HEAD
-             vector<unique_ptr<Skill>>  treeNodeVec,
-=======
-             vector<Skill*>             treeNodeVec,
->>>>>>> main
-             bool                       learn,
-             bool                       activate)
-{
-    this->name         = name;
-    this->manaCost     = manaCost;
-    this->masteryCost  = masteryCost;
-    this->damage       = damage;
-    this->effectChance = effectChance;
-    this->effects      = std::move(effectVec);
-    this->children     = std::move(treeNodeVec);
-    this->isLearned    = learn;
-    this->activated    = activate;
-}
-
-Skill::~Skill() {}
+Skill::Skill(string                       name,
+             float                        manaCost,
+             int                          masteryCost,
+             float                        damage,
+             float                        effectChance,
+             vector<unique_ptr<Effect>>&& effectVec,
+             vector<unique_ptr<Skill>>&&  treeNodeVec,
+             bool                         learn,
+             bool                         activate)
+    : name(name),
+      manaCost(manaCost),
+      masteryCost(masteryCost),
+      damage(damage),
+      effectChance(effectChance),
+      effects(std::move(effectVec)),
+      children(std::move(treeNodeVec)),
+      isLearned(learn),
+      activated(activate)
+{}
 
 bool Skill::learn(int* masteryPoint)
 {
-<<<<<<< HEAD
-=======
-    // If there are no children, nothing to learn
->>>>>>> main
     if (children.empty())
     {
         return false;
@@ -62,10 +51,6 @@ bool Skill::learn(int* masteryPoint)
         }
         else
         {
-<<<<<<< HEAD
-=======
-            // Try to learn child's children
->>>>>>> main
             if (child->learn(masteryPoint))
             {
                 anySkillLearned = true;
