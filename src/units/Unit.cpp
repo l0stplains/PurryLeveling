@@ -63,6 +63,36 @@ Stats Unit::GetStats() const
     return m_stats;
 }
 
+float Unit::GetMaxHealthMultiplier() const
+{
+    return m_maxHealthMultiplier;
+}
+
+float Unit::GetHealthRegenMultiplier() const
+{
+    return m_healthRegenMultiplier;
+}
+
+float Unit::GetMaxManaMultiplier() const
+{
+    return m_maxManaMultiplier;
+}
+
+float Unit::GetManaRegenMultiplier() const
+{
+    return m_manaRegenMultiplier;
+}
+
+float Unit::GetAttackDamageMultiplier() const
+{
+    return m_attackDamageMultiplier;
+}
+
+const SkillTree* Unit::GetSkillTree() const
+{
+    return m_skillTree.get();
+}
+
 void Unit::SetName(const std::string& name)
 {
     m_name = name;
@@ -75,25 +105,23 @@ void Unit::SetActive(bool active)
 
 void Unit::SetMaxHealth(int maxHealth)
 {
-    m_maxHealth = std::max(0, maxHealth);
-    // Ensure current health doesn't exceed new max
+    m_maxHealth     = std::max(0, maxHealth);
     m_currentHealth = std::min(m_currentHealth, m_maxHealth);
+
+    SetHealthRegen(m_maxHealth * 0.05f * m_manaRegenMultiplier);  // 5% of max health as regen
 }
 
 void Unit::SetHealth(int health)
 {
     m_currentHealth = std::max(0, std::min(m_maxHealth, health));
-    if (m_currentHealth == 0)
-    {
-        // Potentially set m_active = false here? Or leave it to TakeDamage?
-        // Let's keep it simple for now, TakeDamage handles becoming inactive.
-    }
 }
 
 void Unit::SetMaxMana(int maxMana)
 {
     m_maxMana     = std::max(0, maxMana);
     m_currentMana = std::min(m_currentMana, m_maxMana);
+
+    SetManaRegen(m_maxHealth * 0.05f * m_manaRegenMultiplier);  // 5% of max mana as regen
 }
 
 void Unit::SetCurrentMana(int currentMana)
@@ -112,6 +140,61 @@ void Unit::SetHealthRegen(int healthRegen)
 void Unit::SetManaRegen(int manaRegen)
 {
     m_manaRegen = manaRegen;
+}
+
+void Unit::SetMaxHealthMultiplier(float maxHealthMultiplier)
+{
+    m_maxHealthMultiplier = maxHealthMultiplier;
+    m_maxHealth           = static_cast<int>(m_maxHealth * maxHealthMultiplier);
+}
+void Unit::SetHealthRegenMultiplier(float healthRegenMultiplier)
+{
+    m_healthRegenMultiplier = healthRegenMultiplier;
+    m_healthRegen           = static_cast<int>(m_healthRegen * healthRegenMultiplier);
+}
+void Unit::SetMaxManaMultiplier(float maxManaMultiplier)
+{
+    m_maxManaMultiplier = maxManaMultiplier;
+    m_maxMana           = static_cast<int>(m_maxMana * maxManaMultiplier);
+}
+void Unit::SetManaRegenMultiplier(float manaRegenMultiplier)
+{
+    m_manaRegenMultiplier = manaRegenMultiplier;
+    m_manaRegen           = static_cast<int>(m_manaRegen * manaRegenMultiplier);
+}
+void Unit::SetAttackDamageMultiplier(float attackDamageMultiplier)
+{
+    m_attackDamageMultiplier = attackDamageMultiplier;
+    m_attackDamage           = static_cast<int>(m_attackDamage * attackDamageMultiplier);
+}
+void Unit::SetSkillTree(std::unique_ptr<SkillTree> skillTree)
+{
+    m_skillTree = std::move(skillTree);
+}
+void Unit::SetStats(Stats stats)
+{
+    m_stats = stats;
+}
+
+void Unit::ApplyEffect(std::unique_ptr<Effect> effect)
+{
+    if (!m_active || m_currentHealth <= 0)
+        return;  // Cannot apply effects to inactive/dead units
+
+    // Apply the effect to the unit
+    m_activeEffects.push_back(std::move(effect));
+}
+
+void Unit::RemoveEffectByName(const std::string& effectName)
+{
+    if (!m_active || m_currentHealth <= 0)
+        return;  // Cannot remove effects from inactive/dead units
+
+    auto it = std::remove_if(
+        m_activeEffects.begin(), m_activeEffects.end(), [&](const std::unique_ptr<Effect>& effect) {
+            return effect->GetName() == effectName;
+        });
+    m_activeEffects.erase(it, m_activeEffects.end());
 }
 
 // --- Base implementations for actions affecting stats ---

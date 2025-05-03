@@ -8,6 +8,7 @@
 
 #include "core/GameContext.hpp"
 
+#include "ui/BattleUnitInfo.hpp"
 #include "ui/Button.hpp"
 
 #include "dungeon/Dungeon.hpp"
@@ -71,14 +72,16 @@ private:
 
     NavigationGrid m_navGrid;  ///< Navigation grid for unit movement
 
+    BattleUnitInfo m_battleUnitInfo;  ///< Battle unit information UI
+
     bool m_isPlayerTurn     = true;
     bool m_wasInChamberExit = false;
 
     bool m_triggerActionTurn = false;
 
-    bool    m_showExitPopup = false;  ///< Flag to show exit confirmation popup
-    Dungeon m_dungeon;
-    Chamber m_chamber;
+    bool     m_showExitPopup = false;  ///< Flag to show exit confirmation popup
+    Dungeon  m_dungeon;
+    Chamber* m_chamber;
 
     std::queue<unsigned int> m_turnQueue;
 
@@ -87,6 +90,8 @@ private:
     State::StateChange        m_pendingStateChange;  ///< Pending state change information
 
     void playMobTurn();
+
+    void nextChamber();
 
     std::vector<sf::Vector2f> generateMobSpawnPoints(const sf::Vector2f& center,
                                                      unsigned int        mobCount,
