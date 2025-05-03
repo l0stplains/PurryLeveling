@@ -519,10 +519,7 @@ void MainMenuState::validateFolder(const std::string& folderPath)
 
         std::cout << "Character type: " << charType << std::endl;
 
-        sf::Vector2u   windowSize = GetContext().GetWindow()->getSize();
-        NavigationGrid tempNavGrid(windowSize.x, windowSize.y, 51, 51);
-
-        std::cout << "NavigationGrid created" << std::endl;
+        sf::Vector2u windowSize = GetContext().GetWindow()->getSize();
 
         std::vector<std::vector<bool>> grid = {
             {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
@@ -541,29 +538,15 @@ void MainMenuState::validateFolder(const std::string& folderPath)
             {1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0},
             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
-        if (!tempNavGrid.SetGrid(grid))
-        {
-            unsigned int passedH = static_cast<unsigned int>(grid.size());
-            unsigned int passedW = passedH > 0 ? static_cast<unsigned int>(grid[0].size()) : 0;
-
-            // expected dims from the NavigationGrid
-            unsigned int expectedH = tempNavGrid.GetGridHeight();
-            unsigned int expectedW = tempNavGrid.GetGridWidth();
-            std::cerr << "NavigationGrid::SetGrid failed!\n"
-                      << "  expected grid size = " << expectedH << " rows × " << expectedW
-                      << " cols\n"
-                      << "  passed   grid size = " << passedH << " rows × " << passedW << " cols\n";
-        }
-
-        GetContext().SetNavigationGrid(tempNavGrid);
-        NavigationGrid& navGrid = GetContext().GetNavigationGrid();
+        GetContext().GetNavigationGrid()->SetGrid(grid);
+        NavigationGrid* navGrid = GetContext().GetNavigationGrid();
 
         if (charType == "Fighter")
         {
             auto fighter = std::make_unique<Fighter>("Fighter",
                                                      sf::Vector2f(windowSize.x * (1.0f / 6),
                                                                   windowSize.y * 0.76f),
-                                                     navGrid,
+                                                     *navGrid,
                                                      false,
                                                      GetContext());
 
@@ -578,7 +561,7 @@ void MainMenuState::validateFolder(const std::string& folderPath)
             auto mage =
                 std::make_unique<Mage>("Mage",
                                        sf::Vector2f(windowSize.x * (2.0f / 6), windowSize.y * 0.76f),
-                                       navGrid,
+                                       *navGrid,
                                        false,
                                        GetContext());
 
@@ -591,7 +574,7 @@ void MainMenuState::validateFolder(const std::string& folderPath)
             auto assassin = std::make_unique<Assassin>("Assassin",
                                                        sf::Vector2f(windowSize.x * (3.0f / 6),
                                                                     windowSize.y * 0.76f),
-                                                       navGrid,
+                                                       *navGrid,
                                                        false,
                                                        GetContext());
 
@@ -604,7 +587,7 @@ void MainMenuState::validateFolder(const std::string& folderPath)
             auto necromancer = std::make_unique<Necromancer>("Necromancer",
                                                              sf::Vector2f(windowSize.x * (4.0f / 6),
                                                                           windowSize.y * 0.76f),
-                                                             navGrid,
+                                                             *navGrid,
                                                              false,
                                                              GetContext());
 
@@ -617,7 +600,7 @@ void MainMenuState::validateFolder(const std::string& folderPath)
             auto berseker = std::make_unique<Berseker>("Berserker",
                                                        sf::Vector2f(windowSize.x * (5.0f / 6),
                                                                     windowSize.y * 0.76f),
-                                                       navGrid,
+                                                       *navGrid,
                                                        false,
                                                        GetContext());
 

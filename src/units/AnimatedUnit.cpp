@@ -725,7 +725,7 @@ const sf::Vector2f& AnimatedUnit::GetScale() const
     return m_scale;
 }
 
-NavigationGrid& AnimatedUnit::GetNavGrid() const
+const NavigationGrid& AnimatedUnit::GetNavGrid() const
 {
     return m_navGrid;
 }
