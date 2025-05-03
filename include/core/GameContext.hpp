@@ -10,6 +10,7 @@
 #include "items/ItemManager.hpp"
 #include "parser/MobLootConfigParser.hpp"
 #include "quest/QuestGenerator.hpp"
+#include "shop/Shop.hpp"
 #include "units/NavigationGrid.hpp"
 
 class StateManager;  // forward declaration
@@ -74,8 +75,25 @@ public:
      */
     Equipment* GetEquipment() const;
 
+    /**
+     * @brief Get the shop
+     *
+     * @return Shop* Pointer to the shop
+     */
+    Shop* GetShop() const;
+
+    /**
+     * @brief Get the item manager
+     *
+     * @return ItemManager* Pointer to the item manager
+     */
     ItemManager* GetItemManager() const;
 
+    /**
+     * @brief Get the mob loot config parser
+     *
+     * @return MobLootConfigParser* Pointer to the mob loot config parser
+     */
     MobLootConfigParser* GetMobLootConfigParser() const;
 
     QuestGenerator* GetQuestGenerator() const;
@@ -149,8 +167,25 @@ public:
      */
     void SetEquipment(Equipment* equipment);
 
+    /**
+     * @brief Set the shop
+     *
+     * @param shop Pointer to the shop
+     */
+    void SetShop(Shop* shop);
+
+    /**
+     * @brief Set the item manager
+     *
+     * @param itemManager Pointer to the item manager
+     */
     void SetItemManager(ItemManager* itemManager);
 
+    /**
+     * @brief Set the mob loot config parser
+     *
+     * @param mobLootConfigParser Pointer to the mob loot config parser
+     */
     void SetMobLootConfigParser(MobLootConfigParser* mobLootConfigParser);
 
     void SetQuestGenerator(QuestGenerator* questGenerator);
@@ -190,10 +225,12 @@ public:
 private:
     // IMPORTANT NOTE: Clear everything related to the user loaded thing on WorldState::Exit();
 
-    ResourceManager*     m_resourceManager;  ///< Pointer to the resource manager
-    UnitManager*         m_unitManager;      ///< Pointer to the unit manager
-    StateManager*        m_stateManager;     ///< Pointer to the state manager
-    ItemManager*         m_itemManager;
+    ResourceManager* m_resourceManager;  ///< Pointer to the resource manager
+    UnitManager*     m_unitManager;      ///< Pointer to the unit manager
+    StateManager*    m_stateManager;     ///< Pointer to the state manager
+    Shop*            m_shop;             ///< Pointer to the shop
+    ItemManager*     m_itemManager;
+
     MobLootConfigParser* m_mobLootConfigParser;
     QuestGenerator*      m_questGenerator;
 

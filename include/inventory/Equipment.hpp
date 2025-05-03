@@ -22,12 +22,9 @@ public:
      * @param pendantID ID of the pendant item
      * @return Equipment object
      */
-    Equipment(ItemManager&       itemManager,
-              const std::string& weaponID,
-              const std::string& headArmorID,
-              const std::string& bodyArmorID,
-              const std::string& footArmorID,
-              const std::string& pendantID);
+
+    void setEquipmentData(ItemManager&                                 ItemManager,
+                          const std::vector<std::vector<std::string>>& equipmentData);
 
     Item getWeapon() const;
     Item getHeadArmor() const;

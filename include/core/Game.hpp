@@ -9,8 +9,13 @@
 #include "inventory/Backpack.hpp"
 #include "inventory/Equipment.hpp"
 #include "items/ItemManager.hpp"
+#include "parser/ItemConfigParser.hpp"
 #include "parser/MobLootConfigParser.hpp"
 #include "quest/QuestGenerator.hpp"
+#include "parser/PlayerConfigParser.hpp"
+#include "parser/QuestConfigParser.hpp"
+#include "parser/ShopConfigParser.hpp"
+#include "shop/Shop.hpp"
 
 /**
  * @class Game
@@ -52,6 +57,7 @@ private:
     ResourceManager m_resourceManager;  ///< Resource manager for loading and managing game assets
     UnitManager     m_unitManager;      ///< Unit manager for managing game units
     StateManager    m_stateManager;     ///< State manager for handling game states
+    Shop            m_shop;             ///< Shop for managing items and transactions
     ItemManager     m_itemManager;
     MobLootConfigParser m_mobLootConfigParser;
     QuestGenerator      m_questGenerator;

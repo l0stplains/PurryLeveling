@@ -1,6 +1,6 @@
 #include "items/ItemManager.hpp"
 
-ItemManager::ItemManager() {}
+ItemManager::ItemManager() : itemDatabase({}) {}
 
 ItemManager::~ItemManager() {}
 
@@ -12,7 +12,7 @@ Item& ItemManager::getItem(std::string itemID)
         return it->second;
     }
 
-    throw "Item not found";
+    throw ItemNotFoundException(itemID);
 }
 
 void ItemManager::setItemDatabase(std::vector<Item> items)

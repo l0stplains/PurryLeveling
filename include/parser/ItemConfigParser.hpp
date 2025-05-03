@@ -14,7 +14,12 @@
 class ItemConfigParser : public ConfigParser
 {
 public:
-    bool ParseFromFile(const std::string& filename) override;
+    /**
+     * @brief Parse item configuration from a file
+     * @param filename Path to the item configuration file
+     * @return true if parsing was successful, false otherwise
+     */
+    void ParseFromFile(const std::string& filename) override;
 
     /**
      * @brief Retrieved data as rows of tokens: {ID, Name, Type, Rarity, BaseAtk, Effect1, Effect2,
@@ -22,6 +27,10 @@ public:
      */
     const std::vector<Item>& GetData() const { return m_data; }
 
+    /**
+     * @brief Get the last error message
+     * @return Last error message
+     */
     std::string GetLastError() const override { return m_lastError; }
 
 private:

@@ -4,6 +4,7 @@ GameContext::GameContext()
     : m_resourceManager(nullptr),
       m_unitManager(nullptr),
       m_stateManager(nullptr),
+      m_shop(nullptr),
       m_backpack(nullptr),
       m_equipment(nullptr),
       m_navigationGrid(1280, 720, 32, 32)
@@ -37,6 +38,11 @@ Backpack* GameContext::GetBackpack() const
 Equipment* GameContext::GetEquipment() const
 {
     return m_equipment;
+}
+
+Shop* GameContext::GetShop() const
+{
+    return m_shop;
 }
 
 ItemManager* GameContext::GetItemManager() const
@@ -102,6 +108,11 @@ void GameContext::SetStateManager(StateManager* stateManager)
 void GameContext::SetBackpack(Backpack* backpack)
 {
     m_backpack = backpack;
+}
+
+void GameContext::SetShop(Shop* shop)
+{
+    m_shop = shop;
 }
 
 void GameContext::SetEquipment(Equipment* equipment)

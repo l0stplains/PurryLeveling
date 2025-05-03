@@ -9,10 +9,11 @@ Game::Game()
     : m_window(sf::VideoMode({1280, 720}), "Purry Leveling", sf::Style::None),  // Non-resizable
       m_context {},
       m_stateManager(),
+      m_shop(),
       m_itemManager(),
       m_mobLootConfigParser(),
       m_questGenerator(),
-      m_backpack(std::vector<std::pair<Item, int>>(4 * 8), 4, 8),
+      m_backpack(4, 8),
       m_equipment()
 {
     // Get the desktop resolution to center the window
@@ -29,12 +30,11 @@ Game::Game()
     // Set the window position to the calculated position (centered)
     m_window.setPosition(sf::Vector2i(x, y));
 
-    m_itemManager.setItemDatabase({});
-
     // Set up context with pointers to resources and entities
     m_context.SetResourceManager(&m_resourceManager);
     m_context.SetUnitManager(&m_unitManager);
     m_context.SetWindow(&m_window);
+    m_context.SetShop(&m_shop);
     m_context.SetBackpack(&m_backpack);
     m_context.SetEquipment(&m_equipment);
     m_context.SetItemManager(&m_itemManager);
