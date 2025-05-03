@@ -362,10 +362,6 @@ void DungeonState::playMobTurn()
     AnimatedUnit* summon = getClosestUnitOfType<AnimatedUnit>(summonIDs, mob->GetPosition());
     if (summon == nullptr)
     {
-        std::cout << character->GetId() << " " << m_character->GetId() << " "
-                  << GetContext().GetCharacterId() << std::endl;
-        std::cout << character->GetPosition().x << " " << character->GetPosition().y << std::endl;
-        std::cout << mob->GetPosition().x << " " << mob->GetPosition().y << std::endl;
         std::cout << "No summons available to attack!" << std::endl;
         mob->Attack(*character, callback);
     }

@@ -11,10 +11,10 @@
 #include "items/ItemManager.hpp"
 #include "parser/ItemConfigParser.hpp"
 #include "parser/MobLootConfigParser.hpp"
-#include "quest/QuestGenerator.hpp"
 #include "parser/PlayerConfigParser.hpp"
 #include "parser/QuestConfigParser.hpp"
 #include "parser/ShopConfigParser.hpp"
+#include "quest/QuestGenerator.hpp"
 #include "shop/Shop.hpp"
 
 /**
@@ -46,8 +46,9 @@ public:
 
 private:
     // Window settings
-    sf::RenderWindow m_window;        ///< The main game window
-    bool             m_vsyncEnabled;  ///< Flag for vertical sync
+    sf::RenderWindow m_window;          ///< The main game window
+    NavigationGrid   m_navigationGrid;  ///< Navigation grid
+    bool             m_vsyncEnabled;    ///< Flag for vertical sync
 
     // Game timing
     sf::Clock m_gameClock;  ///< Clock for measuring time
