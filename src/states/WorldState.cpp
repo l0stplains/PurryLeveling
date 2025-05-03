@@ -293,6 +293,7 @@ void WorldState::RenderUI()
             // Close dialog
             m_showFileDialog = false;
             ImGuiFileDialog::Instance()->Close();
+            GetContext().SetFirstSaveState(false);
         }
     }
 
