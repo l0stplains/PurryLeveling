@@ -35,12 +35,13 @@ public:
     void Render();
 
 private:
-    static constexpr int SLOT_SIZE      = 92;
-    static constexpr int SLOT_PADDING   = 12;
-    static constexpr int MAX_STACK_SIZE = 64;
-    static constexpr int EQUIP_SLOTS    = 5;
-    static constexpr int GRID_WIDTH     = 8;
-    static constexpr int GRID_HEIGHT    = 4;
+    static constexpr int EQUIPMENT_SLOT_SIZE = 92;
+    static constexpr int SLOT_SIZE           = 92;
+    static constexpr int SLOT_PADDING        = 12;
+    static constexpr int MAX_STACK_SIZE      = 64;
+    static constexpr int EQUIP_SLOTS         = 5;
+    static constexpr int GRID_WIDTH          = 8;
+    static constexpr int GRID_HEIGHT         = 4;
 
     GameContext&                          m_gameContext;
     Backpack&                             m_backpack;
@@ -51,6 +52,7 @@ private:
     int                                   m_dragSourceY             = -1;
     bool                                  m_isDraggingFromEquipment = false;
     std::string                           m_equipmentSlotType;
+    std::string                           m_hoveredDescription;
 
     void RenderBackpack(float startX, float startY);
 

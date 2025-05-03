@@ -97,9 +97,7 @@ void MainMenuState::Init()
     m_newGameButton.setOnClickCallback([this]() {
         std::cout << "New Game button clicked" << std::endl;
         // change this state to not rendered
-
-        m_pendingStateChange =
-            StateChange {StateAction::PUSH, std::make_unique<ChooseCharacterState>(GetContext())};
+        m_showSaveNamePopup = true;
         // m_pendingStateChange = StateChange{StateAction::PUSH, nullptr};
     });
 
@@ -192,6 +190,69 @@ void MainMenuState::Draw(sf::RenderWindow& window)
 
 void MainMenuState::RenderUI()
 {
+    if (m_showSaveNamePopup)
+    {
+        ImGui::OpenPopup("Enter Save Name");
+        m_showSaveNamePopup = false;
+    }
+    if (ImGui::BeginPopupModal("Enter Save Name", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Please enter a name for your save folder:");
+        ImGui::InputText("##SaveName", m_saveNameBuf, sizeof(m_saveNameBuf));
+        ImGui::Separator();
+        float w = 80.0f;
+        if (ImGui::Button("OK", ImVec2(w, 0)))
+        {
+            // build full path under data/
+            std::filesystem::path savePath = std::filesystem::path("data") / m_saveNameBuf;
+            if (std::filesystem::exists(savePath))
+            {
+                // folder already exists → error popup
+                showError("Save folder already exists: " + savePath.string());
+            }
+            else
+            {
+                try
+                {
+                    std::filesystem::create_directories(savePath);
+                }
+                catch (const std::exception& e)
+                {
+                    showError("Failed to create folder: " + std::string(e.what()));
+                    return;
+                }
+
+                const std::filesystem::path cfgDir = "resources/config";
+                for (auto fname : {"item.txt", "mobloot.txt", "quest.txt", "shop.txt"})
+                {
+                    try
+                    {
+                        std::filesystem::copy_file(cfgDir / fname,
+                                                   savePath / fname,
+                                                   std::filesystem::copy_options::overwrite_existing);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        showError("Failed to copy " + std::string(fname) + ": " + e.what());
+                        break;
+                    }
+                }
+                // OK to use this name
+                GetContext().SetCurrentFolderName(m_saveNameBuf);
+                ImGui::CloseCurrentPopup();
+                parseNonPlayerConfig(savePath.string());
+                m_pendingStateChange = StateChange {
+                    StateAction::PUSH, std::make_unique<ChooseCharacterState>(GetContext())};
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(w, 0)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+    }
+
     // Process file dialog if it's active
     if (m_showFileDialog)
     {
@@ -211,11 +272,31 @@ void MainMenuState::RenderUI()
             // When user clicks OK
             if (ImGuiFileDialog::Instance()->IsOk())
             {
-                m_selectedFolder = ImGuiFileDialog::Instance()->GetCurrentPath();
+                std::filesystem::path absPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                std::filesystem::path relPath;
+
+                try { 
+                    relPath = std::filesystem::relative(absPath, std::filesystem::current_path());
+                }
+                catch (...) {
+                    relPath = absPath.filename();
+                }
+                
+                m_selectedFolder = relPath.string();
 
                 try
                 {
+                    // ← SAVE the loaded folder name into GameContext:
                     validateFolder(m_selectedFolder);
+
+                    // Remove "data/" prefix for the save process later on
+                    constexpr char dataPrefix[] = "data/";
+                    if (m_selectedFolder.rfind(dataPrefix, 0) == 0)
+                        m_selectedFolder.erase(0, sizeof(dataPrefix) - 1);
+
+                    // Set the current folder name in the context
+                    // (this is used for saving)
+                    GetContext().SetCurrentFolderName(m_selectedFolder);
                     m_startButton.setActive(true);
                     std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
                 }
@@ -387,69 +468,8 @@ void MainMenuState::validateFolder(const std::string& folderPath)
 
         std::cout << "All required files are present in the folder." << std::endl;
 
-        // Wrap each major operation in its own try-catch block to isolate the issue
-        ItemConfigParser itemConfigParser;
-        try
-        {
-            itemConfigParser.ParseFromFile(folderPath);
-            std::cout << "ItemConfigParser done" << std::endl;
-        }
-        catch (const std::exception& e)
-        {
-            std::string error = "ItemConfigParser error: " + std::string(e.what());
-            std::cout << error << std::endl;
-            showError(error);
-            return;
-        }
-        catch (const char* msg)
-        {
-            std::string error = "ItemConfigParser error: ";
-            if (msg)
-                error += msg;
-            else
-                error += "(null message)";
-            std::cout << error << std::endl;
-            showError(error);
-            return;
-        }
-        catch (...)
-        {
-            std::string error = "Unknown exception in ItemConfigParser";
-            std::cout << error << std::endl;
-            showError(error);
-            return;
-        }
-
-        try
-        {
-            GetContext().GetItemManager()->setItemDatabase(itemConfigParser.GetData());
-            std::cout << "ItemManager set" << std::endl;
-        }
-        catch (const std::exception& e)
-        {
-            std::string error = "ItemManager error: " + std::string(e.what());
-            std::cout << error << std::endl;
-            showError(error);
-            return;
-        }
-        catch (const char* msg)
-        {
-            std::string error = "ItemManager error: ";
-            if (msg)
-                error += msg;
-            else
-                error += "(null message)";
-            std::cout << error << std::endl;
-            showError(error);
-            return;
-        }
-        catch (...)
-        {
-            std::string error = "Unknown exception in ItemManager";
-            std::cout << error << std::endl;
-            showError(error);
-            return;
-        }
+        // Parse the files
+        parseNonPlayerConfig(folderPath);
 
         PlayerConfigParser playerConfigParser(*GetContext().GetItemManager());
         try
@@ -621,29 +641,6 @@ void MainMenuState::validateFolder(const std::string& folderPath)
         GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId())->SetActive(false);
 
         std::cout << "Unit created and added to UnitManager" << std::endl;
-
-        MobLootConfigParser mobLootConfigParser;
-        mobLootConfigParser.ParseFromFile(folderPath);
-
-        std::cout << "MobLootConfigParser done" << std::endl;
-
-        // TODO: Insert the mob loot data into the game context
-
-        QuestConfigParser questConfigParser;
-        questConfigParser.ParseFromFile(folderPath);
-
-        std::cout << "QuestConfigParser done" << std::endl;
-
-        // TODO: Insert the quest data into the game context
-
-        ShopConfigParser shopConfigParser;
-        shopConfigParser.ParseFromFile(folderPath);
-
-        std::cout << "ShopConfigParser done" << std::endl;
-
-        GetContext().GetShop()->SetShopData(shopConfigParser.GetData());
-        GetContext().GetShop()->SetMasterItems(itemConfigParser.GetData());
-        GetContext().GetShop()->restock();
     }
     catch (const FileNotFoundException& e)
     {
@@ -709,4 +706,94 @@ void MainMenuState::Resume()
 void MainMenuState::Exit()
 {
     m_backsound.stop();
+}
+
+void MainMenuState::parseNonPlayerConfig(const std::string& folderPath)
+{
+    // Wrap each major operation in its own try-catch block to isolate the issue
+    ItemConfigParser itemConfigParser;
+    try
+    {
+        itemConfigParser.ParseFromFile(folderPath);
+        std::cout << "ItemConfigParser done" << std::endl;
+    }
+    catch (const std::exception& e)
+    {
+        std::string error = "ItemConfigParser error: " + std::string(e.what());
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (const char* msg)
+    {
+        std::string error = "ItemConfigParser error: ";
+        if (msg)
+            error += msg;
+        else
+            error += "(null message)";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (...)
+    {
+        std::string error = "Unknown exception in ItemConfigParser";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+
+    try
+    {
+        GetContext().GetItemManager()->setItemDatabase(itemConfigParser.GetData());
+        std::cout << "ItemManager set" << std::endl;
+    }
+    catch (const std::exception& e)
+    {
+        std::string error = "ItemManager error: " + std::string(e.what());
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (const char* msg)
+    {
+        std::string error = "ItemManager error: ";
+        if (msg)
+            error += msg;
+        else
+            error += "(null message)";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (...)
+    {
+        std::string error = "Unknown exception in ItemManager";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+
+    MobLootConfigParser mobLootConfigParser;
+    mobLootConfigParser.ParseFromFile(folderPath);
+
+    std::cout << "MobLootConfigParser done" << std::endl;
+
+    // TODO: Insert the mob loot data into the game context
+
+    QuestConfigParser questConfigParser;
+    questConfigParser.ParseFromFile(folderPath);
+
+    std::cout << "QuestConfigParser done" << std::endl;
+
+    // TODO: Insert the quest data into the game context
+
+    ShopConfigParser shopConfigParser;
+    shopConfigParser.ParseFromFile(folderPath);
+
+    std::cout << "ShopConfigParser done" << std::endl;
+
+    GetContext().GetShop()->SetShopData(shopConfigParser.GetData());
+    GetContext().GetShop()->SetMasterItems(itemConfigParser.GetData());
+    GetContext().GetShop()->restock();
 }

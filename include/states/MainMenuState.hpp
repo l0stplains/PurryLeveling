@@ -122,11 +122,13 @@ private:
     State::StateChange m_pendingStateChange;  ///< Pending state change information
 
     // File dialog related members
-    bool        m_showFileDialog = false;  ///< Flag to show file dialog
-    std::string m_selectedFolder;          ///< Selected folder path
-    bool        m_showErrorPopup = false;  ///< Flag to show error popup
-    std::string m_errorMessage;            ///< Error message to display
-    bool        m_showExitPopup = false;   ///< Flag to show exit confirmation popup
+    bool        m_showFileDialog = false;     ///< Flag to show file dialog
+    std::string m_selectedFolder;             ///< Selected folder path
+    bool        m_showErrorPopup = false;     ///< Flag to show error popup
+    std::string m_errorMessage;               ///< Error message to display
+    bool        m_showExitPopup     = false;  ///< Flag to show exit confirmation popup
+    bool        m_showSaveNamePopup = false;
+    char        m_saveNameBuf[128]  = {0};
 
     std::vector<std::string> m_requiredFiles;  ///< Required
                                                ///< files for
@@ -139,6 +141,13 @@ private:
      * @param folderPath Path to the folder to check
      */
     void validateFolder(const std::string& folderPath);
+
+    /**
+     * @brief Parses non-player configuration files. Helper method for validateFolder.
+     *
+     * @param folderPath Path to the folder containing the configuration files
+     */
+    void parseNonPlayerConfig(const std::string& folderPath);
 
     /**
      * @brief Shows an error message in an ImGui popup
