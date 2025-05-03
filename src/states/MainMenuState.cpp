@@ -212,31 +212,7 @@ void MainMenuState::RenderUI()
             }
             else
             {
-                try
-                {
-                    std::filesystem::create_directories(savePath);
-                }
-                catch (const std::exception& e)
-                {
-                    showError("Failed to create folder: " + std::string(e.what()));
-                    return;
-                }
-
-                const std::filesystem::path cfgDir = "resources/config";
-                for (auto fname : {"item.txt", "mobloot.txt", "quest.txt", "shop.txt"})
-                {
-                    try
-                    {
-                        std::filesystem::copy_file(cfgDir / fname,
-                                                   savePath / fname,
-                                                   std::filesystem::copy_options::overwrite_existing);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        showError("Failed to copy " + std::string(fname) + ": " + e.what());
-                        break;
-                    }
-                }
+                
                 // OK to use this name
                 GetContext().SetCurrentFolderName(m_saveNameBuf);
                 ImGui::CloseCurrentPopup();
