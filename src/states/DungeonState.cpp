@@ -22,6 +22,7 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_boldFont(GetContext().GetResourceManager()->GetFont("main_bold_font")),
       m_navGrid(GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_battleUnitInfo(context),
+      m_questInfo(context, 250.0f, 150.0f), // Initialize QuestInfo with reasonable size
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
       m_chamber(&dungeon.getChamber(0)),
@@ -56,7 +57,7 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
     m_exitButton     = Button(m_buttonTexture, {120.f, 668.f}, {.9f, .9f}),
 
     // setup door enter area
-        m_chamberExitArea.setOrigin({0, 0});
+    m_chamberExitArea.setOrigin({0, 0});
     m_chamberExitArea.setPosition({628.f, 350.f});
 }
 
@@ -86,6 +87,7 @@ void DungeonState::Init()
     m_exitButton.setClickSound(m_buttonClickSound);
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
+    
     m_attackButton.setOnClickCallback([this]() {
         Mob*         closestMob = getClosestUnitOfType<Mob>(m_mobsID, m_character->GetPosition());
         unsigned int targetId   = closestMob->GetId();
@@ -100,11 +102,29 @@ void DungeonState::Init()
             m_triggerActionTurn = true;
             m_isPlayerTurn      = false;
             m_turnQueue.push(m_character->GetId());
+            
             Mob* attackedMob = GetContext().GetUnitManager()->GetUnitOfType<Mob>(targetId);
+            
+            // Update quest progress if it's a DAMAGE quest
+            if (m_dungeon.getQuest().getType() == QuestType::DAMAGE)
+            {
+                Character* character = 
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+                int damageDealt = character->GetAttackDamage();
+                m_dungeon.updateDamageQuestProgress(damageDealt);
+            }
+            
             if (!attackedMob->IsActive())
             {
                 m_mobsID.erase(std::remove(m_mobsID.begin(), m_mobsID.end(), targetId),
                                m_mobsID.end());
+                
+                // If it's a KILL quest, update the kill count
+                if (m_dungeon.getQuest().getType() == QuestType::KILL)
+                {
+                    m_dungeon.updateKillQuestProgress(1);
+                }
+                
                 // TODO: remove unit from unit manager
                 // GetContext().GetUnitManager()->RemoveUnit(targetId);
             }
@@ -204,6 +224,14 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
     if (m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId())
     {
         std::cout << "MOB CLEARED" << std::endl;
+        
+        // Update the quest progress when mobs are cleared
+        if (m_dungeon.getQuest().getType() == QuestType::KILL)
+        {
+            // TODO: update
+            m_dungeon.updateKillQuestProgress(0);
+        }
+        
         m_dungeon.clearChamber(m_chamber->getChamberNumber() - 1);
         Character* character =
             GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
@@ -226,6 +254,31 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
                     std::cerr << "Backpack is full!" << std::endl;
                 }
             }
+            
+            // If quest is completed, add quest rewards to player
+            if (m_dungeon.isQuestCompleted())
+            {
+                Character* character = 
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+                character->AddExp(m_dungeon.getQuestExpReward());
+                character->AddGold(m_dungeon.getQuestGoldReward());
+                
+                // Add quest item reward to backpack if there is one
+                Item questItem = m_dungeon.getQuestRewardItem();
+                if (!questItem.getItemID().empty())
+                {
+                    try
+                    {
+                        GetContext().GetBackpack()->addItem(questItem, 1);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "Exception: " << e.what() << std::endl;
+                        std::cerr << "Backpack is full, couldn't add quest reward item!" << std::endl;
+                    }
+                }
+            }
+            
             return StateChange {StateAction::POP};
         }
         nextChamber();
@@ -301,7 +354,11 @@ void DungeonState::Draw(sf::RenderWindow& window)
 
 void DungeonState::RenderUI()
 {
-    // m_battleUnitInfo.render(*m_character);
+    // Render battle unit info
+    m_battleUnitInfo.render(*m_character);
+    
+    // Render quest info
+    m_questInfo.render(m_dungeon);
 
     // Display exit confirmation popup
     if (m_showExitPopup)

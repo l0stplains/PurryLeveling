@@ -34,11 +34,10 @@ public:
     /**
      * @brief Load quest data from a QuestConfigParser
      *
-     * @param questConfigParser The parser with quest configuration data
-     * @return true If data was loaded successfully
-     * @return false If there was an error loading data
+     * @param questData The quest data from the parser
      */
-    bool loadQuestData(const QuestConfigParser& questConfigParser);
+    void loadQuestData(const std::map<std::string, 
+        std::vector<std::tuple<std::string, int, int, int, std::string>>>& questData);
 
     /**
      * @brief Generate a quest for a specific dungeon rank
