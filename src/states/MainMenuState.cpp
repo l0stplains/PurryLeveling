@@ -272,13 +272,31 @@ void MainMenuState::RenderUI()
             // When user clicks OK
             if (ImGuiFileDialog::Instance()->IsOk())
             {
-                m_selectedFolder = ImGuiFileDialog::Instance()->GetCurrentPath();
+                std::filesystem::path absPath = ImGuiFileDialog::Instance()->GetCurrentPath();
+                std::filesystem::path relPath;
+
+                try { 
+                    relPath = std::filesystem::relative(absPath, std::filesystem::current_path());
+                }
+                catch (...) {
+                    relPath = absPath.filename();
+                }
+                
+                m_selectedFolder = relPath.string();
 
                 try
                 {
                     // ← SAVE the loaded folder name into GameContext:
-                    GetContext().SetCurrentFolderName(m_selectedFolder);
                     validateFolder(m_selectedFolder);
+
+                    // Remove "data/" prefix for the save process later on
+                    constexpr char dataPrefix[] = "data/";
+                    if (m_selectedFolder.rfind(dataPrefix, 0) == 0)
+                        m_selectedFolder.erase(0, sizeof(dataPrefix) - 1);
+
+                    // Set the current folder name in the context
+                    // (this is used for saving)
+                    GetContext().SetCurrentFolderName(m_selectedFolder);
                     m_startButton.setActive(true);
                     std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
                 }
