@@ -23,15 +23,17 @@ public:
     void Render();
 
 private:
-    static constexpr int SLOT_SIZE      = 92;
+    static constexpr int SLOT_SIZE      = 138;
     static constexpr int SLOT_PADDING   = 12;
     static constexpr int MAX_STACK_SIZE = 64;
-    static constexpr int GRID_WIDTH     = 6;
-    static constexpr int GRID_HEIGHT    = 10;
+    static constexpr int GRID_WIDTH     = 4;
+    int                  GRID_HEIGHT;
     // int GRID_HEIGHT = 5;
 
     GameContext& m_gameContext;
     Backpack&    m_backpack;
+    Shop&        m_shop;
+
     // Shop&                              m_shop;
     int m_playerID;
 

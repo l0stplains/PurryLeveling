@@ -1,7 +1,26 @@
 #include "inventory/Backpack.hpp"
 
-Backpack::Backpack(const std::vector<std::pair<Item, int>>& initial, int rows, int cols)
-    : backpackRows(rows), backpackCols(cols)
+Backpack::Backpack(int rows, int cols)
+    : backpackRows(rows),
+      backpackCols(cols),
+      backpack(rows, std::vector<std::pair<Item, int>>(cols, {Item(), 0}))
+{
+    // Initialize the backpack with empty items
+    for (int i = 0; i < backpackRows; ++i)
+    {
+        for (int j = 0; j < backpackCols; ++j)
+        {
+            backpack[i][j] = {Item(), 0};  // Empty item and quantity 0
+        }
+    }
+}
+
+std::vector<std::vector<std::pair<Item, int>>> Backpack::getBackpackData() const
+{
+    return backpack;
+}
+
+void Backpack::setBackpackData(const std::vector<std::pair<Item, int>>& initial, int rows, int cols)
 {
     // Fill the 2D grid with default empty slots
     backpack.assign(backpackRows, std::vector<std::pair<Item, int>>(backpackCols, {Item(), 0}));
@@ -413,4 +432,14 @@ std::vector<std::pair<Item, int>*> Backpack::filterItemsByType(const std::string
         }
     }
     return result;
+}
+
+int Backpack::getBackpackRows() const
+{
+    return backpackRows;
+}
+
+int Backpack::getBackpackCols() const
+{
+    return backpackCols;
 }

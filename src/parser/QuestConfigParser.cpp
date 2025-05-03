@@ -5,22 +5,26 @@
 #include <vector>
 
 #include "parser/ConfigParserUtils.hpp"
-bool QuestConfigParser::ParseFromFile(const std::string& filename)
+void QuestConfigParser::ParseFromFile(const std::string& filename)
 {
     // 1) read raw tokens: 6 columns per line
     std::vector<std::vector<std::string>> raw;
-    if (!ConfigParserUtils::ReadTokensFile(filename,
+    if (!ConfigParserUtils::ReadTokensFile(filename + "/quest.txt",
                                            raw,
                                            /* expectedCols = */ 6,
                                            m_lastError))
     {
-        return false;
+        throw FileNotFoundException(filename, m_lastError);
     }
 
     // 2) build m_questData: rank → list of (type, count, gold, exp, itemID)
     m_questData.clear();
     for (auto const& rec : raw)
     {
+        if (rec.size() < 6)
+        {
+            throw LineTooShortException(filename, m_lastError);
+        }
         const std::string& rank       = rec[0];
         const std::string& qtype      = rec[1];
         int                count      = std::stoi(rec[2]);
@@ -30,6 +34,4 @@ bool QuestConfigParser::ParseFromFile(const std::string& filename)
 
         m_questData[rank].emplace_back(qtype, count, goldReward, expReward, itemID);
     }
-
-    return true;
 }

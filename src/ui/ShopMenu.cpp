@@ -2,27 +2,21 @@
 
 #include <cstring>
 
+#include "parser/ItemConfigParser.hpp"
+#include "parser/ShopConfigParser.hpp"
 #include "rng/rng.hpp"
 
 ShopMenu::ShopMenu(GameContext& gameContext)
     : m_gameContext(gameContext),
-      //   m_shop(*gameContext.GetShop()),
+      m_shop(*gameContext.GetShop()),
       m_backpack(*gameContext.GetBackpack()),
       m_playerID(gameContext.GetCharacterId())
-{
-    // Initialize some sample items in m_backpack
-    // Using proper Item constructor: Item(itemID, name, type, rarity, effects)
-    // m_backpack.addItem(Item("DFB", "Diamond_Boots", "FootArmor", 'B', {}), 5);
-    // m_backpack.addItem(Item("ABS", "Azure_Body", "BodyArmor", 'C', {}), 45);
-    // m_backpack.addItem(Item("TPS", "Totem", "Pendant", 'S', {}), 12);
-    // m_backpack.addItem(Item("HPS", "Healing_Potion", "Potion", 'S', {}), 32);
-    // m_backpack.addItem(Item("CHA", "Caesar_Head", "HeadArmor", 'A', {}), 64);
-}
+{}
 
 void ShopMenu::Render()
 {
     // Calculate exact dimensions - no extra margins or padding
-    int visibleRows = 6;  // Show exactly 6 rows at a time
+    int visibleRows = 4;  // Show exactly 6 rows at a time
 
     // Calculate precise window dimensions - no extra padding
     float windowWidth  = GRID_WIDTH * SLOT_SIZE + 13;
@@ -59,14 +53,19 @@ void ShopMenu::Render()
                      ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
     RNG rng;
-    int stock = 0;
-    int price = 0;
+    int idx = 0;
 
-    // Calculate exactly how many rows we need
-    int totalRows = GRID_HEIGHT;
+    // Get filtered stock first to avoid repeated calls
+    std::vector<Shop::StockEntry> filteredStock = m_shop.filterStock("All");
+
+    // Calculate exactly how many rows we need based on actual stock
+    GRID_HEIGHT    = filteredStock.size() / GRID_WIDTH;
+    int extraItems = filteredStock.size() % GRID_WIDTH;
+    if (extraItems > 0)
+        GRID_HEIGHT++;
 
     // Draw the grid directly in this window
-    for (int y = 0; y < totalRows; y++)
+    for (int y = 0; y < GRID_HEIGHT; y++)
     {
         for (int x = 0; x < GRID_WIDTH; x++)
         {
@@ -80,100 +79,158 @@ void ShopMenu::Render()
             // Generate a unique ID for this slot
             ImGui::PushID(y * GRID_WIDTH + x);
 
-            // Create the slot button with brownish border and rounded corners
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Brown
-                                                                                        // background
-                                                                                        // matching
-                                                                                        // window
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.5f, 0.2f, 1.0f));  // Green
-                                                                                            // when
-                                                                                            // hovered
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                                  ImVec4(0.25f, 0.6f, 0.25f, 1.0f));                    // Brighter
-                                                                                        // green
-                                                                                        // when
-                                                                                        // active
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));  // Slightly
-                                                                                        // lighter
-                                                                                        // brown
-                                                                                        // border
+            Item item;
+            int  price       = 0;
+            int  stock       = 0;
+            bool isEmptySlot = false;
+
+            // Get item data for this slot - Now with proper bounds checking
+            try
+            {
+                if (idx < filteredStock.size())
+                {
+                    auto entry = filteredStock[idx];
+                    idx++;
+
+                    item  = std::get<0>(entry);
+                    price = std::get<1>(entry);
+                    stock = std::get<2>(entry);
+
+                    // Check if this is an empty item
+                    isEmptySlot = (item.getItemID().empty() || item.getRarity() == ' ');
+                }
+                else
+                {
+                    isEmptySlot = true;
+                    // Use empty item with proper itemID for texture
+                    item = Item();
+                }
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "Exception in ShopMenu::Render: " << e.what() << std::endl;
+                isEmptySlot = true;
+                // Use empty item with proper itemID for texture
+                item = Item();
+            }
+
+            // Apply different styles for empty vs. filled slots
+            if (isEmptySlot)
+            {
+                // Empty slot - draw just a plain background with no hover effects
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Background
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                      ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Same as background -
+                                                                           // no hover effect
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                                      ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Same as background -
+                                                                           // no active effect
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));  // Border
+            }
+            else
+            {
+                // Normal item slot with hover effects
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Background
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                      ImVec4(0.2f, 0.5f, 0.2f, 1.0f));  // Green hover
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                                      ImVec4(0.25f, 0.6f, 0.25f, 1.0f));  // Brighter green active
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));  // Border
+            }
+
             ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);       // Add 1px border
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));  // Ensure consistent
                                                                             // padding
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);  // Round all slot corners
 
             // Create the slot button with a slightly smaller size to show borders
-            if (ImGui::Button("", ImVec2(SLOT_SIZE - 2, SLOT_SIZE - 2)))
+            bool clicked = ImGui::Button("", ImVec2(SLOT_SIZE - 2, SLOT_SIZE - 2));
+
+            // Only process clicks for non-empty slots
+            if (clicked && !isEmptySlot)
             {
                 std::cout << "Clicked on slot " << x << "," << y << std::endl;
+                // Handle item purchase or selection logic here
+
+                /*
+                Character* player =
+                    m_gameContext.GetUnitManager()->GetUnitOfType<Character>(m_playerID);
+                m_gameContext.GetShop()->buy(*player,
+                                             m_backpack,
+                                             item,
+                                             price,
+                                             1);
+                */
             }
 
             // Get the position where we just drew the button
             ImVec2 buttonPos = ImGui::GetItemRectMin();
 
-            // Generate item data for this slot
-            try
+            // Only render item details if there's a valid item
+            // Position where we'll draw the item texture/button
+            // Calculate the center of the button for proper alignment
+            ImVec2 buttonCenter =
+                ImVec2(buttonPos.x + (SLOT_SIZE - 2) / 2.0f, buttonPos.y + (SLOT_SIZE - 2) / 2.0f);
+
+            // Always render the item image/texture (even for empty slots)
+            sf::Texture* texture = &m_gameContext.GetResourceManager()->GetTexture(item.getItemID());
+            if (texture)
             {
-                std::vector<std::shared_ptr<Effect>> effects;
-                Item item("ice_potion", "Azure_Sword", "Weapon", 'S', effects, "");
+                ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
+                ImVec2      imageSize(SLOT_SIZE - 16, SLOT_SIZE - 16);
+                ImVec2      imagePos(buttonCenter.x - imageSize.x / 2.0f,
+                                buttonCenter.y - imageSize.y / 2.0f);
+                ImGui::SetCursorScreenPos(imagePos);
+                ImGui::Image(textureId, imageSize);
 
-                stock = rng.generateInRange(1, 64);
-                price = rng.generateInRange(1, 1000);
-
-                // Position where we'll draw the item texture/button
-                // Calculate the center of the button for proper alignment
-                ImVec2 buttonCenter = ImVec2(buttonPos.x + (SLOT_SIZE - 2) / 2.0f,
-                                             buttonPos.y + (SLOT_SIZE - 2) / 2.0f);
-
-                // Center the image in the slot precisely
-                sf::Texture* texture =
-                    &m_gameContext.GetResourceManager()->GetTexture(item.getItemID());
-                if (texture)
+                // Only show item details for non-empty slots
+                if (!isEmptySlot)
                 {
-                    ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
-                    ImVec2      imageSize(SLOT_SIZE - 16, SLOT_SIZE - 16);
-                    ImVec2      imagePos(buttonCenter.x - imageSize.x / 2.0f,
-                                    buttonCenter.y - imageSize.y / 2.0f);
-                    ImGui::SetCursorScreenPos(imagePos);
-                    ImGui::Image(textureId, imageSize);
+                    // Rarity label (top-left)
+                    char r = item.getRarity();
+                    ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + 7, buttonPos.y + 5));
+                    ImGui::Text("%c", r);
+
+                    // Price label (bottom-left)
+                    ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + 7, buttonPos.y + SLOT_SIZE - 20));
+                    ImGui::Text("%d", price);
+
+                    // Stock label (bottom-right)
+                    std::string stockText     = std::to_string(stock);
+                    ImVec2      stockTextSize = ImGui::CalcTextSize(stockText.c_str());
+                    ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + SLOT_SIZE - stockTextSize.x - 11,
+                                                     buttonPos.y + SLOT_SIZE - 20));
+                    ImGui::Text("%d", stock);
                 }
-                else
-                {
-                    ImGui::PushStyleColor(ImGuiCol_Button,
-                                          GetItemColor(item.getName(), item.getType()));
-                    ImVec2 itemButtonSize(SLOT_SIZE - 16, SLOT_SIZE - 16);
-                    ImVec2 itemButtonPos(buttonCenter.x - itemButtonSize.x / 2.0f,
-                                         buttonCenter.y - itemButtonSize.y / 2.0f);
-                    ImGui::SetCursorScreenPos(itemButtonPos);
-                    ImGui::Button(item.getName().c_str(), itemButtonSize);
-                    ImGui::PopStyleColor();
-                }
-
-                // Draw slot index for debugging (can be removed later)
-                int slotIndex = y * GRID_WIDTH + x + 1;
-                ImGui::SetCursorScreenPos(
-                    ImVec2(buttonPos.x + SLOT_SIZE / 2 - 8, buttonPos.y + SLOT_SIZE / 2));
-                ImGui::Text("%d", slotIndex);
-
-                // Rarity label (top-left)
-                char r = item.getRarity();
-                ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + 7, buttonPos.y + 5));
-                ImGui::Text("%c", r);
-
-                // Price label (bottom-left)
-                ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + 7, buttonPos.y + SLOT_SIZE - 20));
-                ImGui::Text("%d", price);
-
-                // Stock label (bottom-right)
-                std::string stockText     = std::to_string(stock);
-                ImVec2      stockTextSize = ImGui::CalcTextSize(stockText.c_str());
-                ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + SLOT_SIZE - stockTextSize.x - 11,
-                                                 buttonPos.y + SLOT_SIZE - 20));
-                ImGui::Text("%d", stock);
             }
-            catch (const std::exception& e)
+            else
             {
-                // No item in this slot
+                ImVec2 itemButtonSize(SLOT_SIZE - 16, SLOT_SIZE - 16);
+                ImVec2 itemButtonPos(buttonCenter.x - itemButtonSize.x / 2.0f,
+                                     buttonCenter.y - itemButtonSize.y / 2.0f);
+                ImGui::SetCursorScreenPos(itemButtonPos);
+                ImGui::Button(item.getName().c_str(), itemButtonSize);
+                ImGui::PopStyleColor();
+
+                // Only show item details for non-empty slots
+                if (!isEmptySlot)
+                {
+                    // Rarity label (top-left)
+                    char r = item.getRarity();
+                    ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + 7, buttonPos.y + 5));
+                    ImGui::Text("%c", r);
+
+                    // Price label (bottom-left)
+                    ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + 7, buttonPos.y + SLOT_SIZE - 20));
+                    ImGui::Text("%d", price);
+
+                    // Stock label (bottom-right)
+                    std::string stockText     = std::to_string(stock);
+                    ImVec2      stockTextSize = ImGui::CalcTextSize(stockText.c_str());
+                    ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + SLOT_SIZE - stockTextSize.x - 11,
+                                                     buttonPos.y + SLOT_SIZE - 20));
+                    ImGui::Text("%d", stock);
+                }
             }
 
             // Pop style and ID
@@ -187,27 +244,14 @@ void ShopMenu::Render()
     }
 
     // Force exact content height with one final element
-    ImGui::SetCursorPos(ImVec2(0, totalRows * SLOT_SIZE - 1));  // Exact position
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f);             // Invisible
-    ImGui::Button("##endspacer", ImVec2(SLOT_SIZE, 1));         // Minimal size
+    ImGui::SetCursorPos(ImVec2(0, GRID_HEIGHT * SLOT_SIZE - 1));  // Exact position
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f);               // Invisible
+    ImGui::Button("##endspacer", ImVec2(SLOT_SIZE, 1));           // Minimal size
     ImGui::PopStyleVar();
 
     // Restore style values
     ImGui::End();
-    ImGui::PopStyleVar(6);    // Pop the 8 style vars (6 at beginning + 2 scrollbar styles)
+    ImGui::PopStyleVar(6);    // Pop the 6 style vars (4 at beginning + window border + window
+                              // rounding)
     ImGui::PopStyleColor(6);  // Pop the 6 color styles we pushed
-}
-
-// Helper function to get color for item visualization
-ImVec4 ShopMenu::GetItemColor(const std::string& itemName, const std::string& itemType)
-{
-    // m_equipment type colors
-    if (itemType == "Weapon")
-        return ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
-    if (itemType == "HeadArmor" || itemType == "BodyArmor" || itemType == "FootArmor")
-        return ImVec4(0.2f, 0.6f, 0.8f, 1.0f);
-    if (itemType == "Pendant")
-        return ImVec4(0.8f, 0.6f, 0.2f, 1.0f);
-
-    return ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 }

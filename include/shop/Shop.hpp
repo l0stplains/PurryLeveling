@@ -21,8 +21,13 @@ public:
 
     // Default Constructor
     Shop();
+
     // Constructor with shop data and master items
     Shop(const std::vector<std::vector<std::string>> shopData, const std::vector<Item>& masterItems);
+
+    // Getters
+    const std::vector<std::vector<std::string>>& GetShopData() const { return m_configData; }
+    const std::vector<Item>&                     GetMasterItems() const { return m_masterItems; }
 
     // Shop data is a vector of vectors of strings.
     // In the inner vector, the first element is the item ID,
@@ -37,28 +42,25 @@ public:
     // Restock items
     void restock();
     // Buy and sell items
-    void buy(Character&         player,
-             Backpack&          backpack,
-             const std::string& category,
-             const std::string& itemID);
-    void sell(Character& player, Backpack& backpack, const Item& item);
+    void buy(Character& player, Backpack& backpack, Item& item, int totalPrice, int quantity);
+
+    void sell(Character& player, Backpack& backpack, const Item& item, int totalPrice, int quantity);
 
     // For debugging purpose, gets shop catalogue
     void getShopCatalogue() const;
+
+    std::vector<StockEntry> filterStock(const std::string& category);
 
 private:
     ShopConfigParser                      m_parser;
     std::vector<std::vector<std::string>> m_configData;
     std::vector<Item>                     m_masterItems;
 
-    std::map<std::string, StockEntry> allStock;
-    std::map<std::string, StockEntry> potionStock;
-    std::map<std::string, StockEntry> weaponStock;
-    std::map<std::string, StockEntry> headStock;
-    std::map<std::string, StockEntry> bodyStock;
-    std::map<std::string, StockEntry> footStock;
-    std::map<std::string, StockEntry> pendantStock;
-
-    std::map<std::string, StockEntry>*       getStock(const std::string& category);
-    const std::map<std::string, StockEntry>* getStock(const std::string& category) const;
+    std::vector<StockEntry> allStock;
+    // std::map<std::string, StockEntry> potionStock;
+    // std::map<std::string, StockEntry> weaponStock;
+    // std::map<std::string, StockEntry> headStock;
+    // std::map<std::string, StockEntry> bodyStock;
+    // std::map<std::string, StockEntry> footStock;
+    // std::map<std::string, StockEntry> pendantStock;
 };

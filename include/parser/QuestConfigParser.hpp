@@ -9,28 +9,22 @@ class QuestConfigParser : ConfigParser
 {
 public:
     /**
-     * @brief Parse quest configuration from a file
-     *
-     * @param filename Path to the configuration file
-     * @return true if parsing was successful, false otherwise
-     */
-    bool ParseFromFile(const std::string& filename) override;
-    /*
+     * @brief Parse quest configuration from a file.
      * Example of a quest configuration file:
      * # <Dungeon Rank> <Quest Type> <Damage Dealt/Mobs Killed> <Gold Reward> <Exp Reward> <Item
      * Reward (ID)> S KILL 10 100 50 EXC S DAMAGE 20 200 100 MNP
+     * @param filename Path to the configuration file
      */
+    void ParseFromFile(const std::string& filename) override;
 
     /**
      * @brief Get the last error message
-     *
      * @return The last error message that occurred during parsing
      */
     std::string GetLastError() const override { return m_lastError; }
 
     /**
      * @brief Get the last error message
-     *
      * @return The last error message that occurred during parsing
      */
     const std::map<std::string, std::vector<std::tuple<std::string, int, int, int, std::string>>>&

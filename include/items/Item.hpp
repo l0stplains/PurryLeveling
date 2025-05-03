@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "effects/Effect.hpp"
+#include "exception/Exception.hpp"
 
 class Item
 {

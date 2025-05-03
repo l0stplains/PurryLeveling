@@ -13,7 +13,17 @@
 
 #include "ui/Button.hpp"
 
+#include "parser/ItemConfigParser.hpp"
+#include "parser/MobLootConfigParser.hpp"
+#include "parser/PlayerConfigParser.hpp"
+#include "parser/QuestConfigParser.hpp"
+#include "parser/ShopConfigParser.hpp"
 #include "states/State.hpp"
+#include "units/characters/Assassin.hpp"
+#include "units/characters/Berseker.hpp"
+#include "units/characters/Fighter.hpp"
+#include "units/characters/Mage.hpp"
+#include "units/characters/Necromancer.hpp"
 
 // Include ImGuiFileDialog
 #include "external/ImGuiFileDialog.h"
@@ -118,19 +128,17 @@ private:
     std::string m_errorMessage;            ///< Error message to display
     bool        m_showExitPopup = false;   ///< Flag to show exit confirmation popup
 
-    const std::vector<std::string> m_requiredFiles = {
-        "item.txt", "shop.txt", "backpack.txt", "mobloot.txt", "equipment.txt"};  ///< Required
-                                                                                  ///< files for
-                                                                                  ///< save files
-                                                                                  ///< validation
+    std::vector<std::string> m_requiredFiles;  ///< Required
+                                               ///< files for
+                                               ///< save files
+                                               ///< validation
 
     /**
      * @brief Validates if the selected folder contains all required files
      *
      * @param folderPath Path to the folder to check
-     * @return true if all required files exist, false otherwise
      */
-    bool validateFolder(const std::string& folderPath);
+    void validateFolder(const std::string& folderPath);
 
     /**
      * @brief Shows an error message in an ImGui popup

@@ -15,11 +15,13 @@ int main()
         std::cerr << "Item parse error: " << itemParser.GetLastError() << "\n";
         return 1;
     }
-    ItemManager itemMgr(itemParser.GetData());
+    ItemManager itemMgr();
+    itemMgr.setItemDatabase(itemParser.GetData());
 
     // 2) parse player folder
     const std::string  playerDir = "data/configtest/Ghana";
-    PlayerConfigParser playerParser(std::move(itemMgr));
+    PlayerConfigParser playerParser;
+    playerParser.SetItemManager(itemMgr);
     if (!playerParser.ParseFromFile(playerDir))
     {
         std::cerr << "Player parse error: " << playerParser.GetLastError() << "\n";

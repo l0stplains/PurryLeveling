@@ -5,7 +5,7 @@ IPS Ice_Potion       Potion    A  0 SlowEffect      - Freezes target briefly.
 FPA Flaming_Potion   Potion    A  0 BurnEffect      - Sets target ablaze.
 RPD Rock_Potion      Potion    B  0 StoneSkin       - Temporarily hardens skin.
 MPB Manipulation_Potion Potion C 0 MindControl     - Controls a single creature.
-WPC Wealth_Potion    Potion    D  0 GoldBoost       - Increases gold gain.
+WPD Wealth_Potion    Potion    D  0 GoldBoost       - Increases gold gain.
 HPE Heart_Potion     Potion    E  0 HealthBoost     - Small heal over time.
 ASS Azure_Sword      Weapon    S  900 Critical_Strike - Legendary azure blade.
 FSS Flaming_Sword    Weapon    S 1000 BurnEffect     - Engulfs blade in flames.
@@ -37,8 +37,8 @@ CBD Cotton_Body     BodyArmor  D  200 None            - Light protection.
 TBE Torn_Body       BodyArmor  E  100 None            - Threadbare cover.
 FFS Flaming_Foot     FootArmor  S  300 SpeedBoost      - Leaves fire trail.
 SFS Speedy_Foot      FootArmor  S  350 Dash            - Quick short sprint.
-IFS Icy_Foot         FootArmor  A  280 SlowAura        - Slows nearby enemies.
-DFA Diamond_Foot     FootArmor  B  250 Reflect         - Shards fly outward.
+IFA Icy_Foot         FootArmor  A  280 SlowAura        - Slows nearby enemies.
+DFB Diamond_Foot     FootArmor  B  250 Reflect         - Shards fly outward.
 GFC Golden_Foot      FootArmor  C  200 WealthAura      - Gold magnets.
 LFD Leather_Foot     FootArmor  D  150 None            - Standard boots.
 RFE Rotten_Foot      FootArmor  E   80 PoisonAura      - Damages standing foes.
