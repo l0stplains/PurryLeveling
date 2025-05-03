@@ -14,16 +14,17 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_buttonHoverSound(GetContext().GetResourceManager()->GetSoundBuffer("button_hover")),
       m_buttonClickSound(GetContext().GetResourceManager()->GetSoundBuffer("button_click")),
       m_buttonTexture(GetContext().GetResourceManager()->GetTexture("main_menu_button")),
-      m_attackButton(m_buttonTexture, {96.f, 500}, {0.8f, 0.8f}),  // must be changed again below
-      m_useSkillButton(m_buttonTexture, {96.f, 668.f}, {0.8f, 0.8f}),
+      m_attackButton(m_buttonTexture, {96.f, 416.f}, {0.8f, 0.8f}),  // must be changed again below
+      m_useSkillButton(m_buttonTexture, {96.f, 500.f}, {0.8f, 0.8f}),
       m_useItemButton(m_buttonTexture, {96.f, 584.f}, {0.8f, 0.8f}),
       m_exitButton(m_buttonTexture, {96.f, 668.f}, {0.8f, 0.8f}),
       m_font(GetContext().GetResourceManager()->GetFont("main_font")),
       m_boldFont(GetContext().GetResourceManager()->GetFont("main_bold_font")),
       m_navGrid(GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
+      m_battleUnitInfo(context),
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
-      m_chamber(dungeon.getChamber(0)),
+      m_chamber(&dungeon.getChamber(0)),
       m_pendingStateChange({StateAction::NONE})
 {
     SetName("Dungeon State");
@@ -111,7 +112,7 @@ void DungeonState::Init()
         m_character->Attack(*closestMob, callback);
     });
 
-    m_mobsID = m_chamber.getMobsId();
+    m_mobsID = m_chamber->getMobsId();
 
     std::vector<sf::Vector2f> spawnPoints = generateMobSpawnPoints(
         {windowSize.x / 2.0f + 400.f * windowSize.x / 1820.f, 780.0f * windowSize.y / 1024.f},
@@ -141,6 +142,7 @@ void DungeonState::Init()
         m_character->SetControlledByPlayer(false);
         m_character->SetNavGrid(m_navGrid);
         m_character->SetMoveSpeed(m_character->GetMoveSpeed() * 1.5f);
+        m_battleUnitInfo.updateSpriteTexture(*m_character);
     }
     else
     {
@@ -176,21 +178,57 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
     // checks if player die
     if (m_turnQueue.front() == m_character->GetId() && !m_character->IsActive())
     {
+        if (m_dungeon.getRank() == Dungeon::RANK_SPECIAL)
+        {
+            vector<Item> loot = m_dungeon.getLoot();
+            for (auto& item : loot)
+            {
+                try
+                {
+                    GetContext().GetBackpack()->addItem(item, 1);
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << "Exception: " << e.what() << std::endl;
+                    std::cerr << "Backpack is full!" << std::endl;
+                }
+            }
+        }
+        else
+        {
+        }
         return StateChange {StateAction::POP};
     }
 
     // checks if mob clears
     if (m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId())
     {
-        return StateChange {StateAction::POP};
-    }
+        std::cout << "MOB CLEARED" << std::endl;
+        m_dungeon.clearChamber(m_chamber->getChamberNumber() - 1);
+        Character* character =
+            GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+        character->AddExp(m_chamber->getExpReward());
+        character->AddGold(m_chamber->getGoldReward());
 
-    // checks if player finish dungeon
-    if (m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId() &&
-        m_dungeon.getNumChambers() == m_dungeon.getChambers().size())
-    {
-        m_dungeon.setCleared(true);
-        return StateChange {StateAction::POP};
+        // checks if player finish dungeon
+        if (m_dungeon.areAllChambersCleared())
+        {
+            vector<Item> loot = m_dungeon.getLoot();
+            for (auto& item : loot)
+            {
+                try
+                {
+                    GetContext().GetBackpack()->addItem(item, 1);
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << "Exception: " << e.what() << std::endl;
+                    std::cerr << "Backpack is full!" << std::endl;
+                }
+            }
+            return StateChange {StateAction::POP};
+        }
+        nextChamber();
     }
 
     AnimatedUnit* character =
@@ -263,6 +301,8 @@ void DungeonState::Draw(sf::RenderWindow& window)
 
 void DungeonState::RenderUI()
 {
+    // m_battleUnitInfo.render(*m_character);
+
     // Display exit confirmation popup
     if (m_showExitPopup)
     {
@@ -383,6 +423,39 @@ void DungeonState::playMobTurn()
     }
 
     return;
+}
+
+void DungeonState::nextChamber()
+{
+    // remove all mobs from unit manager
+    for (auto id : m_mobsID)
+    {
+        GetContext().GetUnitManager()->RemoveUnit(id);
+    }
+
+    m_chamber = &m_dungeon.getChamber(m_chamber->getChamberNumber());
+    m_mobsID  = m_chamber->getMobsId();
+
+    // spawn new mobs
+    std::vector<sf::Vector2f> spawnPoints =
+        generateMobSpawnPoints({GetContext().GetWindow()->getSize().x / 2.0f +
+                                    400.f * GetContext().GetWindow()->getSize().x / 1820.f,
+                                780.0f * GetContext().GetWindow()->getSize().y / 1024.f},
+                               m_mobsID.size(),
+                               true);
+    for (int i = 0; i < m_mobsID.size(); ++i)
+    {
+        AnimatedUnit* mob = GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(m_mobsID[i]);
+        mob->SetScale(8.f, 8.f);
+        mob->SetActive(true);
+        mob->SetPosition(spawnPoints[i]);
+        mob->SetControlledByPlayer(false);
+        mob->SetNavGrid(m_navGrid);
+        mob->SetShowUI(true);
+        mob->SetDirection(Direction::WEST);
+
+        m_turnQueue.push(m_mobsID[i]);
+    }
 }
 
 std::vector<sf::Vector2f> DungeonState::generateMobSpawnPoints(const sf::Vector2f& center,

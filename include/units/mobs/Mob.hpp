@@ -18,7 +18,7 @@ public:
 
     // --- RPG Stats Getters ---
     int  GetLevel() const;
-    void SetLevel(int);
+    void SetLevel(int);  // virtual so it can be adjusted by basic or boss
 
     const Healing& GetHealSkill() const;
 

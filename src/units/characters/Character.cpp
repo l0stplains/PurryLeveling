@@ -3,12 +3,13 @@
 #include <SFML/Graphics/RectangleShape.hpp>  // Example for UI
 #include <SFML/Graphics/Text.hpp>            // Example for UI
 
+#include <cmath>
 #include <iostream>  // For debug
 
 Character::Character(const std::string& name) : Unit(name)  // Call base constructor
 {
     // Character specific stat initialization (can override AnimatedUnit defaults)
-    m_maxHealth = 120;  // Example: Characters slightly tougher
+    m_maxHealth = 120;
     SetHealth(m_maxHealth);
     m_maxMana = 60;
     SetCurrentMana(m_maxMana);
@@ -31,12 +32,45 @@ int Character::GetMastery() const
 {
     return m_mastery;
 }
+
+void Character::SetLevel(int level)
+{
+    if (!m_active)
+        return;
+    m_level = level;
+
+    SetMaxHealth(100 * level / 4 * GetMaxHealthMultiplier());
+    SetHealth(GetMaxHealth());
+    SetMaxMana(50 * level / 4 * GetMaxManaMultiplier());
+    SetCurrentMana(GetMaxMana());
+    SetAttackDamage(10 * level / 4 * GetAttackDamageMultiplier());
+}
+
+void Character::SetExp(int exp)
+{
+    if (!m_active)
+        return;
+    m_exp = exp;
+    CheckLevelUp();
+}
+void Character::SetGold(int gold)
+{
+    if (!m_active)
+        return;
+    m_gold = gold;
+}
+void Character::SetMastery(int mastery)
+{
+    if (!m_active)
+        return;
+
+    m_mastery = mastery;
+}
 void Character::AddExp(int amount)
 {
     if (!m_active)
         return;
     m_exp += amount;
-    std::cout << GetName() << " gained " << amount << " EXP. Total: " << m_exp << std::endl;
     CheckLevelUp();
 }
 
@@ -45,7 +79,6 @@ void Character::AddGold(int amount)
     if (!m_active)
         return;
     m_gold += amount;
-    std::cout << GetName() << " gained " << amount << " Gold. Total: " << m_gold << std::endl;
 }
 
 void Character::AddMastery(int amount)
@@ -53,36 +86,25 @@ void Character::AddMastery(int amount)
     if (!m_active)
         return;
     m_mastery += amount;
-    std::cout << GetName() << " gained " << amount << " Mastery. Total: " << m_mastery << std::endl;
 }
 
 void Character::CheckLevelUp()
 {
-    // Example Level Up Logic: Level * 100 EXP needed
-    int expNeeded = m_level * 100;
+    // Level Up Logic: Level * 100 EXP needed
+    int expNeeded = std::pow(m_level, 1.7) + 100;
     while (m_active && m_exp >= expNeeded)
     {
-        m_level++;
+        SetLevel(m_level + 1);
         m_exp -= expNeeded;
 
-        // Stat increases on level up
-        int healthGain = 10;
-        int manaGain   = 5;
-        int damageGain = 2;
+        std::cout << "Level Up! New level: " << m_level << std::endl;
+        std::cout << "DMG: " << m_attackDamage << std::endl;
+        std::cout << "HP: " << m_currentHealth << std::endl;
+        std::cout << "Mana: " << m_currentMana << std::endl;
+        std::cout << "EXP: " << m_exp << std::endl;
+        std::cout << "EXP needed: " << expNeeded << std::endl;
 
-        m_maxHealth += healthGain;
-        SetHealth(m_maxHealth);  // Heal to full on level up
-        m_maxMana += manaGain;
-        SetCurrentMana(m_maxMana);  // Restore mana
-        m_attackDamage += damageGain;
-
-        std::cout << GetName() << " leveled up to Level " << m_level << "!" << std::endl;
-        std::cout << "  Max HP: " << m_maxHealth << " (+ " << healthGain << ")" << std::endl;
-        std::cout << "  Max MP: " << m_maxMana << " (+ " << manaGain << ")" << std::endl;
-        std::cout << "  Attack: " << m_attackDamage << " (+ " << damageGain << ")" << std::endl;
-
-        // Play level up effect/sound?
-
-        expNeeded = m_level * 100;  // Calculate EXP needed for the *new* level
+        // NOTES: It tightly related with the exp reward calculation in chamber
+        expNeeded = std::pow(m_level, 1.7) + 100;  // Calculate EXP needed for the *new* level
     }
 }

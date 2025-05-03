@@ -25,6 +25,11 @@ public:
     int GetGold() const;
     int GetMastery() const;
 
+    void SetLevel(int level);
+    void SetExp(int exp);
+    void SetGold(int gold);
+    void SetMastery(int mastery);
+
     // --- RPG Stats Modifiers ---
     void AddExp(int amount);
     void AddGold(int amount);
