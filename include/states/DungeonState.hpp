@@ -78,6 +78,7 @@ private:
 
     bool    m_showExitPopup = false;  ///< Flag to show exit confirmation popup
     Dungeon m_dungeon;
+    Chamber m_chamber;
 
     std::queue<unsigned int> m_turnQueue;
 

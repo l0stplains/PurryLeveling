@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+#include "core/GameContext.hpp"
+#include "core/UnitManager.hpp"
+
 #include "items/Item.hpp"
 #include "items/ItemManager.hpp"
 #include "parser/MobLootConfigParser.hpp"
@@ -24,15 +27,17 @@ private:
     int  chamberNumber;    // The sequence number of this chamber in the dungeon [1 indexed]
     bool isBossRoom;       // Whether this chamber contains a boss
     bool isDoubleChamber;  // Whether this is a double chamber (increased difficulty and rewards)
-    vector<shared_ptr<Unit>> mobs;     // Mobs in this chamber (using shared_ptr for polymorphism)
-    vector<Item>             mobLoot;  // Loot items dropped by mobs in this chamber
-    double                   difficultyMultiplier;  // Multiplier for chamber difficulty
-    int                      mobLevelMin;           // Minimum level for mobs in this chamber
-    int                      mobLevelMax;           // Maximum level for mobs in this chamber
-    bool                     isCleared;             // Whether this chamber has been cleared
-    int                      goldReward;            // Gold reward for clearing this chamber
-    int                      expReward;             // Experience reward for clearing this chamber
-    RNG                      rng;                   // Random number generator
+    vector<unsigned int> mobsId;   // Mobs in this chamber (using shared_ptr for polymorphism)
+    vector<Item>         mobLoot;  // Loot items dropped by mobs in this chamber
+    double               difficultyMultiplier;  // Multiplier for chamber difficulty
+    int                  mobLevelMin;           // Minimum level for mobs in this chamber
+    int                  mobLevelMax;           // Maximum level for mobs in this chamber
+    bool                 isCleared;             // Whether this chamber has been cleared
+    int                  goldReward;            // Gold reward for clearing this chamber
+    int                  expReward;             // Experience reward for clearing this chamber
+    RNG                  rng;                   // Random number generator
+    UnitManager&         unitManager;           // Reference to the UnitManager for unit generation
+    GameContext&         gameContext;  // Reference to the GameContext for game state management
 
     /**
      * @brief Set the gold reward for clearing this chamber
@@ -82,7 +87,7 @@ private:
      *
      * @param mob The mob to add
      */
-    void addMob(shared_ptr<Unit> mob);
+    void addMob(unsigned int mobId);
 
     /**
      * @brief Add a loot item to this chamber
@@ -108,11 +113,13 @@ public:
      * @param mobLevelMin Minimum level for mobs
      * @param mobLevelMax Maximum level for mobs
      */
-    Chamber(int    chamberNumber,
-            bool   isBossRoom,
-            double difficultyMultiplier,
-            int    mobLevelMin,
-            int    mobLevelMax);
+    Chamber(int          chamberNumber,
+            bool         isBossRoom,
+            double       difficultyMultiplier,
+            int          mobLevelMin,
+            int          mobLevelMax,
+            UnitManager& unitManager,
+            GameContext& gameContext);
 
     /**
      * @brief Destroy the Chamber object
@@ -129,9 +136,9 @@ public:
     /**
      * @brief Get the list of mobs in this chamber
      *
-     * @return vector<shared_ptr<Unit>> Vector of mobs
+     * @return vector<unsigned int> Vector of mobs id
      */
-    vector<shared_ptr<Unit>> getMobs() const;
+    vector<unsigned int> getMobsId() const;
 
     /**
      * @brief Generate loot for mobs in this chamber

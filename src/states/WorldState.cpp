@@ -16,9 +16,7 @@
 // Constructor
 WorldState::WorldState(GameContext& context)
     : State(context),
-      m_dungeonFactory(*context.GetItemManager(),
-                       *context.GetMobLootConfigParser(),
-                       *context.GetQuestGenerator()),
+      m_dungeonFactory(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
       m_buttonHoverSound(GetContext().GetResourceManager()->GetSoundBuffer("button_hover")),
@@ -42,10 +40,16 @@ WorldState::WorldState(GameContext& context)
 
 void WorldState::Init()
 {
+    std::cout << "world 1" << std::endl;
     Character* character =
         GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
 
     vector<std::string> distributedRank = generateDungeonRank(character->GetLevel());
+
+    for (const string& rank : distributedRank)
+    {
+        std::cout << "Rank: " << rank << std::endl;
+    }
 
     Dungeon e = m_dungeonFactory.createDungeon(distributedRank[0], character->GetLevel(), 1000, 1000);
     Dungeon d =
@@ -54,6 +58,8 @@ void WorldState::Init()
         m_dungeonFactory.createDungeon(distributedRank[2], character->GetLevel(), 100000, 1000);
     Dungeon c =
         m_dungeonFactory.createDungeon(distributedRank[3], character->GetLevel(), 100000, 1000);
+
+    std::cout << "world 2" << std::endl;
 
     std::map<string, string> portalAssets = {{"E", "portal_e"},
                                              {"D", "portal_d"},
@@ -97,6 +103,8 @@ void WorldState::Init()
         c,
         DimensionType::LAVA);
 
+    std::cout << "world 3" << std::endl;
+
     m_portals.emplace_back(std::move(portal));
     // Background setup
     m_backgroundSprite.setOrigin({0, 0});
@@ -116,6 +124,8 @@ void WorldState::Init()
     m_skillTreeButton.setText("Skill Tree", m_font, 24);
     m_skillTreeButton.setHoverSound(m_buttonHoverSound);
     m_skillTreeButton.setClickSound(m_buttonClickSound);
+
+    std::cout << "world 4" << std::endl;
     // Set button callbacks
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
     m_inventoryButton.setOnClickCallback([this]() {
@@ -123,6 +133,8 @@ void WorldState::Init()
         m_pendingStateChange =
             StateChange {StateAction::PUSH, std::make_unique<InventoryMenuState>(GetContext())};
     });
+
+    std::cout << "world 5" << std::endl;
 
     unsigned int  characterId = GetContext().GetCharacterId();
     AnimatedUnit* animatedCharacter =
@@ -139,6 +151,8 @@ void WorldState::Init()
         std::cerr << "Character not found!" << std::endl;
         return;
     }
+
+    std::cout << "world 6" << std::endl;
 }
 
 State::StateChange WorldState::ProcessEvent(const sf::Event& event)
@@ -540,6 +554,19 @@ vector<std::string> WorldState::generateDungeonRank(int level)
                 positionAdjustedProbs[i] *= 0.9;
             }
             positionAdjustedProbs[6] = 10.0;
+
+            double total = 0.0;
+            for (size_t i = 0; i < positionAdjustedProbs.size(); ++i)
+            {
+                total += positionAdjustedProbs[i];
+            }
+            if (total > 0.0)
+            {
+                for (size_t i = 0; i < positionAdjustedProbs.size(); ++i)
+                {
+                    positionAdjustedProbs[i] = positionAdjustedProbs[i] / total * 100.0;
+                }
+            }
         }
 
         vector<double> cumulativeProbs;

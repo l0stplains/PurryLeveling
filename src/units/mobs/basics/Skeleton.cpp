@@ -12,8 +12,8 @@ Skeleton::Skeleton(const std::string&  name,
                    const GameContext&  gameContext)
     : Unit(name),
       m_boneShard(true, true),
-      Mob(name, m_boneShard),
-      BasicMob(name, m_boneShard),  // ← must initialize the virtual base
+      Mob(name),
+      BasicMob(name),  // ← must initialize the virtual base
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides

@@ -12,8 +12,8 @@ Slime::Slime(const std::string&  name,
              const GameContext&  gameContext)
     : Unit(name),
       m_acidityCorrossion(true, true),
-      Mob(name, m_acidityCorrossion),
-      BasicMob(name, m_acidityCorrossion),  // ← must initialize the virtual base
+      Mob(name),
+      BasicMob(name),  // ← must initialize the virtual base
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides

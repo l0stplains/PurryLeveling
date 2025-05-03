@@ -157,7 +157,7 @@ void Unit::TakeDamage(int damage, ActionCompletionCallback callback)
     // and delay the callback execution.
 }
 
-void Unit::Heal(int amount)
+void Unit::Heal(int amount, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
         return;  // Cannot heal inactive/dead units
@@ -166,6 +166,10 @@ void Unit::Heal(int amount)
     m_currentHealth = std::min(m_currentHealth, m_maxHealth);  // Clamp to max health
     // std::cout << m_name << " (Base) healed " << amount << " health. Health: " << m_health << "/"
     // << m_maxHealth << std::endl; // Debug
+    if (callback)
+    {
+        callback();
+    }
 }
 void Unit::AddEffect(std::unique_ptr<Effect> effect)
 {

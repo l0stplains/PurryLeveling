@@ -2,13 +2,13 @@
 
 #include "rng/rng.hpp"
 
-DungeonFactory::DungeonFactory(ItemManager&         itemManager,
-                               MobLootConfigParser& mobLootConfigParser,
-                               QuestGenerator&      questGenerator)
+DungeonFactory::DungeonFactory(GameContext& gameContext)
     : rng(),
-      itemManager(itemManager),
-      mobLootConfigParser(mobLootConfigParser),
-      questGenerator(questGenerator),
+      itemManager(*gameContext.GetItemManager()),
+      mobLootConfigParser(*gameContext.GetMobLootConfigParser()),
+      unitManager(*gameContext.GetUnitManager()),
+      questGenerator(*gameContext.GetQuestGenerator()),
+      gameContext(gameContext),
       doubleDungeonActivateThreshold(0.05),
       isDoubleDungeonYet(false),
       chance(0.0)
@@ -202,7 +202,9 @@ Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel, int p
                         isBossRoom,
                         difficultyMultiplier,
                         normalizedRank == Dungeon::RANK_SPECIAL ? specialMinLevel : mobLevelMin,
-                        normalizedRank == Dungeon::RANK_SPECIAL ? specialMaxLevel : mobLevelMax);
+                        normalizedRank == Dungeon::RANK_SPECIAL ? specialMaxLevel : mobLevelMax,
+                        unitManager,
+                        gameContext);
 
         bool isDoubleChamber = shouldBeDoubleChamber();
         if (isDoubleChamber)

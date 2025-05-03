@@ -23,6 +23,7 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_navGrid(GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
+      m_chamber(dungeon.getChamber(0)),
       m_pendingStateChange({StateAction::NONE})
 {
     SetName("Dungeon State");
@@ -110,22 +111,22 @@ void DungeonState::Init()
         m_character->Attack(*closestMob, callback);
     });
 
-    int                       slimeCount  = 4;
+    m_mobsID = m_chamber.getMobsId();
+
     std::vector<sf::Vector2f> spawnPoints = generateMobSpawnPoints(
         {windowSize.x / 2.0f + 400.f * windowSize.x / 1820.f, 780.0f * windowSize.y / 1024.f},
-        slimeCount,
+        m_mobsID.size(),
         true);
-    for (int i = 0; i < slimeCount; ++i)
+    for (int i = 0; i < m_mobsID.size(); ++i)
     {
-        std::unique_ptr<Slime> slime =
-            std::make_unique<Slime>("Slime", sf::Vector2f {0, 0}, m_navGrid, GetContext());
-        slime->SetScale(8.f, 8.f);
-        slime->SetPosition(spawnPoints[i]);
-        slime->SetControlledByPlayer(false);
-        slime->SetShowUI(true);
-        slime->SetDirection(Direction::WEST);
-        m_mobsID.push_back(slime->GetId());
-        GetContext().GetUnitManager()->AddUnit(std::move(slime));
+        AnimatedUnit* mob = GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(m_mobsID[i]);
+        mob->SetScale(8.f, 8.f);
+        mob->SetActive(true);
+        mob->SetPosition(spawnPoints[i]);
+        mob->SetControlledByPlayer(false);
+        mob->SetNavGrid(m_navGrid);
+        mob->SetShowUI(true);
+        mob->SetDirection(Direction::WEST);
     }
 
     m_character =
@@ -141,9 +142,6 @@ void DungeonState::Init()
         m_character->SetNavGrid(m_navGrid);
         m_character->SetMoveSpeed(m_character->GetMoveSpeed() * 1.5f);
 
-        m_character->SetAttackDamage(2000);
-        m_character->SetMaxHealth(10000);
-        m_character->SetHealth(10000);
     }
     else
     {
@@ -313,7 +311,10 @@ void DungeonState::Resume() {}
 
 void DungeonState::Exit()
 {
-    GetContext().GetUnitManager()->RemoveUnitExcept(GetContext().GetCharacterId());
+    for(auto id : m_mobsID)
+    {
+        GetContext().GetUnitManager()->RemoveUnit(id);
+    }
     AnimatedUnit* character =
         GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
 

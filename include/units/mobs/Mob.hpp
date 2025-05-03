@@ -1,12 +1,12 @@
 #pragma once
 
-#include "skill/Skill.hpp"
+#include "skill/mobSkill/Healing.hpp"
 #include "units/Unit.hpp"
 
 class Mob : virtual public Unit
 {
 public:
-    Mob(const std::string& name, Skill& healSkill);
+    Mob(const std::string& name);
 
     ~Mob() override = default;
 
@@ -20,10 +20,10 @@ public:
     int  GetLevel() const;
     void SetLevel(int);
 
-    const Skill& GetHealSkill() const;
+    const Healing& GetHealSkill() const;
 
 protected:
     // --- RPG Stats ---
-    int    m_level = 1;
-    Skill& m_healSkill;
+    int     m_level = 1;
+    Healing m_healSkill;
 };

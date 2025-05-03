@@ -32,7 +32,7 @@ public:
 
     virtual void Attack(Unit& target, ActionCompletionCallback callback = nullptr);
     virtual void TakeDamage(int damage, ActionCompletionCallback callback = nullptr);
-    virtual void Heal(int amount);
+    virtual void Heal(int amount, ActionCompletionCallback callback = nullptr);
 
     virtual void RestoreMana(int amount);
 

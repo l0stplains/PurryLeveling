@@ -80,7 +80,8 @@ public:
     /**
      * @brief Overrides Unit::Heal potentially to add a visual effect.
      */
-    void Heal(int amount) override;  // Override if visual needed
+    void Heal(int amount, ActionCompletionCallback callback = nullptr) override;  // Override if
+                                                                                  // visual needed
 
     /**
      * @brief Resets unit state (health, mana, position, animation).

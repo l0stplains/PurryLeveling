@@ -12,8 +12,8 @@ Goblin::Goblin(const std::string&  name,
                const GameContext&  gameContext)
     : Unit(name),
       m_sneakyStab(true, true),
-      Mob(name, m_sneakyStab),
-      BasicMob(name, m_sneakyStab),  // ← must initialize the virtual base
+      Mob(name),
+      BasicMob(name),  // ← must initialize the virtual base
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides

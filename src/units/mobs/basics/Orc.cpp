@@ -12,8 +12,8 @@ Orc::Orc(const std::string&  name,
          const GameContext&  gameContext)
     : Unit(name),
       m_brutalStrike(true, true),
-      Mob(name, m_brutalStrike),
-      BasicMob(name, m_brutalStrike),  // ← must initialize the virtual base
+      Mob(name),
+      BasicMob(name),  // ← must initialize the virtual base
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides

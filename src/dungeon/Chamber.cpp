@@ -3,6 +3,11 @@
 #include <iostream>
 #include <map>
 
+#include "units/mobs/basics/Goblin.hpp"
+#include "units/mobs/basics/Orc.hpp"
+#include "units/mobs/basics/Skeleton.hpp"
+#include "units/mobs/basics/Slime.hpp"
+
 using namespace std;
 
 /*
@@ -25,11 +30,13 @@ public:
 };
 */
 
-Chamber::Chamber(int    chamberNumber,
-                 bool   isBossRoom,
-                 double difficultyMultiplier,
-                 int    mobLevelMin,
-                 int    mobLevelMax)
+Chamber::Chamber(int          chamberNumber,
+                 bool         isBossRoom,
+                 double       difficultyMultiplier,
+                 int          mobLevelMin,
+                 int          mobLevelMax,
+                 UnitManager& unitManager,
+                 GameContext& gameContext)
     : chamberNumber(chamberNumber),
       isBossRoom(isBossRoom),
       isDoubleChamber(false),
@@ -39,7 +46,9 @@ Chamber::Chamber(int    chamberNumber,
       isCleared(false),
       goldReward(0),
       expReward(0),
-      rng()
+      rng(),
+      unitManager(unitManager),
+      gameContext(gameContext)
 {}
 
 Chamber::~Chamber() {}
@@ -87,7 +96,7 @@ void Chamber::generateMobs(bool isBossRoom)
     }
     else
     {
-        int numMobs = 1 + chamberNumber / 2;
+        int numMobs = std::min(1 + chamberNumber / 2, 4);
 
         // Double chambers have more mobs
         if (isDoubleChamber)
@@ -100,25 +109,30 @@ void Chamber::generateMobs(bool isBossRoom)
             int    mobType = rng.generateInRange(4);
             string mobName;
 
+            std::unique_ptr<Mob> mob;
             switch (mobType)
             {
                 case 0:
-                    mobName = "Slime";
+                    mob = std::make_unique<Slime>(
+                        "Slime", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
                     break;
                 case 1:
-                    mobName = "Goblin";
+                    mob = std::make_unique<Goblin>(
+                        "Goblin", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
                     break;
                 case 2:
-                    mobName = "Skeleton";
+                    mob = std::make_unique<Skeleton>(
+                        "Skeleton", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
                     break;
                 case 3:
-                    mobName = "Orc";
+                    mob = std::make_unique<Orc>(
+                        "Orc", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
                     break;
                 default:
-                    mobName = "Unknown_Mob";
+                    // it should never reach here
+                    mob = std::make_unique<Slime>(
+                        "Slime", sf::Vector2f(0, 0), gameContext.GetNavigationGrid(), gameContext);
             }
-            /*
-            auto mob = make_shared<Mob*>(mobName);
 
             // Set mob stats based on chamber difficulty
             int mobLevel = rng.generateInRange(mobLevelMin, mobLevelMax);
@@ -129,9 +143,10 @@ void Chamber::generateMobs(bool isBossRoom)
             mob->SetCurrentMana(mob->GetMaxMana());
             mob->SetAttackDamage(8 * mobLevel / 10 * difficultyMultiplier);
             mob->SetLevel(mobLevel);
+            mob->SetActive(false);
 
-            mobs.push_back(mob);
-            */
+            mobsId.push_back(mob->GetId());
+            unitManager.AddUnit(std::move(mob));
         }
     }
 
@@ -161,9 +176,9 @@ void Chamber::calculateRewards(bool isDoubleChamber)
     }
 }
 
-void Chamber::addMob(shared_ptr<Unit> mob)
+void Chamber::addMob(unsigned int mobId)
 {
-    mobs.push_back(mob);
+    mobsId.push_back(mobId);
 }
 
 void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemManager& itemManager)
@@ -177,8 +192,9 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
         return;
     }
 
-    for (const auto& mob : mobs)
+    for (const auto& mobId : mobsId)
     {
+        Mob*   mob     = unitManager.GetUnitOfType<Mob>(mobId);
         string mobName = mob->GetName();
 
         auto mobIt = mobLootData.find(mobName);
@@ -226,9 +242,9 @@ vector<Item> Chamber::clearChamber()
     return mobLoot;
 }
 
-vector<shared_ptr<Unit>> Chamber::getMobs() const
+vector<unsigned int> Chamber::getMobsId() const
 {
-    return mobs;
+    return mobsId;
 }
 
 vector<Item> Chamber::getMobLoot() const

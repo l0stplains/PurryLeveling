@@ -630,16 +630,21 @@ void AnimatedUnit::TakeDamage(int damage, ActionCompletionCallback callback)
 }
 
 // --- Heal Override (Optional: Add visual effect) ---
-void AnimatedUnit::Heal(int amount)
+void AnimatedUnit::Heal(int amount, ActionCompletionCallback callback)
 {
     if (!m_active || m_currentHealth <= 0)
         return;
 
     Unit::Heal(amount);  // Call base class to update health value
 
-    // Optional: Play a heal particle effect or brief animation here
-    // std::cout << GetName() << " (Animated) healed visually." << std::endl; // Debug
-    // PlayAnimation(UnitAnimationType::HEAL_EFFECT, nullptr); // If you add such an animation
+    PlayAnimation(
+        UnitAnimationType::JUMP,  // Optional: Play heal animation
+        [this, cb = std::move(callback), amount]() {
+            std::cout << GetName() << " (Animated) healed for " << amount << "." << std::endl;
+            if (cb)
+                cb();
+        },
+        true);  // Force reset heal animation even if already playing
 }
 
 // --- Reset Override ---
