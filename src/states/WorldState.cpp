@@ -363,6 +363,37 @@ void WorldState::RenderUI()
                                             fury,  // use dummy skill tree
                                             err);
 
+            std::string savePath = "data/" + GetContext().GetCurrentFolderName();
+
+            if (GetContext().GetFirstSaveState() == true) {
+                try
+                {
+                    std::filesystem::create_directories(savePath);
+                    GetContext().SetFirstSaveState(false);
+                }
+                catch (const std::exception& e)
+                {
+                    showError("Failed to create folder: " + std::string(e.what()));
+                    return;
+                }
+
+                const std::filesystem::path cfgDir = "resources/config";
+                for (auto fname : {"item.txt", "mobloot.txt", "quest.txt", "shop.txt"})
+                {
+                    try
+                    {
+                        std::filesystem::copy_file(cfgDir / fname,
+                        std::filesystem::path(savePath) / fname,
+                        std::filesystem::copy_options::overwrite_existing);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        showError("Failed to copy " + std::string(fname) + ": " + e.what());
+                        break;
+                    }
+                }
+            }
+
             m_pendingStateChange = StateChange {StateAction::POP};
         }
         // ImGui::PopStyleColor(3);
