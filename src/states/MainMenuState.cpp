@@ -191,7 +191,8 @@ void MainMenuState::renderNewSaveModal()
         ImGui::OpenPopup(PopupId);
         m_showSaveNamePopup = false;
     }
-    if (!ImGui::BeginPopupModal(PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (!ImGui::BeginPopupModal(
+            PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
         return;
 
     ImGui::Text("Please enter a name for your save folder:");
@@ -484,7 +485,7 @@ void MainMenuState::setupNavigationGrid()
  */
 void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
 {
-    const auto&       stats      = parser.GetTypeStats();
+    const auto&       stats      = parser.GetUnitStats();
     const std::string charType   = stats.at("TYPE");
     NavigationGrid*   navGrid    = GetContext().GetNavigationGrid();
     sf::Vector2u      windowSize = GetContext().GetWindow()->getSize();
@@ -532,14 +533,41 @@ void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
     GetContext().SetCharacterId(id);
     GetContext().GetUnitManager()->AddUnit(std::move(character));
 
-    // Configure the unit
+    // Configure unit stats
     auto* baseUnit = GetContext().GetUnitManager()->GetUnit(id);
     baseUnit->SetName(parser.GetUnitStats().at("NAME"));
+
+    Stats tempStats;
+    tempStats.strength                 = std::stoi(parser.GetUnitStats().at("STRENGTH"));
+    tempStats.agility                  = std::stoi(parser.GetUnitStats().at("AGILITY"));
+    tempStats.intelligence             = std::stoi(parser.GetUnitStats().at("INTELLIGENCE"));
+    tempStats.buffMultiplier           = std::stof(parser.GetUnitStats().at("BUFF_MULTIPLIER"));
+    tempStats.criticalStrikeMultiplier = std::stof(parser.GetUnitStats().at("CRITICAL_STRIKE_"
+                                                                            "MULTIPLIER"));
+    tempStats.criticalStrikeChance = std::stof(parser.GetUnitStats().at("CRITICAL_STRIKE_CHANCE"));
+    tempStats.skipTurnChance       = std::stof(parser.GetUnitStats().at("SKIPTURNCHANCE"));
+    tempStats.luck                 = std::stoi(parser.GetUnitStats().at("LUCK"));
+    tempStats.physicalDefense      = std::stoi(parser.GetUnitStats().at("PHYSICAL_DEFENSE"));
+    tempStats.magicDefense         = std::stoi(parser.GetUnitStats().at("MAGIC_DEFENSE"));
+    tempStats.dodgeChance          = std::stof(parser.GetUnitStats().at("DODGE_CHANCE"));
+    tempStats.accuracy             = std::stof(parser.GetUnitStats().at("ACCURACY"));
+    tempStats.statusResistance     = std::stof(parser.GetUnitStats().at("STATUS_RESISTANCE"));
+    tempStats.hasteMultiplier      = std::stof(parser.GetUnitStats().at("HASTE_MULTIPLIER"));
+    tempStats.resourceCostMul = std::stof(parser.GetUnitStats().at("RESOURCE_COST_MULTIPLIER"));
+
+    baseUnit->SetStats(tempStats);
     baseUnit->SetActive(false);
 
-    // Configure the character
+    // Configure character stats
     auto* charUnit = GetContext().GetUnitManager()->GetUnitOfType<Character>(id);
     charUnit->SetGold(std::stoi(parser.GetCharStats().at("GOLD")));
+    charUnit->SetLevel(std::stoi(parser.GetCharStats().at("LEVEL")));
+    charUnit->SetExp(std::stoi(parser.GetCharStats().at("EXP")));
+    charUnit->SetMastery(std::stoi(parser.GetCharStats().at("MASTERY")));
+
+    // TODO: Configure type specific stats
+
+    // Configure skills
 }
 
 void MainMenuState::showError(const std::string& message)
