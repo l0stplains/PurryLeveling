@@ -108,7 +108,7 @@ void UnitManager::Update(const sf::Time& dt)
     // Update all active units
     for (auto& unitPtr : m_units)  // Iterate unique_ptrs
     {
-        if (unitPtr->IsActive())
+        if (unitPtr && unitPtr->IsActive())
         {
             // dynamic cast to animated unit
             if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
@@ -141,7 +141,7 @@ void UnitManager::Draw(sf::RenderWindow& window)
     // Units vector is now sorted by Z-order (ascending)
     for (const auto& unitPtr : m_units)
     {
-        if (unitPtr->IsActive())
+        if (unitPtr && unitPtr->IsActive())
         {
             // dynamic cast to animated unit
             if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
@@ -162,7 +162,7 @@ void UnitManager::DrawUI(sf::RenderWindow& window)
     // Draw UI elements for relevant units (e.g., Characters)
     for (const auto& unitPtr : m_units)
     {
-        if (unitPtr->IsActive())
+        if (unitPtr && unitPtr->IsActive())
         {
             if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
             {
@@ -178,7 +178,7 @@ void UnitManager::ProcessEvent(const sf::Event& event)
     // Forward keyboard input only to active, player-controlled Characters
     for (auto& unitPtr : m_units)
     {
-        if (unitPtr->IsActive())
+        if (unitPtr && unitPtr->IsActive())
         {
             if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
             {
@@ -215,6 +215,8 @@ void UnitManager::BringUnitToFront(unsigned int id)
     // Find the current highest Z-order among AnimatedUnits
     for (const auto& unitPtr : m_units)
     {
+        if (unitPtr == nullptr)
+            continue;  // Skip null pointers
         // Attempt to cast to AnimatedUnit to get Z-order
         if (const AnimatedUnit* animatedUnit = dynamic_cast<const AnimatedUnit*>(unitPtr.get()))
         {

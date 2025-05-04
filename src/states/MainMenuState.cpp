@@ -275,13 +275,15 @@ void MainMenuState::RenderUI()
                 std::filesystem::path absPath = ImGuiFileDialog::Instance()->GetCurrentPath();
                 std::filesystem::path relPath;
 
-                try { 
+                try
+                {
                     relPath = std::filesystem::relative(absPath, std::filesystem::current_path());
                 }
-                catch (...) {
+                catch (...)
+                {
                     relPath = absPath.filename();
                 }
-                
+
                 m_selectedFolder = relPath.string();
 
                 try

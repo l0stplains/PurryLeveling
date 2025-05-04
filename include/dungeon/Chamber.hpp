@@ -61,14 +61,6 @@ private:
     void calculateRewards(bool isDoubleChamber);
 
     /**
-     * @brief Check if this is a boss room
-     *
-     * @return true If this is a boss room
-     * @return false If this is not a boss room
-     */
-    bool getIsBossRoom() const;
-
-    /**
      * @brief Get the minimum mob level
      *
      * @return int The minimum mob level
@@ -212,4 +204,12 @@ public:
      * @param isDouble Whether this is a double chamber
      */
     void setIsDoubleChamber(bool isDouble);
+
+    /**
+     * @brief Check if this is a boss room
+     *
+     * @return true If this is a boss room
+     * @return false If this is not a boss room
+     */
+    bool getIsBossRoom() const;
 };

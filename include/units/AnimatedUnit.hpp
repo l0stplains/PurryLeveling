@@ -11,6 +11,8 @@
 
 #include "core/GameContext.hpp"
 
+#include "ui/FloatingText.hpp"
+
 #include "Animation.hpp"
 #include "Enums.hpp"
 #include "NavigationGrid.hpp"
@@ -75,7 +77,9 @@ public:
     /**
      * @brief Overrides Unit::TakeDamage to play damage/death animations.
      */
-    void TakeDamage(int damage, ActionCompletionCallback callback = nullptr) override;
+    void TakeDamage(int                      damage,
+                    ActionCompletionCallback callback = nullptr,
+                    ActionCompletionCallback onDeath  = nullptr) override;
 
     /**
      * @brief Overrides Unit::Heal potentially to add a visual effect.
@@ -121,6 +125,8 @@ public:
                                ActionCompletionCallback callback   = nullptr,
                                bool                     forceReset = false);
 
+    void AddFloatingText(const std::string& text, const sf::Color& color = sf::Color::Red);
+
 protected:
     /**
      * @brief Updates the unit's direction based on a movement vector.
@@ -162,6 +168,8 @@ protected:
     UnitAnimationType m_currentAnimationType = UnitAnimationType::IDLE;
     Animation*        m_currentAnimation     = nullptr;
     bool              m_isAnimating          = false;
+
+    std::vector<FloatingText> m_floatingTexts;
 
     // --- State & Callbacks ---
     ActionCompletionCallback m_currentActionCallback = nullptr;

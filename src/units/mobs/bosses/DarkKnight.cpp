@@ -25,36 +25,37 @@ DarkKnight::DarkKnight(const std::string&  name,
     m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
-    sf::Vector2i orcFrameSize(32, 32);
+    sf::Vector2i darkKnightFrameSize(32, 32);
 
-    std::unordered_map<UnitAnimationType, std::string> orcTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_orc_idle"},
-        {UnitAnimationType::WALK, "mob_orc_walk"},
-        {UnitAnimationType::ATTACK, "mob_orc_attack"},
-        {UnitAnimationType::JUMP, "mob_orc_jump"},
-        {UnitAnimationType::DAMAGE, "mob_orc_dmg"},
-        {UnitAnimationType::DIE, "mob_orc_die"}
+    std::unordered_map<UnitAnimationType, std::string> darkKnightTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_townsfolk_idle"},
+        {UnitAnimationType::WALK, "mob_townsfolk_walk"},
+        {UnitAnimationType::ATTACK, "mob_townsfolk_attack"},
+        {UnitAnimationType::JUMP, "mob_townsfolk_jump"},
+        {UnitAnimationType::DAMAGE, "mob_townsfolk_dmg"},
+        {UnitAnimationType::DIE, "mob_townsfolk_die"}
 
     };
-    std::unordered_map<UnitAnimationType, std::string> orcShadowTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_orc_idle_shadow"},
-        {UnitAnimationType::WALK, "mob_orc_walk_shadow"},
-        {UnitAnimationType::ATTACK, "mob_orc_attack_shadow"},
-        {UnitAnimationType::JUMP, "mob_orc_jump_shadow"},
-        {UnitAnimationType::DAMAGE, "mob_orc_dmg_shadow"},
-        {UnitAnimationType::DIE, "mob_orc_die_shadow"}
+    std::unordered_map<UnitAnimationType, std::string> darkKnightShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_townsfolk_idle_shadow"},
+        {UnitAnimationType::WALK, "mob_townsfolk_walk_shadow"},
+        {UnitAnimationType::ATTACK, "mob_townsfolk_attack_shadow"},
+        {UnitAnimationType::JUMP, "mob_townsfolk_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "mob_townsfolk_dmg_shadow"},
+        {UnitAnimationType::DIE, "mob_townsfolk_die_shadow"}
 
     };
     // Example frame counts (adjust these!)
-    std::unordered_map<UnitAnimationType, int> orcFramesPerAnim = {{UnitAnimationType::IDLE, 16},
-                                                                   {UnitAnimationType::WALK, 4},
-                                                                   {UnitAnimationType::ATTACK, 4},
-                                                                   {UnitAnimationType::JUMP, 4},
-                                                                   {UnitAnimationType::DAMAGE, 4},
-                                                                   {UnitAnimationType::DIE, 12}};
+    std::unordered_map<UnitAnimationType, int> darkKnightFramesPerAnim = {
+        {UnitAnimationType::IDLE, 16},
+        {UnitAnimationType::WALK, 4},
+        {UnitAnimationType::ATTACK, 4},
+        {UnitAnimationType::JUMP, 4},
+        {UnitAnimationType::DAMAGE, 4},
+        {UnitAnimationType::DIE, 12}};
 
     // Example durations (in seconds, adjust these!)
-    std::unordered_map<UnitAnimationType, float> orcDurationPerAnim = {
+    std::unordered_map<UnitAnimationType, float> darkKnightDurationPerAnim = {
         {UnitAnimationType::IDLE, 3.2f},
         {UnitAnimationType::WALK, 0.8f},
         {UnitAnimationType::ATTACK, 0.4f},
@@ -63,14 +64,15 @@ DarkKnight::DarkKnight(const std::string&  name,
         {UnitAnimationType::DIE, 1.2f}};
 
     // Example looping status (Idle/Walk usually loop)
-    std::unordered_map<UnitAnimationType, bool> orcLoopingAnims = {{UnitAnimationType::IDLE, true},
-                                                                   {UnitAnimationType::WALK, true},
-                                                                   {UnitAnimationType::ATTACK, false},
-                                                                   {UnitAnimationType::JUMP, false},
-                                                                   {UnitAnimationType::DAMAGE, false},
-                                                                   {UnitAnimationType::DIE, false}};
+    std::unordered_map<UnitAnimationType, bool> darkKnightLoopingAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, false},
+        {UnitAnimationType::JUMP, false},
+        {UnitAnimationType::DAMAGE, false},
+        {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, bool> orcDirectionalAnims = {
+    std::unordered_map<UnitAnimationType, bool> darkKnightDirectionalAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, true},
@@ -78,19 +80,21 @@ DarkKnight::DarkKnight(const std::string&  name,
         {UnitAnimationType::DAMAGE, true},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, int> orcDefaultRows = {{UnitAnimationType::DIE, 0}};
+    std::unordered_map<UnitAnimationType, int> darkKnightDefaultRows = {{UnitAnimationType::DIE, 0}};
 
-    LoadAnimations(orcTexturePaths,
-                   orcFrameSize,
-                   orcFramesPerAnim,
-                   orcDurationPerAnim,
-                   orcLoopingAnims,
-                   orcDirectionalAnims,
-                   orcDefaultRows,
-                   orcShadowTexturePaths);
+    LoadAnimations(darkKnightTexturePaths,
+                   darkKnightFrameSize,
+                   darkKnightFramesPerAnim,
+                   darkKnightDurationPerAnim,
+                   darkKnightLoopingAnims,
+                   darkKnightDirectionalAnims,
+                   darkKnightDefaultRows,
+                   darkKnightShadowTexturePaths);
 }
 
-void DarkKnight::Attack(Unit& target, ActionCompletionCallback callback)
+void DarkKnight::Attack(Unit&                    target,
+                        ActionCompletionCallback callback,
+                        ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {  // Check self and target state
@@ -113,7 +117,7 @@ void DarkKnight::Attack(Unit& target, ActionCompletionCallback callback)
         sf::Vector2f positionInRange = animatedTarget->GetPosition() -
                                        direction * (m_attackRange * 0.9f);  // Move 90% of the way
 
-        std::cout << GetName() << " moving to attack zirr " << target.GetName() << std::endl;  // Debug
+        std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
 
         // Move, and chain the PerformAttack call as the callback for Move
         Move(positionInRange,
@@ -121,7 +125,8 @@ void DarkKnight::Attack(Unit& target, ActionCompletionCallback callback)
               animatedTarget,
               initialPosition = m_position,
               initialDir      = m_direction,
-              cb              = std::move(callback)]() mutable {
+              cb              = std::move(callback),
+              od              = std::move(onDeath)]() mutable {
                  // This lambda is called when Move() finishes (reaches destination or gets blocked)
                  sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
                  float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
@@ -153,11 +158,14 @@ void DarkKnight::Attack(Unit& target, ActionCompletionCallback callback)
 
                      // Call the original PerformAttack with our wrapped callback
                      // The lambda captures a shared_ptr by value to ensure it stays alive
-                     this->PerformAttack(*animatedTarget, [wrappedCb = wrappedCallback]() {
-                         // Execute our wrapped callback when PerformAttack finishes
-                         if (*wrappedCb)
-                             (*wrappedCb)();
-                     });
+                     this->PerformAttack(
+                         *animatedTarget,
+                         [wrappedCb = wrappedCallback]() {
+                             // Execute our wrapped callback when PerformAttack finishes
+                             if (*wrappedCb)
+                                 (*wrappedCb)();
+                         },
+                         od);
                  }
                  else
                  {
@@ -174,11 +182,13 @@ void DarkKnight::Attack(Unit& target, ActionCompletionCallback callback)
         // Target already in range
         std::cout << GetName() << " is in range, performing attack on " << target.GetName()
                   << std::endl;  // Debug
-        PerformAttack(*animatedTarget, std::move(callback));
+        PerformAttack(*animatedTarget, std::move(callback), std::move(onDeath));
     }
 }
 
-void DarkKnight::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
+void DarkKnight::PerformAttack(AnimatedUnit&            target,
+                               ActionCompletionCallback callback,
+                               ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
@@ -191,66 +201,63 @@ void DarkKnight::PerformAttack(AnimatedUnit& target, ActionCompletionCallback ca
     UpdateDirection(target.GetPosition() - m_position);
 
     // Play attack animation. The lambda executes *after* the animation finishes.
-    PlayAnimation(UnitAnimationType::ATTACK, [this, &target, cb = std::move(callback)]() mutable {
-        // --- Animation Finished Callback ---
-        std::cout << GetName() << "'s attack animation finished." << std::endl;  // Debug
+    PlayAnimation(
+        UnitAnimationType::ATTACK,
+        [this, &target, cb = std::move(callback), od = std::move(onDeath)]() mutable {
+            // --- Animation Finished Callback ---
+            std::cout << GetName() << "'s attack animation finished." << std::endl;  // Debug
 
-        // Check if target is STILL valid and in range after animation delay
-        if (target.IsActive() && target.GetHealth() > 0)
-        {
-            sf::Vector2f vectorToTarget = target.GetPosition() - m_position;
-            float        distanceToTarget =
-                std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
-
-            // Deal daorc if still in range (maybe slightly larger range check here?)
-            if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
+            // Check if target is STILL valid and in range after animation delay
+            if (target.IsActive() && target.GetHealth() > 0)
             {
-                std::cout << GetName() << " deals " << m_attackDamage << " damage to "
-                          << target.GetName() << std::endl;  // Debug
-                // Cast target back to AnimatedUnit if TakeDamage is needed
-                // This is risky if target might not be AnimatedUnit, but necessary for TakeDamage
-                AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
-                if (animatedTarget)
+                sf::Vector2f vectorToTarget   = target.GetPosition() - m_position;
+                float        distanceToTarget = std::sqrt(vectorToTarget.x * vectorToTarget.x +
+                                                   vectorToTarget.y * vectorToTarget.y);
+
+                // Deal damage if still in range (maybe slightly larger range check here?)
+                if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
                 {
-                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes daorc
+                    std::cout << GetName() << " deals " << m_attackDamage << " damage to "
+                              << target.GetName() << std::endl;  // Debug
+                    // Cast target back to AnimatedUnit if TakeDamage is needed
+                    // This is risky if target might not be AnimatedUnit, but necessary
+                    // for TakeDamage
+                    AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
+                    if (animatedTarget)
+                    {
+                        animatedTarget->TakeDamage(CalculateDamage(target), nullptr, od);  // Target
+                                                                                           // takes
+                                                                                           // damage
+                    }
+                    else
+                    {
+                        std::cerr << "Warning: Target " << target.GetName()
+                                  << " is not an AnimatedUnit, cannot TakeDamage." << std::endl;
+                    }
                 }
                 else
                 {
-                    std::cerr << "Warning: Target " << target.GetName()
-                              << " is not an AnimatedUnit, cannot TakeDamage." << std::endl;
+                    std::cout << GetName()
+                              << " dealt no damage, target moved out of range during "
+                                 "animation."
+                              << std::endl;  // Debug
                 }
             }
             else
             {
-                std::cout << GetName()
-                          << " dealt no daorc, target moved out of range during animation."
+                std::cout << GetName() << " dealt no damage, target is no longer valid."
                           << std::endl;  // Debug
             }
-        }
-        else
-        {
-            std::cout << GetName() << " dealt no daorc, target is no longer valid."
-                      << std::endl;  // Debug
-        }
-
-        // Set cooldown AFTER attack attempt
-        // m_currentAttackCooldown = m_attackCooldown;
-
-        // Default back to idle if not moving etc.
-        if (!m_isMoving)
-        {
-            PlayAnimation(UnitAnimationType::IDLE);
-        }
-
-        // Call the original completion callback if provided
-        if (cb)
-        {
-            cb();
-        }
-    });
+            if (cb)
+            {
+                cb();
+            }
+        });
 }
 
-void DarkKnight::UseSkill(Unit& target, ActionCompletionCallback callback)
+void DarkKnight::UseSkill(Unit&                    target,
+                          ActionCompletionCallback callback,
+                          ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {

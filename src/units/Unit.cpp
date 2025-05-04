@@ -199,7 +199,7 @@ void Unit::RemoveEffectByName(const std::string& effectName)
 
 // --- Base implementations for actions affecting stats ---
 
-void Unit::Attack(Unit& target, ActionCompletionCallback callback)
+void Unit::Attack(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -209,10 +209,15 @@ void Unit::Attack(Unit& target, ActionCompletionCallback callback)
     }
 
     // Basic attack logic: reduce target's health by this unit's attack damage
-    target.TakeDamage(m_attackDamage, callback);
+    target.TakeDamage(CalculateDamage(target), callback, onDeath);
 }
 
-void Unit::TakeDamage(int damage, ActionCompletionCallback callback)
+int Unit::CalculateDamage(Unit& target)
+{
+    return m_attackDamage * m_attackDamageMultiplier;
+}
+
+void Unit::TakeDamage(int damage, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -228,6 +233,10 @@ void Unit::TakeDamage(int damage, ActionCompletionCallback callback)
     if (m_currentHealth <= 0)
     {
         m_currentHealth = 0;
+        if (onDeath)
+        {
+            onDeath();
+        }
         // std::cout << m_name << " (Base) became inactive." << std::endl; // Debug
     }
 
