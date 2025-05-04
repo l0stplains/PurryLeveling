@@ -171,13 +171,13 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                 Item item  = m_backpack.getItemAtTile(y, x);
                 int  count = m_backpack.getQuantityAtTile(y, x);
 
-                if (ImGui::IsItemHovered()) 
+                if (ImGui::IsItemHovered())
                 {
                     // Show item description on hover
                     std::string itemName = item.getName();
                     std::replace(itemName.begin(), itemName.end(), '_', ' ');
                     m_hoveredDescription = itemName + " | " + item.getDescription();
-                    const auto& effects = item.getEffects();
+                    const auto& effects  = item.getEffects();
                     if (effects.size() > 0)
                     {
                         m_hoveredDescription += " | Effects: ";

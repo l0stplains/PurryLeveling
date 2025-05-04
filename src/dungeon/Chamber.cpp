@@ -1,5 +1,6 @@
 #include "dungeon/Chamber.hpp"
 
+#include <cmath>
 #include <iostream>
 #include <map>
 
@@ -7,8 +8,32 @@
 #include "units/mobs/basics/Orc.hpp"
 #include "units/mobs/basics/Skeleton.hpp"
 #include "units/mobs/basics/Slime.hpp"
+#include "units/mobs/bosses/DarkKnight.hpp"
+#include "units/mobs/bosses/DemonLord.hpp"
+#include "units/mobs/bosses/Lich.hpp"
+#include "units/mobs/bosses/Ogre.hpp"
 
 using namespace std;
+
+/*
+class MobUnit : public Unit
+{
+public:
+    MobUnit(const std::string& name) : Unit(name) {}
+
+    // Implement the pure virtual function from Unit
+    void UseSkill(int skillId, ActionCompletionCallback callback = nullptr) override
+    {
+        std::cout << GetName() << " uses skill ID: " << skillId << std::endl;
+
+        // Default behavior for mob skill
+        if (callback)
+        {
+            callback();
+        }
+    }
+};
+*/
 
 Chamber::Chamber(int          chamberNumber,
                  bool         isBossRoom,
@@ -39,40 +64,44 @@ void Chamber::generateMobs(bool isBossRoom)
     {
         int bossType = rng.generateInRange(4);
 
-        string bossName;
-
+        std::unique_ptr<Mob> bossMob;
         switch (bossType)
         {
             case 0:
-                bossName = "Ogre";
+                bossMob = std::make_unique<Ogre>(
+                    "Ogre", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                 break;
             case 1:
-                bossName = "Dark Knight";
+                bossMob = std::make_unique<DarkKnight>(
+                    "Dark Knight", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                 break;
             case 2:
-                bossName = "Demon Lord";
+                bossMob = std::make_unique<DemonLord>(
+                    "Demon Lord", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                 break;
             case 3:
-                bossName = "Lich";
+                bossMob = std::make_unique<Lich>(
+                    "Lich", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                 break;
             default:
-                bossName = "Unknown_Boss";
+                bossMob = std::make_unique<Ogre>(
+                    "Ogre", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
         }
-        /*
-        auto boss = make_shared<Mob*>(bossName);
-
         int bossLevel        = rng.generateInRange(mobLevelMin, mobLevelMax);
-        int healthMultiplier = isBossRoom ? 3 : 1;
+        int healthMultiplier = 2;
 
-        boss->SetMaxHealth(100 * bossLevel / 10 * healthMultiplier * difficultyMultiplier);
-        boss->SetHealth(boss->GetMaxHealth());
-        boss->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
-        boss->SetCurrentMana(boss->GetMaxMana());
-        boss->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
-        boss->SetLevel(bossLevel);
+        bossMob->SetMaxHealth(100 * bossLevel / 10 * healthMultiplier * difficultyMultiplier);
+        bossMob->SetHealth(bossMob->GetMaxHealth());
+        bossMob->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
+        bossMob->SetCurrentMana(bossMob->GetMaxMana());
+        bossMob->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
+        bossMob->SetLevel(bossLevel);
 
-        mobs.push_back(boss);
-        */
+        bossMob->SetLevel(bossLevel);
+        bossMob->SetActive(false);
+
+        mobsId.push_back(bossMob->GetId());
+        unitManager.AddUnit(std::move(bossMob));
     }
     else
     {
@@ -86,8 +115,7 @@ void Chamber::generateMobs(bool isBossRoom)
 
         for (int i = 0; i < numMobs; i++)
         {
-            int    mobType = rng.generateInRange(4);
-            string mobName;
+            int mobType = rng.generateInRange(4);
 
             std::unique_ptr<Mob> mob;
             switch (mobType)
@@ -137,11 +165,14 @@ void Chamber::generateMobs(bool isBossRoom)
 
 void Chamber::calculateRewards(bool isDoubleChamber)
 {
-    goldReward = chamberNumber * 50 + (mobLevelMin + mobLevelMax) / 2 * 10;
-    expReward  = chamberNumber * 100 + (mobLevelMin + mobLevelMax) / 2 * 20;
+    // First term (chamber number) for adjusting rewards based on chamber number
+    // It's compesating player in the Special Dungeon.
+    //
+    // The second term (mob level) is for adjusting rewards based on mob level
+    // It's compesating player for defeating mobs based on their level
 
-    goldReward = static_cast<int>(goldReward * difficultyMultiplier);
-    expReward  = static_cast<int>(expReward * difficultyMultiplier);
+    goldReward = chamberNumber * 50 + std::pow((mobLevelMin + mobLevelMax) / 2, 1.2) * 1 + 10;
+    expReward  = chamberNumber * 100 + std::pow((mobLevelMin + mobLevelMax) / 2, 1.2) * 2 + 100;
 
     if (isBossRoom)
     {
@@ -165,7 +196,7 @@ void Chamber::addMob(unsigned int mobId)
 
 void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemManager& itemManager)
 {
-    std::map<std::string, std::map<std::string, float>> mobLootData = lootConfigParser.GetData();
+    const auto& mobLootData = lootConfigParser.GetData();
 
     vector<Item> allItems = itemManager.getAllItems();
 
@@ -204,7 +235,8 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
                     }
                     catch (const ItemNotFoundException& e)
                     {
-                        cout << "Item ID not found in mob loot: " << itemId << ". Error: " << e.what() << endl;
+                        cout << "Item ID not found in mob loot: " << itemId
+                             << ". Error: " << e.what() << endl;
                         continue;
                     }
                 }

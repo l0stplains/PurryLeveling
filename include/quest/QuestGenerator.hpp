@@ -36,8 +36,9 @@ public:
      *
      * @param questData The quest data from the parser
      */
-    void loadQuestData(const std::map<std::string, 
-        std::vector<std::tuple<std::string, int, int, int, std::string>>>& questData);
+    void loadQuestData(
+        const std::map<std::string, std::vector<std::tuple<std::string, int, int, int, std::string>>>&
+            questData);
 
     /**
      * @brief Generate a quest for a specific dungeon rank

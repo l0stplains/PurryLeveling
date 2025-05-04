@@ -93,7 +93,7 @@ Slime::Slime(const std::string&  name,
                    slimeShadowTexturePaths);
 }
 
-void Slime::Attack(Unit& target, ActionCompletionCallback callback)
+void Slime::Attack(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {  // Check self and target state
@@ -116,7 +116,7 @@ void Slime::Attack(Unit& target, ActionCompletionCallback callback)
         sf::Vector2f positionInRange = animatedTarget->GetPosition() -
                                        direction * (m_attackRange * 0.9f);  // Move 90% of the way
 
-        std::cout << GetName() << " moving to attack zirr " << target.GetName() << std::endl;  // Debug
+        std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
 
         // Move, and chain the PerformAttack call as the callback for Move
         Move(positionInRange,
@@ -124,7 +124,8 @@ void Slime::Attack(Unit& target, ActionCompletionCallback callback)
               animatedTarget,
               initialPosition = m_position,
               initialDir      = m_direction,
-              cb              = std::move(callback)]() mutable {
+              cb              = std::move(callback),
+              od              = std::move(onDeath)]() mutable {
                  // This lambda is called when Move() finishes (reaches destination or gets blocked)
                  sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
                  float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
@@ -156,11 +157,14 @@ void Slime::Attack(Unit& target, ActionCompletionCallback callback)
 
                      // Call the original PerformAttack with our wrapped callback
                      // The lambda captures a shared_ptr by value to ensure it stays alive
-                     this->PerformAttack(*animatedTarget, [wrappedCb = wrappedCallback]() {
-                         // Execute our wrapped callback when PerformAttack finishes
-                         if (*wrappedCb)
-                             (*wrappedCb)();
-                     });
+                     this->PerformAttack(
+                         *animatedTarget,
+                         [wrappedCb = wrappedCallback]() {
+                             // Execute our wrapped callback when PerformAttack finishes
+                             if (*wrappedCb)
+                                 (*wrappedCb)();
+                         },
+                         od);
                  }
                  else
                  {
@@ -177,11 +181,13 @@ void Slime::Attack(Unit& target, ActionCompletionCallback callback)
         // Target already in range
         std::cout << GetName() << " is in range, performing attack on " << target.GetName()
                   << std::endl;  // Debug
-        PerformAttack(*animatedTarget, std::move(callback));
+        PerformAttack(*animatedTarget, std::move(callback), std::move(onDeath));
     }
 }
 
-void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
+void Slime::PerformAttack(AnimatedUnit&            target,
+                          ActionCompletionCallback callback,
+                          ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
@@ -194,66 +200,61 @@ void Slime::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callbac
     UpdateDirection(target.GetPosition() - m_position);
 
     // Play attack animation. The lambda executes *after* the animation finishes.
-    PlayAnimation(UnitAnimationType::ATTACK, [this, &target, cb = std::move(callback)]() mutable {
-        // --- Animation Finished Callback ---
-        std::cout << GetName() << "'s attack animation finished." << std::endl;  // Debug
+    PlayAnimation(
+        UnitAnimationType::ATTACK,
+        [this, &target, cb = std::move(callback), od = std::move(onDeath)]() mutable {
+            // --- Animation Finished Callback ---
+            std::cout << GetName() << "'s attack animation finished." << std::endl;  // Debug
 
-        // Check if target is STILL valid and in range after animation delay
-        if (target.IsActive() && target.GetHealth() > 0)
-        {
-            sf::Vector2f vectorToTarget = target.GetPosition() - m_position;
-            float        distanceToTarget =
-                std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
-
-            // Deal daslime if still in range (maybe slightly larger range check here?)
-            if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
+            // Check if target is STILL valid and in range after animation delay
+            if (target.IsActive() && target.GetHealth() > 0)
             {
-                std::cout << GetName() << " deals " << m_attackDamage << " damage to "
-                          << target.GetName() << std::endl;  // Debug
-                // Cast target back to AnimatedUnit if TakeDamage is needed
-                // This is risky if target might not be AnimatedUnit, but necessary for TakeDamage
-                AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
-                if (animatedTarget)
+                sf::Vector2f vectorToTarget   = target.GetPosition() - m_position;
+                float        distanceToTarget = std::sqrt(vectorToTarget.x * vectorToTarget.x +
+                                                   vectorToTarget.y * vectorToTarget.y);
+
+                // Deal damage if still in range (maybe slightly larger range check here?)
+                if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
                 {
-                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes daslime
+                    std::cout << GetName() << " deals " << m_attackDamage << " damage to "
+                              << target.GetName() << std::endl;  // Debug
+                    // Cast target back to AnimatedUnit if TakeDamage is needed
+                    // This is risky if target might not be AnimatedUnit, but necessary
+                    // for TakeDamage
+                    AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
+                    if (animatedTarget)
+                    {
+                        animatedTarget->TakeDamage(CalculateDamage(target), nullptr, od);  // Target
+                                                                                           // takes
+                                                                                           // damage
+                    }
+                    else
+                    {
+                        std::cerr << "Warning: Target " << target.GetName()
+                                  << " is not an AnimatedUnit, cannot TakeDamage." << std::endl;
+                    }
                 }
                 else
                 {
-                    std::cerr << "Warning: Target " << target.GetName()
-                              << " is not an AnimatedUnit, cannot TakeDamage." << std::endl;
+                    std::cout << GetName()
+                              << " dealt no damage, target moved out of range during "
+                                 "animation."
+                              << std::endl;  // Debug
                 }
             }
             else
             {
-                std::cout << GetName()
-                          << " dealt no daslime, target moved out of range during animation."
+                std::cout << GetName() << " dealt no damage, target is no longer valid."
                           << std::endl;  // Debug
             }
-        }
-        else
-        {
-            std::cout << GetName() << " dealt no daslime, target is no longer valid."
-                      << std::endl;  // Debug
-        }
-
-        // Set cooldown AFTER attack attempt
-        // m_currentAttackCooldown = m_attackCooldown;
-
-        // Default back to idle if not moving etc.
-        if (!m_isMoving)
-        {
-            PlayAnimation(UnitAnimationType::IDLE);
-        }
-
-        // Call the original completion callback if provided
-        if (cb)
-        {
-            cb();
-        }
-    });
+            if (cb)
+            {
+                cb();
+            }
+        });
 }
 
-void Slime::UseSkill(Unit& target, ActionCompletionCallback callback)
+void Slime::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {

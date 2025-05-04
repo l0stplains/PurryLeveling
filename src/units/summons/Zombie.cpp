@@ -1,78 +1,64 @@
-#include "units/mobs/basics/Orc.hpp"
+
+#include "units/summons/Zombie.hpp"
 
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
 #include <limits>
 
-#include "units/mobs/basics/BasicMob.hpp"
-
-Orc::Orc(const std::string&  name,
-         const sf::Vector2f& position,
-         NavigationGrid&     navGrid,
-         const GameContext&  gameContext)
-    : Unit(name),
-      m_brutalStrike(true, true),
-      Mob(name),
-      BasicMob(name),  // ← must initialize the virtual base
-      AnimatedUnit(name, position, navGrid, false, gameContext)
+Zombie::Zombie(const std::string&  name,
+               const sf::Vector2f& position,
+               NavigationGrid&     navGrid,
+               bool                isPlayerControlled,
+               const GameContext&  gameContext)
+    : Unit(name),  // ← must initialize the virtual base
+      Summon(name),
+      AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
-    // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 12;
-    m_healthRegen  = 4;
-    m_manaRegen    = 4;
-    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.f;
+    m_moveSpeed = 150.f;
+    sf::Vector2i zombieFrameSize(32, 32);
 
-    sf::Vector2i orcFrameSize(32, 32);
-
-    std::unordered_map<UnitAnimationType, std::string> orcTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_orc_idle"},
-        {UnitAnimationType::WALK, "mob_orc_walk"},
-        {UnitAnimationType::ATTACK, "mob_orc_attack"},
-        {UnitAnimationType::JUMP, "mob_orc_jump"},
-        {UnitAnimationType::DAMAGE, "mob_orc_dmg"},
-        {UnitAnimationType::DIE, "mob_orc_die"}
+    std::unordered_map<UnitAnimationType, std::string> zombieTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_zombie_idle"},
+        {UnitAnimationType::WALK, "mob_zombie_walk"},
+        {UnitAnimationType::ATTACK, "mob_zombie_attack"},
+        {UnitAnimationType::JUMP, "mob_zombie_jump"},
+        {UnitAnimationType::DAMAGE, "mob_zombie_dmg"},
+        {UnitAnimationType::DIE, "mob_zombie_die"}
 
     };
-    std::unordered_map<UnitAnimationType, std::string> orcShadowTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_orc_idle_shadow"},
-        {UnitAnimationType::WALK, "mob_orc_walk_shadow"},
-        {UnitAnimationType::ATTACK, "mob_orc_attack_shadow"},
-        {UnitAnimationType::JUMP, "mob_orc_jump_shadow"},
-        {UnitAnimationType::DAMAGE, "mob_orc_dmg_shadow"},
-        {UnitAnimationType::DIE, "mob_orc_die_shadow"}
+    std::unordered_map<UnitAnimationType, std::string> zombieShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_zombie_idle_shadow"},
+        {UnitAnimationType::WALK, "mob_zombie_walk_shadow"},
+        {UnitAnimationType::ATTACK, "mob_zombie_attack_shadow"},
+        {UnitAnimationType::JUMP, "mob_zombie_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "mob_zombie_dmg_shadow"},
+        {UnitAnimationType::DIE, "mob_zombie_die_shadow"}
 
     };
-    // Example frame counts (adjust these!)
-    std::unordered_map<UnitAnimationType, int> orcFramesPerAnim = {{UnitAnimationType::IDLE, 16},
-                                                                   {UnitAnimationType::WALK, 4},
-                                                                   {UnitAnimationType::ATTACK, 4},
-                                                                   {UnitAnimationType::JUMP, 4},
-                                                                   {UnitAnimationType::DAMAGE, 4},
-                                                                   {UnitAnimationType::DIE, 12}};
+    std::unordered_map<UnitAnimationType, int> zombieFramesPerAnim = {{UnitAnimationType::IDLE, 19},
+                                                                      {UnitAnimationType::WALK, 4},
+                                                                      {UnitAnimationType::ATTACK, 5},
+                                                                      {UnitAnimationType::JUMP, 4},
+                                                                      {UnitAnimationType::DAMAGE, 4},
+                                                                      {UnitAnimationType::DIE, 11}};
 
-    // Example durations (in seconds, adjust these!)
-    std::unordered_map<UnitAnimationType, float> orcDurationPerAnim = {
-        {UnitAnimationType::IDLE, 3.2f},
+    std::unordered_map<UnitAnimationType, float> zombieDurationPerAnim = {
+        {UnitAnimationType::IDLE, 3.8f},
         {UnitAnimationType::WALK, 0.8f},
-        {UnitAnimationType::ATTACK, 0.4f},
+        {UnitAnimationType::ATTACK, 0.5f},
         {UnitAnimationType::JUMP, 0.4f},
         {UnitAnimationType::DAMAGE, 0.4f},
-        {UnitAnimationType::DIE, 1.2f}};
+        {UnitAnimationType::DIE, 1.1f}};
 
-    // Example looping status (Idle/Walk usually loop)
-    std::unordered_map<UnitAnimationType, bool> orcLoopingAnims = {{UnitAnimationType::IDLE, true},
-                                                                   {UnitAnimationType::WALK, true},
-                                                                   {UnitAnimationType::ATTACK, false},
-                                                                   {UnitAnimationType::JUMP, false},
-                                                                   {UnitAnimationType::DAMAGE, false},
-                                                                   {UnitAnimationType::DIE, false}};
+    std::unordered_map<UnitAnimationType, bool> zombieLoopingAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, false},
+        {UnitAnimationType::JUMP, false},
+        {UnitAnimationType::DAMAGE, false},
+        {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, bool> orcDirectionalAnims = {
+    std::unordered_map<UnitAnimationType, bool> zombieDirectionalAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, true},
@@ -80,19 +66,19 @@ Orc::Orc(const std::string&  name,
         {UnitAnimationType::DAMAGE, true},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, int> orcDefaultRows = {{UnitAnimationType::DIE, 0}};
+    std::unordered_map<UnitAnimationType, int> zombieDefaultRows = {{UnitAnimationType::DIE, 0}};
 
-    LoadAnimations(orcTexturePaths,
-                   orcFrameSize,
-                   orcFramesPerAnim,
-                   orcDurationPerAnim,
-                   orcLoopingAnims,
-                   orcDirectionalAnims,
-                   orcDefaultRows,
-                   orcShadowTexturePaths);
+    LoadAnimations(zombieTexturePaths,
+                   zombieFrameSize,
+                   zombieFramesPerAnim,
+                   zombieDurationPerAnim,
+                   zombieLoopingAnims,
+                   zombieDirectionalAnims,
+                   zombieDefaultRows,
+                   zombieShadowTexturePaths);
 }
 
-void Orc::Attack(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+void Zombie::Attack(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {  // Check self and target state
@@ -184,9 +170,9 @@ void Orc::Attack(Unit& target, ActionCompletionCallback callback, ActionCompleti
     }
 }
 
-void Orc::PerformAttack(AnimatedUnit&            target,
-                        ActionCompletionCallback callback,
-                        ActionCompletionCallback onDeath)
+void Zombie::PerformAttack(AnimatedUnit&            target,
+                           ActionCompletionCallback callback,
+                           ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
@@ -253,7 +239,7 @@ void Orc::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Orc::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+void Zombie::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -264,7 +250,7 @@ void Orc::UseSkill(Unit& target, ActionCompletionCallback callback, ActionComple
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
-// void Orc::RenderUI(sf::RenderWindow& window) {
+// void Zombie::RenderUI(sf::RenderWindow& window) {
 //     Character::RenderUI(window); // Call base UI rendering
 //     // Add fighter-specific UI elements here (e.g., rage bar?)
 // }

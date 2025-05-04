@@ -24,9 +24,13 @@ public:
     Mage(Mage&&)                 = default;
     Mage& operator=(Mage&&)      = default;
 
-    void Attack(Unit& target, ActionCompletionCallback callback = nullptr) override;
+    void Attack(Unit&                    target,
+                ActionCompletionCallback callback = nullptr,
+                ActionCompletionCallback onDeath  = nullptr) override;
 
-    void UseSkill(Unit& target, ActionCompletionCallback callback = nullptr) override;
+    void UseSkill(Unit&                    target,
+                  ActionCompletionCallback callback = nullptr,
+                  ActionCompletionCallback onDeath  = nullptr) override;
 
     /**
      * @brief Override RenderUI if fighter has specific visuals.
@@ -34,10 +38,10 @@ public:
     // void RenderUI(sf::RenderWindow& window) override;
 
 private:
-    /**
-     * @brief Helper function to perform the attack animation and damage after range check.
-     */
-    void PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback);
+    vector<unsigned int> m_summons;  // List of summoned units
+    int                  m_summonedUnits = 1;
+
+    int m_extraMana = 10;
 
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
 };

@@ -1,4 +1,5 @@
 #include "inventory/Equipment.hpp"
+
 #include <iostream>
 
 Equipment::Equipment()
@@ -23,7 +24,7 @@ void Equipment::setEquipmentData(ItemManager&                                 it
             continue;
         }
         if (slot == "WEAPON")
-        {            
+        {
             weapon = itemManager.getItem(itemID);
         }
         else if (slot == "ARMOR_HEAD")
@@ -42,7 +43,6 @@ void Equipment::setEquipmentData(ItemManager&                                 it
         {
             pendant = itemManager.getItem(itemID);
         }
-        
     }
 }
 
@@ -145,15 +145,15 @@ Item& Equipment::findSlot(const std::string& slotType)
 }
 
 void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const std::string& slotType)
-{   
-    Item itemToEquip = backpack.getItemAtTile(x, y);
-    Item& slot = findSlot(slotType);
+{
+    Item  itemToEquip = backpack.getItemAtTile(x, y);
+    Item& slot        = findSlot(slotType);
 
     if (itemToEquip.getType() != slotType)
     {
         throw InvalidEquipmentTypeException("Item type doesn't match required slot type");
     }
-    else 
+    else
     {
         backpack.takeItem(itemToEquip, 1);
     }

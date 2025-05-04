@@ -25,20 +25,33 @@ public:
     Necromancer& operator=(Necromancer&&)      = default;
 
     // --- Action Overrides ---
-    void Attack(Unit& target, ActionCompletionCallback callback = nullptr) override;
+    void Attack(Unit&                    target,
+                ActionCompletionCallback callback = nullptr,
+                ActionCompletionCallback onDeath  = nullptr) override;
 
-    void UseSkill(Unit& target, ActionCompletionCallback callback = nullptr) override;
+    void UseSkill(Unit&                    target,
+                  ActionCompletionCallback callback = nullptr,
+                  ActionCompletionCallback onDeath  = nullptr) override;
+
+    void KillSummons(ActionCompletionCallback callback = nullptr);
 
     /**
      * @brief Override RenderUI if fighter has specific visuals.
      */
     // void RenderUI(sf::RenderWindow& window) override;
 
-private:
-    /**
-     * @brief Helper function to perform the attack animation and damage after range check.
-     */
-    void PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback);
+    const std::vector<unsigned int>& GetSummons() const;
+    float                            GetSummonChance() const;
+    int                              GetSummonedUnits() const;
+    float                            GetLifestealPercentage() const;
+    void                             SetSummonChance(float chance);
+    void                             SetSummonedUnits(int units);
+    void                             SetLifestealPercentage(float percentage);
 
-    float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
+private:
+    vector<unsigned int> m_summons;  // List of summoned units
+    int                  m_summonedUnits       = 1;
+    float                m_lifestealPercentage = 0.1f;  // 10% lifesteal
+    float                m_summonChance        = 0.8f;  // 80/20, i like gambling
+    float                m_attackRange         = 32.0f;
 };

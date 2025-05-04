@@ -9,11 +9,13 @@
 #include "core/GameContext.hpp"
 
 #include "ui/BattleUnitInfo.hpp"
-#include "ui/QuestInfo.hpp"
+#include "ui/BossHealthBar.hpp"
 #include "ui/Button.hpp"
+#include "ui/QuestInfo.hpp"
 
 #include "dungeon/Dungeon.hpp"
 #include "dungeon/DungeonFactory.hpp"
+#include "props/Pointer.hpp"
 #include "props/Portal.hpp"
 #include "states/Enums.hpp"
 #include "states/State.hpp"
@@ -51,9 +53,10 @@ public:
     void Resume() override;
 
 private:
-    sf::Texture m_backgroundTexture;  ///< Background texture
-    sf::Sprite  m_backgroundSprite;   ///< Background sprite
-    sf::Sprite  m_chamberExitArea;    ///< Door enter area sprite
+    sf::Texture m_backgroundTexture;      ///< Background texture
+    sf::Texture m_bossBackgroundTexture;  ///< Boss background texture
+    sf::Sprite  m_backgroundSprite;       ///< Background sprite
+    sf::Sprite  m_chamberExitArea;        ///< Door enter area sprite
 
     sf::Sound m_buttonHoverSound;  ///< Button hover sound
     sf::Sound m_buttonClickSound;  ///< Button click sound
@@ -68,7 +71,8 @@ private:
     sf::Font m_font;      ///< Font for UI text
     sf::Font m_boldFont;  ///< Font for UI text
 
-    NavigationGrid m_navGrid;  ///< Navigation grid for unit movement
+    NavigationGrid m_navGrid;     ///< Navigation grid for unit movement
+    NavigationGrid m_mobNavGrid;  ///< Navigation grid for mob movement
 
     BattleUnitInfo m_battleUnitInfo;  ///< Battle unit information UI
     QuestInfo      m_questInfo;       ///< Quest information UI
@@ -82,11 +86,17 @@ private:
     Dungeon  m_dungeon;
     Chamber* m_chamber;
 
+    Pointer       m_chamberExitPointer;
+    BossHealthBar m_bossHealthBar;
+
     std::queue<unsigned int> m_turnQueue;
 
     AnimatedUnit*             m_character;
     std::vector<unsigned int> m_mobsID;
     State::StateChange        m_pendingStateChange;  ///< Pending state change information
+
+    bool m_isTransitioning = false;
+    bool m_walkToExit      = false;
 
     void playMobTurn();
 
