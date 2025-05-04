@@ -109,7 +109,7 @@ void DungeonFactory::getMobLevelRange(const string& rank,
     else if (normalizedRank == Dungeon::RANK_SPECIAL)
     {
         minLevel = 0;
-        maxLevel = playerLevel + 20;
+        maxLevel = playerLevel;
     }
     else
     {
@@ -193,7 +193,7 @@ Dungeon DungeonFactory::createDungeon(const string& rank, int playerLevel, int p
 
         if (normalizedRank == Dungeon::RANK_SPECIAL)
         {
-            int levelIncrease = i * 1.2;
+            int levelIncrease = i * 0.5;
             specialMinLevel += levelIncrease;
             specialMaxLevel += levelIncrease;
         }
