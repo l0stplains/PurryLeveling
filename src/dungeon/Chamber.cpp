@@ -1,6 +1,5 @@
 #include "dungeon/Chamber.hpp"
 
-#include <cmath>
 #include <iostream>
 #include <map>
 
@@ -8,10 +7,6 @@
 #include "units/mobs/basics/Orc.hpp"
 #include "units/mobs/basics/Skeleton.hpp"
 #include "units/mobs/basics/Slime.hpp"
-#include "units/mobs/bosses/DarkKnight.hpp"
-#include "units/mobs/bosses/DemonLord.hpp"
-#include "units/mobs/bosses/Lich.hpp"
-#include "units/mobs/bosses/Ogre.hpp"
 
 using namespace std;
 
@@ -64,44 +59,40 @@ void Chamber::generateMobs(bool isBossRoom)
     {
         int bossType = rng.generateInRange(4);
 
-        std::unique_ptr<Mob> bossMob;
+        string bossName;
+
         switch (bossType)
         {
             case 0:
-                bossMob = std::make_unique<Ogre>(
-                    "Ogre", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
+                bossName = "Ogre";
                 break;
             case 1:
-                bossMob = std::make_unique<DarkKnight>(
-                    "Dark Knight", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
+                bossName = "Dark Knight";
                 break;
             case 2:
-                bossMob = std::make_unique<DemonLord>(
-                    "Demon Lord", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
+                bossName = "Demon Lord";
                 break;
             case 3:
-                bossMob = std::make_unique<Lich>(
-                    "Lich", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
+                bossName = "Lich";
                 break;
             default:
-                bossMob = std::make_unique<Ogre>(
-                    "Ogre", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
+                bossName = "Unknown_Boss";
         }
+        /*
+        auto boss = make_shared<Mob*>(bossName);
+
         int bossLevel        = rng.generateInRange(mobLevelMin, mobLevelMax);
-        int healthMultiplier = 2;
+        int healthMultiplier = isBossRoom ? 3 : 1;
 
-        bossMob->SetMaxHealth(100 * bossLevel / 10 * healthMultiplier * difficultyMultiplier);
-        bossMob->SetHealth(bossMob->GetMaxHealth());
-        bossMob->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
-        bossMob->SetCurrentMana(bossMob->GetMaxMana());
-        bossMob->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
-        bossMob->SetLevel(bossLevel);
+        boss->SetMaxHealth(100 * bossLevel / 10 * healthMultiplier * difficultyMultiplier);
+        boss->SetHealth(boss->GetMaxHealth());
+        boss->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
+        boss->SetCurrentMana(boss->GetMaxMana());
+        boss->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
+        boss->SetLevel(bossLevel);
 
-        bossMob->SetLevel(bossLevel);
-        bossMob->SetActive(false);
-
-        mobsId.push_back(bossMob->GetId());
-        unitManager.AddUnit(std::move(bossMob));
+        mobs.push_back(boss);
+        */
     }
     else
     {
@@ -115,7 +106,8 @@ void Chamber::generateMobs(bool isBossRoom)
 
         for (int i = 0; i < numMobs; i++)
         {
-            int mobType = rng.generateInRange(4);
+            int    mobType = rng.generateInRange(4);
+            string mobName;
 
             std::unique_ptr<Mob> mob;
             switch (mobType)
@@ -165,14 +157,11 @@ void Chamber::generateMobs(bool isBossRoom)
 
 void Chamber::calculateRewards(bool isDoubleChamber)
 {
-    // First term (chamber number) for adjusting rewards based on chamber number
-    // It's compesating player in the Special Dungeon.
-    //
-    // The second term (mob level) is for adjusting rewards based on mob level
-    // It's compesating player for defeating mobs based on their level
+    goldReward = chamberNumber * 50 + (mobLevelMin + mobLevelMax) / 2 * 10;
+    expReward  = chamberNumber * 100 + (mobLevelMin + mobLevelMax) / 2 * 20;
 
-    goldReward = chamberNumber * 50 + std::pow((mobLevelMin + mobLevelMax) / 2, 1.2) * 1 + 10;
-    expReward  = chamberNumber * 100 + std::pow((mobLevelMin + mobLevelMax) / 2, 1.2) * 2 + 100;
+    goldReward = static_cast<int>(goldReward * difficultyMultiplier);
+    expReward  = static_cast<int>(expReward * difficultyMultiplier);
 
     if (isBossRoom)
     {
@@ -196,7 +185,7 @@ void Chamber::addMob(unsigned int mobId)
 
 void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemManager& itemManager)
 {
-    const auto& mobLootData = lootConfigParser.GetData();
+    std::map<std::string, std::map<std::string, float>> mobLootData = lootConfigParser.GetData();
 
     vector<Item> allItems = itemManager.getAllItems();
 

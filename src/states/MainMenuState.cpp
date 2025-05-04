@@ -750,8 +750,8 @@ void MainMenuState::parseNonPlayerConfig(const std::string& folderPath)
         return;
     }
 
-    MobLootConfigParser mobLootConfigParser;
-    mobLootConfigParser.ParseFromFile(folderPath);
+    MobLootConfigParser* mobLootConfigParser = GetContext().GetMobLootConfigParser();
+    mobLootConfigParser->ParseFromFile(folderPath);
     
 
     std::cout << "MobLootConfigParser done" << std::endl;
