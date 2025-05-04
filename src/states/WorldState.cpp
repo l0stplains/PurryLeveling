@@ -45,7 +45,7 @@ void WorldState::Init()
         GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
     character->SetLevel(30);
     generatePortals();
-    character->SetLevel(100); // NOTES: delete this line later
+    character->SetLevel(100);  // NOTES: delete this line later
 
     // Background setup
     m_backgroundSprite.setOrigin({0, 0});

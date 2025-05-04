@@ -10,8 +10,8 @@
 
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
-#include "ui/QuestInfo.hpp"
 #include "ui/Button.hpp"
+#include "ui/QuestInfo.hpp"
 
 #include "dungeon/Dungeon.hpp"
 #include "dungeon/DungeonFactory.hpp"

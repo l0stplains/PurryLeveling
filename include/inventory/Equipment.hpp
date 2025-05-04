@@ -39,7 +39,7 @@ public:
     void setPendant(const Item& pendant);
 
     Item& findSlot(const std::string& slotType);
-    Item findAndFillSlot(const std::string& slotType, Item item);
+    Item  findAndFillSlot(const std::string& slotType, Item item);
 
     /**
      * @brief Equip an item from the backpack to the equipment
