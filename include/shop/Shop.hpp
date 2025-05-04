@@ -49,7 +49,19 @@ public:
     // For debugging purpose, gets shop catalogue
     void getShopCatalogue() const;
 
+    // Updated to support multiple categories
     std::vector<StockEntry> filterStock(const std::string& category);
+    std::vector<StockEntry> filterStockByCategories(const std::vector<std::string>& categories);
+
+    // Get sorted stock by category and sort criteria
+    // Added isDescending parameter for descending sort direction
+    std::vector<StockEntry> getSortedStock(const std::vector<std::string>& categories,
+                                           const std::string&              sortBy,
+                                           bool                            isDescending = false);
+
+    // Get backpack items for selling (with filtering)
+    std::vector<StockEntry> getBackpackStockForSelling(Backpack&                       backpack,
+                                                       const std::vector<std::string>& categories);
 
 private:
     ShopConfigParser                      m_parser;
@@ -57,10 +69,7 @@ private:
     std::vector<Item>                     m_masterItems;
 
     std::vector<StockEntry> allStock;
-    // std::map<std::string, StockEntry> potionStock;
-    // std::map<std::string, StockEntry> weaponStock;
-    // std::map<std::string, StockEntry> headStock;
-    // std::map<std::string, StockEntry> bodyStock;
-    // std::map<std::string, StockEntry> footStock;
-    // std::map<std::string, StockEntry> pendantStock;
+
+    // Map to track price of all items that have ever existed in the shop
+    std::map<std::string, int> m_idPrice;
 };

@@ -28,26 +28,6 @@ InventoryMenu::InventoryMenu(GameContext& gameContext)
     m_draggedItem = std::make_unique<std::pair<Item, int>>(Item("", "", "", 'C', effects, ""), 0);
     m_isDraggingFromEquipment = false;
     m_equipmentSlotType       = "";
-
-    // // Initialize some sample items in m_backpack
-    // // Using proper Item constructor: Item(itemID, name, type, rarity, effects)
-    // m_backpack.addItem(Item("IPS", "Ice Potion", "Potion", 'A', effects, "Googoo"), 10);
-    // m_backpack.addItem(Item("DHB", "Diamond", "resource", 'S', effects, "Gaagaa"), 5);
-    // m_backpack.addItem(Item("FFS", "Iron", "resource", 'C', effects, "Hahaha"), 45);
-    // m_backpack.addItem(Item("GHC", "Gold", "resource", 'B', effects, "Lolelole"), 12);
-    // m_backpack.addItem(Item("WPC", "Wood", "resource", 'C', effects, "Wooden item"), 32);
-    // m_backpack.addItem(Item("SRE", "Stone", "resource", 'C', effects, "Rocky item"), 64);
-
-    // // Add some m_equipment items
-    // m_backpack.addItem(Item("ASS", "Iron Sword", "Weapon", 'B', effects, "A sharp blade"), 5);
-    // m_backpack.addItem(
-    //     Item("LFD", "Leather Helmet", "HeadArmor", 'C', effects, "Protective headgear"), 1);
-    // m_backpack.addItem(
-    //     Item("CBD", "Chain Mail", "BodyArmor", 'B', effects, "Heavy armor for protection"), 1);
-    // m_backpack.addItem(
-    //     Item("LBD", "Leather Boots", "FootArmor", 'C', effects, "Comfortable footwear"), 1);
-    // m_backpack.addItem(
-    //     Item("FRS", "Magic Amulet", "Pendant", 'A', effects, "Grants magical protection"), 1);
 }
 
 void InventoryMenu::Render()
