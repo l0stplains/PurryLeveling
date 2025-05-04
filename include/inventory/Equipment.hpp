@@ -38,6 +38,7 @@ public:
     void setFootArmor(const Item& footArmor);
     void setPendant(const Item& pendant);
 
+    Item& findSlot(const std::string& slotType);
     Item findAndFillSlot(const std::string& slotType, Item item);
 
     /**

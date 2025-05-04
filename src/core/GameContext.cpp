@@ -100,7 +100,6 @@ bool GameContext::GetFirstSaveState()
     return m_firstSave;
 }
 
-
 void GameContext::SetResourceManager(ResourceManager* resourceManager)
 {
     m_resourceManager = resourceManager;
