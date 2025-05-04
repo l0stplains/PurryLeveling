@@ -233,9 +233,11 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
                         cout << "Mob " << mobName << " dropped item " << item.getName()
                              << " (ID: " << itemId << ")" << endl;
                     }
-                    catch (const char* error)
+                    catch (const ItemNotFoundException& e)
                     {
-                        cerr << "Error retrieving item " << itemId << ": " << error << endl;
+                        cout << "Item ID not found in mob loot: " << itemId
+                             << ". Error: " << e.what() << endl;
+                        continue;
                     }
                 }
             }

@@ -88,91 +88,91 @@ Mage::Mage(const std::string&  name,
 void Mage::Attack(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
-    {  // Check self and target state
+    {
         if (callback)
-            callback();  // Cannot attack, call callback immediately
+            callback();
         return;
     }
 
-    // clean all summoned Wildfires before summoning new ones
-    for (const auto& summonId : m_summons)
+    for (int oldId : m_summons)
     {
-        std::vector<Wildfire*> summonedWildfires =
-            m_gameContext.GetUnitManager()->GetAllUnitsOfType<Wildfire>();
-        for (auto& wildfire : summonedWildfires)
-        {
-            if (wildfire->GetId() == summonId)
-            {
-                m_gameContext.GetUnitManager()->RemoveUnit(wildfire->GetId());
-                std::cout << "Removed Wildfire with ID: " << wildfire->GetId() << std::endl;
-            }
-        }
+        m_gameContext.GetUnitManager()->RemoveUnit(oldId);
+        std::cout << "Removed Wildfire with ID: " << oldId << std::endl;
     }
-    std::function<void()> jumpCallback = [this, &target, callback, onDeath]() {
-        sf::Vector2f summonPosition = m_position;
-        summonPosition.x += 100;
-        std::vector<sf::Vector2f> summonPositions =
-            Summon::generateSummonSpawnPoints(summonPosition, m_summonedUnits, true);
-        for (int i = 0; i < m_summonedUnits; i++)
+    m_summons.clear();
+
+    Unit* targetPtr = &target;
+
+    std::function<void()> jumpCallback = [this,
+                                          targetPtr,
+                                          damage  = m_attackDamage,
+                                          summons = &m_summons,  // capture pointer to the vector
+                                          navGrid = &m_navGrid,
+                                          lvl     = m_level,
+                                          cb      = std::move(callback),
+                                          od      = std::move(onDeath)]() mutable {
+        // generate spawn points
+        sf::Vector2f basePos = m_position;
+        basePos.x += 100;
+        auto positions = Summon::generateSummonSpawnPoints(basePos, m_summonedUnits, true);
+
+        // summon new Wildfires
+        for (size_t i = 0; i < positions.size(); ++i)
         {
-            std::unique_ptr<Wildfire> wildfire = make_unique<Wildfire>(
-                std::string("Wildfire"), summonPositions[i], m_navGrid, false, m_gameContext);
-            wildfire->SetScale(5.f, 5.f);
-            wildfire->SetActive(true);
-            wildfire->SetControlledByPlayer(false);
-            wildfire->SetNavGrid(m_navGrid);
-            wildfire->SetShowUI(false);
-            wildfire->SetLevel(m_level);
-            wildfire->SetDirection(Direction::EAST);
+            auto wf =
+                std::make_unique<Wildfire>("Wildfire", positions[i], *navGrid, false, m_gameContext);
+            wf->SetScale(5.f, 5.f);
+            wf->SetActive(true);
+            wf->SetControlledByPlayer(false);
+            wf->SetNavGrid(*navGrid);
+            wf->SetShowUI(false);
+            wf->SetLevel(lvl);
+            wf->SetDirection(Direction::EAST);
 
-            // i spent like 6 hours trying to figure out a race condition issue here
-            Wildfire* raw = wildfire.get();
-
-            // register in the manager
-            m_gameContext.GetUnitManager()->AddUnit(std::move(wildfire));
-
-            // now the manager “knows” about that ID
-            m_summons.push_back(raw->GetId());
+            Wildfire* raw = wf.get();
+            m_gameContext.GetUnitManager()->AddUnit(std::move(wf));
+            summons->push_back(raw->GetId());
         }
 
-        std::cout << "Summoned " << m_summonedUnits << " wildfires!" << std::endl;
+        std::cout << "Summoned " << summons->size() << " wildfires!" << std::endl;
 
-        Unit*  targetPtr = &target;  // take address of the abstract base
-        int    damage    = m_attackDamage;
-        size_t total     = m_summons.size();
-        auto   counter   = std::make_shared<std::atomic_int>(0);
-        auto   finalCb   = std::move(callback);
+        size_t total   = summons->size();
+        auto   counter = std::make_shared<std::atomic_int>(0);
 
-        // helper to bump the count and call finalCb at the end
-        auto makeOnDamageDone = [this, counter, total, finalCb]() mutable {
-            std::cout << "Summon damage done, total: " << counter->load() << std::endl;
+        // damage‐done helper
+        auto makeOnDamageDone = [summons, counter, total, cb]() mutable {
             int done = counter->fetch_add(1, std::memory_order_relaxed) + 1;
-            if (done == (int)total && finalCb)
+            std::cout << "Summon damage done, total: " << done << "/" << total << std::endl;
+            if (done == (int)total && cb)
             {
-                m_summons.clear();
-                finalCb();
+                summons->clear();
+                cb();
             }
         };
 
-        auto wrappedOnDeath = [this, makeOnDamageDone, onDeath]() mutable {
+        auto wrappedOnDeath = [makeOnDamageDone, od]() mutable {
             makeOnDamageDone();
-            if (onDeath)
-            {
-                onDeath();
-            }
+            if (od)
+                od();
         };
 
-        for (auto summonId : m_summons)
+        // start each Wildfire’s attack
+        for (int id : *summons)
         {
-            if (auto s = m_gameContext.GetUnitManager()->GetUnit(summonId);
-                s && s->IsActive() && s->GetHealth() > 0)
+            if (auto* s = m_gameContext.GetUnitManager()->GetUnit(id);
+                s && targetPtr && targetPtr->IsActive())
             {
-                // first, attack animation; when it finishes we apply damage
+                std::cout << "Attacking with Wildfire ID: " << id << std::endl;
                 s->Attack(*targetPtr, makeOnDamageDone, wrappedOnDeath);
+            }
+            else
+            {
+                std::cerr << "Skipping attack for missing or dead unit " << id << "\n";
             }
         }
     };
-    PlayAnimation(UnitAnimationType::JUMP, jumpCallback);
+
+    PlayAnimation(UnitAnimationType::JUMP, std::move(jumpCallback));
     return;
 }
 

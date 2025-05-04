@@ -90,116 +90,128 @@ void Necromancer::Attack(Unit&                    target,
                          ActionCompletionCallback callback,
                          ActionCompletionCallback onDeath)
 {
+    // Early‑out if we can't act or target is invalid
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
-    {  // Check self and target state
+    {
         if (callback)
-            callback();  // Cannot attack, call callback immediately
+            callback();
         return;
     }
-    // if no summons, summon a unit
-    if (m_summons.size() == 0)
+
+    // Capture the actual target pointer so we don't reference a dead stack frame
+    Unit* targetPtr = &target;
+
+    // --- If we have no summons, try summoning ---
+    if (m_summons.empty())
     {
-        std::function<void()> jumpCallback = [this, callback, onDeath]() {
-            RNG   rng;
-            float chance = rng.generateProbability();
-            if (chance < m_summonChance)
+        // Prepare a callback that runs after the jump animation
+        std::function<void()> jumpCallback = [this,
+                                              targetPtr,
+                                              summonCount = m_summonedUnits,
+                                              chanceProb  = m_summonChance,
+                                              cb          = std::move(callback),
+                                              od          = std::move(onDeath)]() mutable {
+            RNG rng;
+            if (rng.generateProbability() < chanceProb)
             {
-                sf::Vector2f summonPosition = m_position;
-                summonPosition.x += 100;
-                std::vector<sf::Vector2f> summonPositions =
-                    Summon::generateSummonSpawnPoints(summonPosition, m_summonedUnits, true);
-                for (int i = 0; i < m_summonedUnits; i++)
+                // Generate spawn points
+                sf::Vector2f basePos = m_position;
+                basePos.x += 100;
+                auto spawnPts = Summon::generateSummonSpawnPoints(basePos, summonCount, true);
+
+                // Summon each Zombie exactly once
+                for (int i = 0; i < summonCount; ++i)
                 {
-                    std::unique_ptr<Zombie> zombie = make_unique<Zombie>(
-                        std::string("Zombie"), summonPositions[i], m_navGrid, false, m_gameContext);
-                    zombie->SetScale(8.f, 8.f);
-                    zombie->SetActive(true);
-                    zombie->SetControlledByPlayer(false);
-                    zombie->SetNavGrid(m_navGrid);
-                    zombie->SetShowUI(true);
-                    zombie->SetLevel(m_level);
-                    zombie->SetDirection(Direction::EAST);
+                    auto z = std::make_unique<Zombie>(
+                        "Zombie", spawnPts[i], m_navGrid, false, m_gameContext);
+                    z->SetScale(8.f, 8.f);
+                    z->SetActive(true);
+                    z->SetControlledByPlayer(false);
+                    z->SetNavGrid(m_navGrid);
+                    z->SetShowUI(true);
+                    z->SetLevel(m_level);
+                    z->SetDirection(Direction::EAST);
 
-                    Zombie* raw = zombie.get();
-
-                    // register in the manager
-                    m_gameContext.GetUnitManager()->AddUnit(std::move(zombie));
-
-                    // now the manager “knows” about that ID
-                    m_summons.push_back(raw->GetId());
-
-                    m_summons.push_back(zombie->GetId());
-                    m_gameContext.GetUnitManager()->AddUnit(std::move(zombie));
+                    // Keep the raw pointer so we can grab its ID after registration
+                    Zombie* rawZ = z.get();
+                    m_gameContext.GetUnitManager()->AddUnit(std::move(z));
+                    m_summons.push_back(rawZ->GetId());
                 }
-                std::cout << "Summoned " << m_summonedUnits << " zombies!" << std::endl;
-                if (callback)
-                    callback();  // Cannot attack, call callback immediately
-                return;
-            }
-            if (callback)
-                callback();  // Cannot summon, call callback immediately
-            return;
-        };
-        PlayAnimation(UnitAnimationType::JUMP, jumpCallback);
-    }
-    else
-    {
-        PlayAnimation(UnitAnimationType::JUMP);
-        // Check if any summons are still alive
-        bool   allDead    = true;
-        size_t totalAlive = 0;  // capture size now, in case m_summons changes later
-        for (const auto& summonId : m_summons)
-        {
-            Unit* summon = m_gameContext.GetUnitManager()->GetUnit(summonId);
-            if (summon && summon->IsActive() && summon->GetHealth() > 0)
-            {
-                allDead = false;
-                ++totalAlive;  // count alive summons
-            }
-        }
 
-        if (allDead)
-        {
-            m_summons.clear();                    // Clear the list if all summons are dead
-            Attack(target, std::move(callback));  // Retry the attack
-            return;
-        }
-
-        Unit*  targetPtr = &target;  // take address of the abstract base
-        int    damage    = m_attackDamage;
-        size_t total     = m_summons.size();
-        auto   counter   = std::make_shared<std::atomic_int>(0);
-        auto   finalCb   = std::move(callback);
-
-        // helper to bump the count and call finalCb at the end
-        auto makeOnDamageDone = [this, counter, total, finalCb]() mutable {
-            std::cout << "Summon damage done, total: " << counter->load() << std::endl;
-            int done = counter->fetch_add(1, std::memory_order_relaxed) + 1;
-            if (done == (int)total && finalCb)
-            {
-                finalCb();
+                std::cout << "Summoned " << summonCount << " zombies!" << std::endl;
             }
+            // In either case, call the callback so the mage's turn can finish
+            if (cb)
+                cb();
         };
 
-        auto wrappedOnDeath = [this, makeOnDamageDone, onDeath]() mutable {
-            makeOnDamageDone();
-            if (onDeath)
-            {
-                onDeath();
-            }
-        };
-
-        for (auto summonId : m_summons)
-        {
-            if (auto s = m_gameContext.GetUnitManager()->GetUnit(summonId);
-                s && s->IsActive() && s->GetHealth() > 0)
-            {
-                // first, attack animation; when it finishes we apply damage
-                s->Attack(*targetPtr, makeOnDamageDone, wrappedOnDeath);
-            }
-        }
-
+        // Play the jump animation, then run our summoning logic
+        PlayAnimation(UnitAnimationType::JUMP, std::move(jumpCallback));
         return;
+    }
+
+    // --- Otherwise, we already have summons: let them attack ---
+
+    // First: remove dead summons from the list
+    bool anyAlive = false;
+    for (auto it = m_summons.begin(); it != m_summons.end();)
+    {
+        if (auto* u = m_gameContext.GetUnitManager()->GetUnit(*it);
+            u && u->IsActive() && u->GetHealth() > 0)
+        {
+            anyAlive = true;
+            ++it;
+        }
+        else
+        {
+            it = m_summons.erase(it);
+        }
+    }
+
+    // If all summons died, clear and retry summoning
+    if (!anyAlive)
+    {
+        m_summons.clear();
+        // Retry attack, which will go into the summon‑branch
+        Attack(target, std::move(callback), std::move(onDeath));
+        return;
+    }
+
+    // Play a quick jump to signal the attack phase
+    PlayAnimation(UnitAnimationType::JUMP);
+
+    // Setup the counter and final callback
+    size_t total   = m_summons.size();
+    auto   counter = std::make_shared<std::atomic_int>(0);
+    auto   finalCb = std::move(callback);
+
+    auto makeOnDamageDone = [counter, total, finalCb]() mutable {
+        int done = counter->fetch_add(1, std::memory_order_relaxed) + 1;
+        std::cout << "Summon damage done: " << done << "/" << total << std::endl;
+        if (done == (int)total && finalCb)
+        {
+            finalCb();
+        }
+    };
+
+    auto wrappedOnDeath = [makeOnDamageDone, od = std::move(onDeath)]() mutable {
+        makeOnDamageDone();
+        if (od)
+            od();
+    };
+
+    // Instruct each zombie to attack
+    for (int id : m_summons)
+    {
+        if (auto* s = m_gameContext.GetUnitManager()->GetUnit(id);
+            s && s->IsActive() && targetPtr && targetPtr->IsActive())
+        {
+            s->Attack(*targetPtr, makeOnDamageDone, wrappedOnDeath);
+        }
+        else
+        {
+            std::cerr << "Skipping attack for dead/missing summon " << id << "\n";
+        }
     }
 }
 

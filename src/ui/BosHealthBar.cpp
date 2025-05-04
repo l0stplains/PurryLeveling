@@ -100,7 +100,7 @@ void BossHealthBar::render(const Unit& boss)
         ImGui::PushItemWidth(ImGui::GetWindowWidth() - padX * 2);
 
         // Health bar
-        ImGui::ProgressBar(healthPercent, ImVec2(-1, 17), "");
+        ImGui::ProgressBar(healthPercent, ImVec2(-1, 18), "");
 
         // Health text overlay centered on the bar
         std::string healthText =
