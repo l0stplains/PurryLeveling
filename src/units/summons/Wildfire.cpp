@@ -1,78 +1,66 @@
-#include "units/mobs/basics/Orc.hpp"
 
-#include <cmath>     // For sqrt
-#include <iostream>  // For debug output
+#include "units/summons/Wildfire.hpp"
+
+#include <cmath>       // For sqrt
+#include <functional>  // For std::function
+#include <iostream>    // For debug output
 #include <limits>
 
-#include "units/mobs/basics/BasicMob.hpp"
-
-Orc::Orc(const std::string&  name,
-         const sf::Vector2f& position,
-         NavigationGrid&     navGrid,
-         const GameContext&  gameContext)
-    : Unit(name),
-      m_brutalStrike(true, true),
-      Mob(name),
-      BasicMob(name),  // ← must initialize the virtual base
-      AnimatedUnit(name, position, navGrid, false, gameContext)
+Wildfire::Wildfire(const std::string&  name,
+                   const sf::Vector2f& position,
+                   NavigationGrid&     navGrid,
+                   bool                isPlayerControlled,
+                   const GameContext&  gameContext)
+    : Unit(name),  // ← must initialize the virtual base
+      Summon(name),
+      AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
-    // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 12;
-    m_healthRegen  = 4;
-    m_manaRegen    = 4;
-    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.f;
+    m_moveSpeed = 250.f;
+    sf::Vector2i wildfireFrameSize(32, 32);
 
-    sf::Vector2i orcFrameSize(32, 32);
-
-    std::unordered_map<UnitAnimationType, std::string> orcTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_orc_idle"},
-        {UnitAnimationType::WALK, "mob_orc_walk"},
-        {UnitAnimationType::ATTACK, "mob_orc_attack"},
-        {UnitAnimationType::JUMP, "mob_orc_jump"},
-        {UnitAnimationType::DAMAGE, "mob_orc_dmg"},
-        {UnitAnimationType::DIE, "mob_orc_die"}
+    std::unordered_map<UnitAnimationType, std::string> wildfireTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_wildfire_idle"},
+        {UnitAnimationType::WALK, "mob_wildfire_walk"},
+        {UnitAnimationType::ATTACK, "mob_wildfire_attack"},
+        {UnitAnimationType::JUMP, "mob_wildfire_jump"},
+        {UnitAnimationType::DAMAGE, "mob_wildfire_dmg"},
+        {UnitAnimationType::DIE, "mob_wildfire_die"}
 
     };
-    std::unordered_map<UnitAnimationType, std::string> orcShadowTexturePaths = {
-        {UnitAnimationType::IDLE, "mob_orc_idle_shadow"},
-        {UnitAnimationType::WALK, "mob_orc_walk_shadow"},
-        {UnitAnimationType::ATTACK, "mob_orc_attack_shadow"},
-        {UnitAnimationType::JUMP, "mob_orc_jump_shadow"},
-        {UnitAnimationType::DAMAGE, "mob_orc_dmg_shadow"},
-        {UnitAnimationType::DIE, "mob_orc_die_shadow"}
+    std::unordered_map<UnitAnimationType, std::string> wildfireShadowTexturePaths = {
+        {UnitAnimationType::IDLE, "mob_wildfire_idle_shadow"},
+        {UnitAnimationType::WALK, "mob_wildfire_walk_shadow"},
+        {UnitAnimationType::ATTACK, "mob_wildfire_attack_shadow"},
+        {UnitAnimationType::JUMP, "mob_wildfire_jump_shadow"},
+        {UnitAnimationType::DAMAGE, "mob_wildfire_dmg_shadow"},
+        {UnitAnimationType::DIE, "mob_wildfire_die_shadow"}
 
     };
-    // Example frame counts (adjust these!)
-    std::unordered_map<UnitAnimationType, int> orcFramesPerAnim = {{UnitAnimationType::IDLE, 16},
-                                                                   {UnitAnimationType::WALK, 4},
-                                                                   {UnitAnimationType::ATTACK, 4},
-                                                                   {UnitAnimationType::JUMP, 4},
-                                                                   {UnitAnimationType::DAMAGE, 4},
-                                                                   {UnitAnimationType::DIE, 12}};
+    std::unordered_map<UnitAnimationType, int> wildfireFramesPerAnim = {
+        {UnitAnimationType::IDLE, 4},
+        {UnitAnimationType::WALK, 4},
+        {UnitAnimationType::ATTACK, 12},
+        {UnitAnimationType::JUMP, 4},
+        {UnitAnimationType::DAMAGE, 4},
+        {UnitAnimationType::DIE, 12}};
 
-    // Example durations (in seconds, adjust these!)
-    std::unordered_map<UnitAnimationType, float> orcDurationPerAnim = {
-        {UnitAnimationType::IDLE, 3.2f},
-        {UnitAnimationType::WALK, 0.8f},
-        {UnitAnimationType::ATTACK, 0.4f},
+    std::unordered_map<UnitAnimationType, float> wildfireDurationPerAnim = {
+        {UnitAnimationType::IDLE, 0.8f},
+        {UnitAnimationType::WALK, 0.6f},
+        {UnitAnimationType::ATTACK, 0.6f},
         {UnitAnimationType::JUMP, 0.4f},
         {UnitAnimationType::DAMAGE, 0.4f},
-        {UnitAnimationType::DIE, 1.2f}};
+        {UnitAnimationType::DIE, 0.f}};
 
-    // Example looping status (Idle/Walk usually loop)
-    std::unordered_map<UnitAnimationType, bool> orcLoopingAnims = {{UnitAnimationType::IDLE, true},
-                                                                   {UnitAnimationType::WALK, true},
-                                                                   {UnitAnimationType::ATTACK, false},
-                                                                   {UnitAnimationType::JUMP, false},
-                                                                   {UnitAnimationType::DAMAGE, false},
-                                                                   {UnitAnimationType::DIE, false}};
+    std::unordered_map<UnitAnimationType, bool> wildfireLoopingAnims = {
+        {UnitAnimationType::IDLE, true},
+        {UnitAnimationType::WALK, true},
+        {UnitAnimationType::ATTACK, false},
+        {UnitAnimationType::JUMP, false},
+        {UnitAnimationType::DAMAGE, false},
+        {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, bool> orcDirectionalAnims = {
+    std::unordered_map<UnitAnimationType, bool> wildfireDirectionalAnims = {
         {UnitAnimationType::IDLE, true},
         {UnitAnimationType::WALK, true},
         {UnitAnimationType::ATTACK, true},
@@ -80,19 +68,19 @@ Orc::Orc(const std::string&  name,
         {UnitAnimationType::DAMAGE, true},
         {UnitAnimationType::DIE, false}};
 
-    std::unordered_map<UnitAnimationType, int> orcDefaultRows = {{UnitAnimationType::DIE, 0}};
+    std::unordered_map<UnitAnimationType, int> wildfireDefaultRows = {{UnitAnimationType::DIE, 0}};
 
-    LoadAnimations(orcTexturePaths,
-                   orcFrameSize,
-                   orcFramesPerAnim,
-                   orcDurationPerAnim,
-                   orcLoopingAnims,
-                   orcDirectionalAnims,
-                   orcDefaultRows,
-                   orcShadowTexturePaths);
+    LoadAnimations(wildfireTexturePaths,
+                   wildfireFrameSize,
+                   wildfireFramesPerAnim,
+                   wildfireDurationPerAnim,
+                   wildfireLoopingAnims,
+                   wildfireDirectionalAnims,
+                   wildfireDefaultRows,
+                   wildfireShadowTexturePaths);
 }
 
-void Orc::Attack(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+void Wildfire::Attack(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {  // Check self and target state
@@ -123,8 +111,8 @@ void Orc::Attack(Unit& target, ActionCompletionCallback callback, ActionCompleti
               animatedTarget,
               initialPosition = m_position,
               initialDir      = m_direction,
-              cb              = std::move(callback),
-              od              = std::move(onDeath)]() mutable {
+              cb              = callback,
+              od              = onDeath]() mutable {
                  // This lambda is called when Move() finishes (reaches destination or gets blocked)
                  sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
                  float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
@@ -134,36 +122,7 @@ void Orc::Attack(Unit& target, ActionCompletionCallback callback, ActionCompleti
                      std::cout << GetName() << " reached target, performing attack on "
                                << animatedTarget->GetName() << std::endl;  // Debug
 
-                     // Create a wrapped callback that will handle returning to position
-                     // We need to wrap this in a std::shared_ptr to avoid potential lifetime issues
-                     auto wrappedCallback = std::make_shared<ActionCompletionCallback>(
-                         [this, initialPosition, initialDir, originalCb = std::move(cb)]() mutable {
-                             std::cout << GetName()
-                                       << " attack completed, returning to initial position"
-                                       << std::endl;
-
-                             // Move back to initial position
-                             Move(initialPosition,
-                                  [this, initialDir, originalCb = std::move(originalCb)]() mutable {
-                                      // After moving back, set direction
-                                      SetDirection(initialDir);
-
-                                      // Call original callback
-                                      if (originalCb)
-                                          originalCb();
-                                  });
-                         });
-
-                     // Call the original PerformAttack with our wrapped callback
-                     // The lambda captures a shared_ptr by value to ensure it stays alive
-                     this->PerformAttack(
-                         *animatedTarget,
-                         [wrappedCb = wrappedCallback]() {
-                             // Execute our wrapped callback when PerformAttack finishes
-                             if (*wrappedCb)
-                                 (*wrappedCb)();
-                         },
-                         od);
+                     this->PerformAttack(*animatedTarget, cb, od);
                  }
                  else
                  {
@@ -184,9 +143,9 @@ void Orc::Attack(Unit& target, ActionCompletionCallback callback, ActionCompleti
     }
 }
 
-void Orc::PerformAttack(AnimatedUnit&            target,
-                        ActionCompletionCallback callback,
-                        ActionCompletionCallback onDeath)
+void Wildfire::PerformAttack(AnimatedUnit&            target,
+                             ActionCompletionCallback callback,
+                             ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
@@ -246,6 +205,7 @@ void Orc::PerformAttack(AnimatedUnit&            target,
                 std::cout << GetName() << " dealt no damage, target is no longer valid."
                           << std::endl;  // Debug
             }
+            SetActive(false);
             if (cb)
             {
                 cb();
@@ -253,7 +213,9 @@ void Orc::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Orc::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+void Wildfire::UseSkill(Unit&                    target,
+                        ActionCompletionCallback callback,
+                        ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -264,7 +226,7 @@ void Orc::UseSkill(Unit& target, ActionCompletionCallback callback, ActionComple
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
-// void Orc::RenderUI(sf::RenderWindow& window) {
+// void Wildfire::RenderUI(sf::RenderWindow& window) {
 //     Character::RenderUI(window); // Call base UI rendering
 //     // Add fighter-specific UI elements here (e.g., rage bar?)
 // }

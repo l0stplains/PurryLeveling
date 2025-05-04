@@ -25,7 +25,7 @@ WorldState::WorldState(GameContext& context)
       m_buttonTexture(GetContext().GetResourceManager()->GetTexture("main_menu_button")),
       m_squareButtonTexture(GetContext().GetResourceManager()->GetTexture("square_button")),
       m_exitButton(m_squareButtonTexture, {32.f, 32.f}, {0.5f, 0.5f}),
-      m_inventoryButton(m_buttonTexture, {112.f, 32.f}, {0.5f, 0.5f}),
+      m_inventoryButton(m_buttonTexture, {115.f, 32.f}, {0.5f, 0.5f}),
       m_skillTreeButton(m_buttonTexture, {236.f, 32.f}, {0.5f, 0.5f}),
       m_font(GetContext().GetResourceManager()->GetFont("main_font")),
       m_boldFont(GetContext().GetResourceManager()->GetFont("main_bold_font")),
@@ -41,7 +41,11 @@ WorldState::WorldState(GameContext& context)
 
 void WorldState::Init()
 {
+    Character* character =
+        GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+    character->SetLevel(30);
     generatePortals();
+    character->SetLevel(100);  // NOTES: delete this line later
 
     // Background setup
     m_backgroundSprite.setOrigin({0, 0});
@@ -293,6 +297,7 @@ void WorldState::RenderUI()
             // Close dialog
             m_showFileDialog = false;
             ImGuiFileDialog::Instance()->Close();
+            GetContext().SetFirstSaveState(false);
         }
     }
 
@@ -362,6 +367,38 @@ void WorldState::RenderUI()
                                             *GetContext().GetBackpack(),
                                             fury,  // use dummy skill tree
                                             err);
+
+            std::string savePath = "data/" + GetContext().GetCurrentFolderName();
+
+            if (GetContext().GetFirstSaveState() == true)
+            {
+                try
+                {
+                    std::filesystem::create_directories(savePath);
+                    GetContext().SetFirstSaveState(false);
+                }
+                catch (const std::exception& e)
+                {
+                    showError("Failed to create folder: " + std::string(e.what()));
+                    return;
+                }
+
+                const std::filesystem::path cfgDir = "resources/config";
+                for (auto fname : {"item.txt", "mobloot.txt", "quest.txt", "shop.txt"})
+                {
+                    try
+                    {
+                        std::filesystem::copy_file(cfgDir / fname,
+                                                   std::filesystem::path(savePath) / fname,
+                                                   std::filesystem::copy_options::overwrite_existing);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        showError("Failed to copy " + std::string(fname) + ": " + e.what());
+                        break;
+                    }
+                }
+            }
 
             m_pendingStateChange = StateChange {StateAction::POP};
         }

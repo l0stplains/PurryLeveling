@@ -212,35 +212,10 @@ void MainMenuState::RenderUI()
             }
             else
             {
-                try
-                {
-                    std::filesystem::create_directories(savePath);
-                }
-                catch (const std::exception& e)
-                {
-                    showError("Failed to create folder: " + std::string(e.what()));
-                    return;
-                }
-
-                const std::filesystem::path cfgDir = "resources/config";
-                for (auto fname : {"item.txt", "mobloot.txt", "quest.txt", "shop.txt"})
-                {
-                    try
-                    {
-                        std::filesystem::copy_file(cfgDir / fname,
-                                                   savePath / fname,
-                                                   std::filesystem::copy_options::overwrite_existing);
-                    }
-                    catch (const std::exception& e)
-                    {
-                        showError("Failed to copy " + std::string(fname) + ": " + e.what());
-                        break;
-                    }
-                }
                 // OK to use this name
                 GetContext().SetCurrentFolderName(m_saveNameBuf);
                 ImGui::CloseCurrentPopup();
-                parseNonPlayerConfig(savePath.string());
+                parseNonPlayerConfig("resources/config");
                 m_pendingStateChange = StateChange {
                     StateAction::PUSH, std::make_unique<ChooseCharacterState>(GetContext())};
             }
@@ -275,13 +250,15 @@ void MainMenuState::RenderUI()
                 std::filesystem::path absPath = ImGuiFileDialog::Instance()->GetCurrentPath();
                 std::filesystem::path relPath;
 
-                try { 
+                try
+                {
                     relPath = std::filesystem::relative(absPath, std::filesystem::current_path());
                 }
-                catch (...) {
+                catch (...)
+                {
                     relPath = absPath.filename();
                 }
-                
+
                 m_selectedFolder = relPath.string();
 
                 try
@@ -774,8 +751,8 @@ void MainMenuState::parseNonPlayerConfig(const std::string& folderPath)
         return;
     }
 
-    MobLootConfigParser mobLootConfigParser;
-    mobLootConfigParser.ParseFromFile(folderPath);
+    MobLootConfigParser* mobLootConfigParser = GetContext().GetMobLootConfigParser();
+    mobLootConfigParser->ParseFromFile(folderPath);
 
     std::cout << "MobLootConfigParser done" << std::endl;
 
@@ -783,6 +760,37 @@ void MainMenuState::parseNonPlayerConfig(const std::string& folderPath)
 
     QuestConfigParser questConfigParser;
     questConfigParser.ParseFromFile(folderPath);
+
+    try
+    {
+        GetContext().GetQuestGenerator()->loadQuestData(questConfigParser.GetQuestData());
+        std::cout << "ItemManager set" << std::endl;
+    }
+    catch (const std::exception& e)
+    {
+        std::string error = "QuestGenerator error: " + std::string(e.what());
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (const char* msg)
+    {
+        std::string error = "QuestGenerator error: ";
+        if (msg)
+            error += msg;
+        else
+            error += "(null message)";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (...)
+    {
+        std::string error = "Unknown exception in QuestGenerator";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
 
     std::cout << "QuestConfigParser done" << std::endl;
 

@@ -4,25 +4,25 @@
 
 #include "core/GameContext.hpp"
 
-#include "skill/mobSkill/BoneShard.hpp"
 #include "units/AnimatedUnit.hpp"
-#include "units/mobs/basics/BasicMob.hpp"
+#include "units/summons/Summon.hpp"
 
-class Skeleton : public BasicMob, public AnimatedUnit
+class Wildfire : public Summon, public AnimatedUnit
 {
 public:
-    Skeleton(const std::string&  name,
+    Wildfire(const std::string&  name,
              const sf::Vector2f& position,
              NavigationGrid&     navGrid,  // Pass grid to base
+             bool                isPlayerControlled,
              const GameContext&  gameContext);
 
-    ~Skeleton() override = default;
+    ~Wildfire() override = default;
 
     // Prevent copying, allow moving
-    Skeleton(const Skeleton&)            = delete;
-    Skeleton& operator=(const Skeleton&) = delete;
-    Skeleton(Skeleton&&)                 = default;
-    Skeleton& operator=(Skeleton&&)      = default;
+    Wildfire(const Wildfire&)            = delete;
+    Wildfire& operator=(const Wildfire&) = delete;
+    Wildfire(Wildfire&&)                 = default;
+    Wildfire& operator=(Wildfire&&)      = default;
 
     // --- Action Overrides ---
     void Attack(Unit&                    target,
@@ -45,8 +45,6 @@ private:
     void PerformAttack(AnimatedUnit&            target,
                        ActionCompletionCallback callback,
                        ActionCompletionCallback onDeath = nullptr);
-
-    BoneShard m_boneShard;
 
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
 };

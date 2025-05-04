@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "units/Unit.hpp"
 
 class Summon : virtual public Unit
@@ -16,6 +18,10 @@ public:
 
     int  GetLevel() const;
     void SetLevel(int);
+
+    static std::vector<sf::Vector2f> generateSummonSpawnPoints(const sf::Vector2f& center,
+                                                               unsigned int        mobCount,
+                                                               bool                isRightHalf);
 
 protected:
     int m_level = 1;

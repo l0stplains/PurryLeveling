@@ -1,5 +1,7 @@
 #include "inventory/Equipment.hpp"
 
+#include <iostream>
+
 Equipment::Equipment()
 {
     this->weapon    = Item();
@@ -17,6 +19,10 @@ void Equipment::setEquipmentData(ItemManager&                                 it
         const auto& slot   = equipmentData[i][0];
         const auto& itemID = equipmentData[i][1];
 
+        if (itemID == "NOL")
+        {
+            continue;
+        }
         if (slot == "WEAPON")
         {
             weapon = itemManager.getItem(itemID);
@@ -110,101 +116,53 @@ void Equipment::setPendant(const Item& newPendant)
     pendant = newPendant;
 }
 
-Item Equipment::findAndFillSlot(const std::string& slotType, Item item)
+Item& Equipment::findSlot(const std::string& slotType)
 {
     if (slotType == "Weapon")
     {
-        setWeapon(item);
-        return item;
+        return weapon;
     }
     else if (slotType == "HeadArmor")
     {
-        setHeadArmor(item);
-        return item;
+        return headArmor;
     }
     else if (slotType == "BodyArmor")
     {
-        setBodyArmor(item);
-        return item;
+        return bodyArmor;
     }
     else if (slotType == "FootArmor")
     {
-        setFootArmor(item);
-        return item;
+        return footArmor;
     }
     else if (slotType == "Pendant")
     {
-        setPendant(item);
-        return item;
+        return pendant;
     }
     else
     {
         throw InvalidEquipmentTypeException("Invalid equipment slot type");
     }
-
-    return item;
 }
 
 void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const std::string& slotType)
 {
-    // Get the item from backpack (take one from the stack)
-    Item itemToEquip = backpack.getItemAtTile(x, y);
-    if (itemToEquip.getType() == slotType && backpack.getQuantityAtTile(x, y) == 1)
-    {
-        return;
-    }
+    Item  itemToEquip = backpack.getItemAtTile(x, y);
+    Item& slot        = findSlot(slotType);
 
-    // Check if the item type matches the slot type
     if (itemToEquip.getType() != slotType)
     {
         throw InvalidEquipmentTypeException("Item type doesn't match required slot type");
     }
-
-    // Get the currently equipped item (if any)
-    Item currentlyEquipped = findAndFillSlot(slotType, itemToEquip);
-
-    // If there was a previous item
-    if (!currentlyEquipped.isNull())
+    else
     {
-        // Different item type at target position
-        // First, try to find a non-full stack of the same item type to add to
-        std::vector<std::pair<int, int>> itemTiles = backpack.findItemTile(currentlyEquipped);
-        bool                             addedToExistingStack = false;
-
-        // Loop through all tiles containing this item type with available space
-        for (const auto& [itemX, itemY] : itemTiles)
-        {
-            // Since findItemTile returns tiles with this item type that have space available,
-            // we can directly add to this tile without additional checks
-            backpack.takeItemAtTile(x, y, 1);
-            backpack.addItemAtTile(itemX, itemY, currentlyEquipped, 1);
-            addedToExistingStack = true;
-
-            // Successfully added to existing stack, exit the loop
-            break;
-        }
-
-        // If we couldn't add to an existing stack, use an empty tile
-        if (!addedToExistingStack)
-        {
-            // Different item type - find an empty tile to place the unequipped item
-            std::vector<std::pair<int, int>> emptyTiles = backpack.findEmptyTile();
-
-            if (emptyTiles.empty())
-            {
-                // No empty tile available
-                throw BackpackOvercapacityException();
-            }
-
-            // Use the first empty tile
-            int emptyX = emptyTiles[0].first;
-            int emptyY = emptyTiles[0].second;
-
-            // Add the unequipped item to the empty slot
-            backpack.takeItemAtTile(x, y, 1);
-            backpack.addItemAtTile(emptyX, emptyY, currentlyEquipped, 1);
-        }
+        backpack.takeItem(itemToEquip, 1);
     }
+
+    if (!slot.isNull())
+    {
+        unequipItemToBackpack(backpack, x, y, slotType);
+    }
+    slot = itemToEquip;
 }
 
 void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const std::string& slotType)
@@ -253,17 +211,17 @@ void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const st
     // which will propagate up from this function - that's what we want
     bool targetIsEmpty = false;
 
-    // Rather than using try/catch, we'll scan all empty tiles to see if our target
-    // coordinates match any of them
-    std::vector<std::pair<int, int>> emptyTiles = backpack.findEmptyTile();
-    for (const auto& [emptyX, emptyY] : emptyTiles)
+    Item targetItem;
+    try
     {
-        if (emptyX == x && emptyY == y)
-        {
-            targetIsEmpty = true;
-            break;
-        }
+        targetItem = backpack.getItemAtTile(x, y);
     }
+    catch (const EmptyCellException&)
+    {
+        targetIsEmpty = true;
+    }
+
+    std::cout << "Target is empty: " << targetIsEmpty << std::endl;
 
     if (targetIsEmpty)
     {
@@ -271,75 +229,30 @@ void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const st
         backpack.addItemAtTile(x, y, itemToUnequip, 1);
 
         // Clear the equipment slot
-        findAndFillSlot(slotType, Item());
+        findSlot(slotType) = Item();
     }
     else
     {
-        Item targetItem = backpack.getItemAtTile(x, y);
-
         // Check if items are of the same type
         if (targetItem.getType() == itemToUnequip.getType())
         {
             // Same item type - swap only 1 from target
-            // Take one item from the backpack
-            Item takenItem = backpack.takeItemAtTile(x, y, 1);
-
-            // Put the unequipped item in the backpack
-            backpack.addItemAtTile(x, y, itemToUnequip, 1);
-
-            // Fill the slot with the item we took
-            findAndFillSlot(slotType, takenItem);
+            if (backpack.getQuantityAtTile(x, y) == 1)
+            {
+                backpack.takeItemAtTile(x, y, 1);
+                backpack.addItemAtTile(x, y, itemToUnequip, 1);
+            }
+            else
+            {
+                backpack.takeItemAtTile(x, y, 1);
+                backpack.addItem(itemToUnequip, 1);
+            }
+            findSlot(slotType) = targetItem;
         }
         else
         {
-            // Different item type at target position
-            // First, try to find a non-full stack of the same item type to add to
-            std::vector<std::pair<int, int>> itemTiles = backpack.findItemTile(itemToUnequip);
-            bool                             addedToExistingStack = false;
-
-            // Loop through all tiles containing this item type with available space
-            for (const auto& [itemX, itemY] : itemTiles)
-            {
-                // Skip the target tile we already checked (it has a different item)
-                if (itemX == x && itemY == y)
-                {
-                    continue;
-                }
-
-                // Since findItemTile returns tiles with this item type that have space available,
-                // we can directly add to this tile without additional checks
-                backpack.addItemAtTile(itemX, itemY, itemToUnequip, 1);
-                addedToExistingStack = true;
-
-                // Clear the equipment slot
-                findAndFillSlot(slotType, Item());
-
-                // Successfully added to existing stack, exit the loop
-                break;
-            }
-
-            // If we couldn't add to an existing stack, use an empty tile
-            if (!addedToExistingStack)
-            {
-                // Different item type - find an empty tile to place the unequipped item
-                std::vector<std::pair<int, int>> emptyTiles = backpack.findEmptyTile();
-
-                if (emptyTiles.empty())
-                {
-                    // No empty tile available
-                    throw BackpackOvercapacityException();
-                }
-
-                // Use the first empty tile
-                int emptyX = emptyTiles[0].first;
-                int emptyY = emptyTiles[0].second;
-
-                // Add the unequipped item to the empty slot
-                backpack.addItemAtTile(emptyX, emptyY, itemToUnequip, 1);
-
-                // Clear the equipment slot
-                findAndFillSlot(slotType, Item());
-            }
+            backpack.addItem(itemToUnequip, 1);
+            findSlot(slotType) = Item();
         }
     }
 }

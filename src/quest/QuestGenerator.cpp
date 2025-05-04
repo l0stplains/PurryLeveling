@@ -1,13 +1,34 @@
 #include "quest/QuestGenerator.hpp"
 
+#include <iostream>
+
 QuestGenerator::QuestGenerator() : rng() {}
 
 QuestGenerator::~QuestGenerator() {}
 
-bool QuestGenerator::loadQuestData(const QuestConfigParser& questConfigParser)
+void QuestGenerator::loadQuestData(
+    const std::map<std::string, std::vector<std::tuple<std::string, int, int, int, std::string>>>& quests)
 {
-    questData = questConfigParser.GetQuestData();
-    return !questData.empty();
+    questData.clear();
+    questData = quests;
+    for (const auto& pair : questData)
+    {
+        const string& rank          = pair.first;
+        const auto&   questsForRank = pair.second;
+
+        std::cout << "Loaded quests for rank " << rank << ":" << std::endl;
+        for (const auto& questTuple : questsForRank)
+        {
+            std::cout
+                << "  - Type: " << get<0>(questTuple) << ", Target Count: " << get<1>(questTuple)
+                << ", Gold Reward: " << get<2>(questTuple) << ", Exp Reward: " << get<3>(questTuple)
+                << ", Item Reward ID: " << get<4>(questTuple) << std::endl;
+        }
+    }
+    std::cout << "Quest data loaded successfully." << std::endl;
+    std::cout << "Total number of quest types: " << questData.size() << std::endl;
+    std::cout << "Total number of quests: " << questData.size() << std::endl;
+    std::cout << "----------------------------------------" << std::endl;
 }
 
 Quest QuestGenerator::generateQuest(const string& dungeonRank)

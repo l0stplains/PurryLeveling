@@ -114,6 +114,19 @@ void AnimatedUnit::Update(const sf::Time& dt)
 
     float deltaTime = dt.asSeconds();
 
+    // -1. Update Floating Texts
+    for (auto it = m_floatingTexts.begin(); it != m_floatingTexts.end();)
+    {
+        if (!it->Update(deltaTime))
+        {
+            it = m_floatingTexts.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
     // 0. clear queue if suddenly becomes not controllable
     if (!m_controlledByPlayer && m_moveQueue.size())
     {
@@ -130,7 +143,7 @@ void AnimatedUnit::Update(const sf::Time& dt)
             std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
 
         // Check if close enough to destination
-        const float arrivalThreshold = 2.0f;  // Pixels tolerance
+        const float arrivalThreshold = 4.0f;  // Pixels tolerance
         if (distanceToTarget <= arrivalThreshold)
         {
             SetPosition(m_targetPosition);  // Snap to target
@@ -336,6 +349,12 @@ void AnimatedUnit::Draw(sf::RenderWindow& window)
         }
     }
 
+    const sf::Font& font = m_gameContext.GetResourceManager()->GetFont("main_font");
+    for (auto& floatingText : m_floatingTexts)
+    {
+        floatingText.Draw(window, font);
+    }
+
     // then the real sprite
     window.draw(*m_sprite);
 }
@@ -494,6 +513,18 @@ void AnimatedUnit::PlayAnimation(UnitAnimationType        type,
     }
 }
 
+void AnimatedUnit::AddFloatingText(const std::string& text, const sf::Color& color)
+{
+    if (!m_active || !m_showUI)
+        return;
+
+    // Position it slightly above the unit
+    sf::Vector2f textPos = m_position + sf::Vector2f(0, -64.0f);
+
+    // Create and add the floating text
+    m_floatingTexts.emplace_back(text, textPos, color);
+}
+
 // --- Actions ---
 
 void AnimatedUnit::Move(const sf::Vector2f& targetPosition, ActionCompletionCallback callback)
@@ -501,7 +532,7 @@ void AnimatedUnit::Move(const sf::Vector2f& targetPosition, ActionCompletionCall
     // 1) Early-out if already at target
     sf::Vector2f delta     = targetPosition - m_position;
     float        distance  = std::sqrt(delta.x * delta.x + delta.y * delta.y);
-    const float  threshold = 16.0f;
+    const float  threshold = 4.0f;
     if (distance < threshold)
     {
         if (callback)
@@ -567,7 +598,9 @@ void AnimatedUnit::Move(const sf::Vector2f& targetPosition, ActionCompletionCall
 }
 
 // --- TakeDamage Override ---
-void AnimatedUnit::TakeDamage(int damage, ActionCompletionCallback callback)
+void AnimatedUnit::TakeDamage(int                      damage,
+                              ActionCompletionCallback callback,
+                              ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -582,6 +615,9 @@ void AnimatedUnit::TakeDamage(int damage, ActionCompletionCallback callback)
     // Call base class function FIRST to update health and active status
     Unit::TakeDamage(damage, nullptr);  // Don't pass callback here, we handle it after animation
 
+    std::string damageText = "-" + std::to_string(damage);
+    AddFloatingText(damageText, sf::Color(255, 40, 40));  // Bright red
+
     // Check if the unit just became inactive (died)
     bool justDied = (healthBefore > 0 && m_currentHealth <= 0);
 
@@ -593,6 +629,11 @@ void AnimatedUnit::TakeDamage(int damage, ActionCompletionCallback callback)
         m_velocity = {0.f, 0.f};
         // Play death animation. Chain the original callback after death anim.
         std::cout << GetName() << " (Animated) just died." << std::endl;  // Debug
+        if (onDeath)
+        {
+            // Call the onDeath callback immediately
+            onDeath();
+        }
         PlayAnimation(
             UnitAnimationType::DIE,
             [this, cb = std::move(finalCallback)]() {
@@ -636,6 +677,8 @@ void AnimatedUnit::Heal(int amount, ActionCompletionCallback callback)
         return;
 
     Unit::Heal(amount);  // Call base class to update health value
+    std::string healText = "+" + std::to_string(amount);
+    AddFloatingText(healText, sf::Color(40, 230, 40));  // Bright green
 
     PlayAnimation(
         UnitAnimationType::JUMP,  // Optional: Play heal animation
@@ -808,6 +851,13 @@ void AnimatedUnit::SetDirection(Direction dir)
 void AnimatedUnit::SetControlledByPlayer(bool controlled)
 {
     m_controlledByPlayer = controlled;
+    m_moveQueue.clear();
+    m_isMoving              = false;
+    m_velocity              = {0.f, 0.f};
+    m_targetPosition        = m_position;  // don’t march to a stale target
+    m_currentMovingCallback = nullptr;     // drop the callback
+
+    PlayAnimation(UnitAnimationType::IDLE);
 }
 
 void AnimatedUnit::SetShowUI(bool show)
