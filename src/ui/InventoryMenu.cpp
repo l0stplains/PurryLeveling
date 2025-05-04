@@ -2,7 +2,14 @@
 
 #include <cstring>
 
-int BACKPACK_SLOT_SIZE = 107;
+static constexpr int BACKPACK_SLOT_SIZE  = 107;
+static constexpr int EQUIPMENT_SLOT_SIZE = 92;
+static constexpr int SLOT_SIZE           = 92;
+static constexpr int SLOT_PADDING        = 12;
+static constexpr int MAX_STACK_SIZE      = 64;
+static constexpr int EQUIP_SLOTS         = 5;
+static constexpr int GRID_WIDTH          = 8;
+static constexpr int GRID_HEIGHT         = 4;
 
 InventoryMenu::DragDropPayload::DragDropPayload(bool fromEquip, int x, int y, const std::string& type)
     : fromEquipment(fromEquip), sourceX(x), sourceY(y)
@@ -22,25 +29,25 @@ InventoryMenu::InventoryMenu(GameContext& gameContext)
     m_isDraggingFromEquipment = false;
     m_equipmentSlotType       = "";
 
-    // Initialize some sample items in m_backpack
-    // Using proper Item constructor: Item(itemID, name, type, rarity, effects)
-    m_backpack.addItem(Item("IPS", "Ice Potion", "Potion", 'A', effects, "Googoo"), 10);
-    m_backpack.addItem(Item("DHB", "Diamond", "resource", 'S', effects, "Gaagaa"), 5);
-    m_backpack.addItem(Item("FFS", "Iron", "resource", 'C', effects, "Hahaha"), 45);
-    m_backpack.addItem(Item("GHC", "Gold", "resource", 'B', effects, "Lolelole"), 12);
-    m_backpack.addItem(Item("WPC", "Wood", "resource", 'C', effects, "Wooden item"), 32);
-    m_backpack.addItem(Item("SRE", "Stone", "resource", 'C', effects, "Rocky item"), 64);
+    // // Initialize some sample items in m_backpack
+    // // Using proper Item constructor: Item(itemID, name, type, rarity, effects)
+    // m_backpack.addItem(Item("IPS", "Ice Potion", "Potion", 'A', effects, "Googoo"), 10);
+    // m_backpack.addItem(Item("DHB", "Diamond", "resource", 'S', effects, "Gaagaa"), 5);
+    // m_backpack.addItem(Item("FFS", "Iron", "resource", 'C', effects, "Hahaha"), 45);
+    // m_backpack.addItem(Item("GHC", "Gold", "resource", 'B', effects, "Lolelole"), 12);
+    // m_backpack.addItem(Item("WPC", "Wood", "resource", 'C', effects, "Wooden item"), 32);
+    // m_backpack.addItem(Item("SRE", "Stone", "resource", 'C', effects, "Rocky item"), 64);
 
-    // Add some m_equipment items
-    m_backpack.addItem(Item("ASS", "Iron Sword", "Weapon", 'B', effects, "A sharp blade"), 5);
-    m_backpack.addItem(
-        Item("LFD", "Leather Helmet", "HeadArmor", 'C', effects, "Protective headgear"), 1);
-    m_backpack.addItem(
-        Item("CBD", "Chain Mail", "BodyArmor", 'B', effects, "Heavy armor for protection"), 1);
-    m_backpack.addItem(
-        Item("LBD", "Leather Boots", "FootArmor", 'C', effects, "Comfortable footwear"), 1);
-    m_backpack.addItem(
-        Item("FRS", "Magic Amulet", "Pendant", 'A', effects, "Grants magical protection"), 1);
+    // // Add some m_equipment items
+    // m_backpack.addItem(Item("ASS", "Iron Sword", "Weapon", 'B', effects, "A sharp blade"), 5);
+    // m_backpack.addItem(
+    //     Item("LFD", "Leather Helmet", "HeadArmor", 'C', effects, "Protective headgear"), 1);
+    // m_backpack.addItem(
+    //     Item("CBD", "Chain Mail", "BodyArmor", 'B', effects, "Heavy armor for protection"), 1);
+    // m_backpack.addItem(
+    //     Item("LBD", "Leather Boots", "FootArmor", 'C', effects, "Comfortable footwear"), 1);
+    // m_backpack.addItem(
+    //     Item("FRS", "Magic Amulet", "Pendant", 'A', effects, "Grants magical protection"), 1);
 }
 
 void InventoryMenu::Render()
@@ -164,14 +171,28 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                 Item item  = m_backpack.getItemAtTile(y, x);
                 int  count = m_backpack.getQuantityAtTile(y, x);
 
-                if (ImGui::IsItemHovered())
+                if (ImGui::IsItemHovered()) 
                 {
                     // Show item description on hover
-                    m_hoveredDescription = item.getDescription();
+                    std::string itemName = item.getName();
+                    std::replace(itemName.begin(), itemName.end(), '_', ' ');
+                    m_hoveredDescription = itemName + " | " + item.getDescription();
+                    const auto& effects = item.getEffects();
+                    if (effects.size() > 0)
+                    {
+                        m_hoveredDescription += " | Effects: ";
+                    }
+                    for (size_t i = 0; i < effects.size(); ++i)
+                    {
+                        std::string effectName = effects[i]->GetName();
+                        std::replace(effectName.begin(), effectName.end(), '_', ' ');
+                        m_hoveredDescription += effectName + (i < effects.size() - 1 ? ", " : "");
+                    }
                     std::cout << y << ", " << x << std::endl;
 
                     std::cout << "Hovered item: " << item.getName() << std::endl;
                     std::cout << "Hovered item description: " << m_hoveredDescription << std::endl;
+                    std::cout << "Hovered item type: " << item.getType() << std::endl;
                 }
 
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
@@ -486,31 +507,25 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
                 ImGui::EndDragDropSource();
             }
             // Render the equipped item
-            ImGui::SetCursorScreenPos(
-                ImVec2(startX + 200 + 20, startY + i * EQUIPMENT_SLOT_SIZE + 20));
+            ImGui::SetCursorScreenPos(ImVec2(startX + 200 + 4, startY + 4 + i * EQUIPMENT_SLOT_SIZE));
 
-            /*
-            // OPTION: To use images for m_equipment items
-            sf::Texture* texture = textureManager.getTexture(equippedItem.getID());
-            if (texture) {
+            sf::Texture* texture =
+                &m_gameContext.GetResourceManager()->GetTexture(equippedItem.getItemID());  // Get
+                                                                                            // texture
+            if (texture)
+            {
                 ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
                 ImGui::Image(textureId, ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
-            } else {
-                // Fallback to colored button
-                ImGui::PushStyleColor(ImGuiCol_Button, getItemColor(equippedItem.getName(),
-            equippedItem.getType())); ImGui::Button(equippedItem.getName().c_str(),
-            ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16)); ImGui::PopStyleColor();
             }
-            */
-
-            // Current implementation using colored buttons
-
-            ImGui::PushStyleColor(ImGuiCol_Button,
-                                  GetItemColor(equippedItem.getName(), equippedItem.getType()));
-            ImGui::Button(equippedItem.getName().c_str(),
-                          ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
-            ImGui::PopStyleColor();
-            // capture hover description
+            else
+            {
+                // Fallback to colored button
+                ImGui::PushStyleColor(ImGuiCol_Button,
+                                      GetItemColor(equippedItem.getName(), equippedItem.getType()));
+                ImGui::Button(equippedItem.getName().c_str(),
+                              ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
+                ImGui::PopStyleColor();
+            }
 
             char        r = equippedItem.getRarity();
             std::string rarityText(1, r);

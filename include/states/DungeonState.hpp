@@ -10,6 +10,7 @@
 
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
+#include "ui/QuestInfo.hpp"
 #include "ui/Button.hpp"
 
 #include "dungeon/Dungeon.hpp"
@@ -19,9 +20,6 @@
 #include "states/Enums.hpp"
 #include "states/State.hpp"
 #include "units/NavigationGrid.hpp"
-
-// Include ImGuiFileDialog
-#include "external/ImGuiFileDialog.h"
 
 class DungeonState : public State
 {
@@ -77,6 +75,7 @@ private:
     NavigationGrid m_mobNavGrid;  ///< Navigation grid for mob movement
 
     BattleUnitInfo m_battleUnitInfo;  ///< Battle unit information UI
+    QuestInfo      m_questInfo;       ///< Quest information UI
 
     bool m_isPlayerTurn     = true;
     bool m_wasInChamberExit = false;

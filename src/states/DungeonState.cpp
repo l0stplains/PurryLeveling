@@ -26,6 +26,7 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_mobNavGrid(
           GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_battleUnitInfo(context),
+      m_questInfo(context, 250.0f, 150.0f), // Initialize QuestInfo with reasonable size
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
       m_chamber(&dungeon.getChamber(0)),
@@ -118,6 +119,7 @@ void DungeonState::Init()
     m_exitButton.setClickSound(m_buttonClickSound);
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
+    
     m_attackButton.setOnClickCallback([this]() {
         Mob*         closestMob = getClosestUnitOfType<Mob>(m_mobsID, m_character->GetPosition());
         unsigned int targetId   = closestMob->GetId();
@@ -256,6 +258,15 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
     {
         m_walkToExit = true;
         m_character->SetControlledByPlayer(true);
+        std::cout << "MOB CLEARED" << std::endl;
+        
+        // Update the quest progress when mobs are cleared
+        if (m_dungeon.getQuest().getType() == QuestType::KILL)
+        {
+            // TODO: update
+            m_dungeon.updateKillQuestProgress(0);
+        }
+        
         m_dungeon.clearChamber(m_chamber->getChamberNumber() - 1);
         Character* character =
             GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
@@ -289,6 +300,31 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
                 };
                 necromancer->KillSummons(callback);
             }
+            
+            // If quest is completed, add quest rewards to player
+            if (m_dungeon.isQuestCompleted())
+            {
+                Character* character = 
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+                character->AddExp(m_dungeon.getQuestExpReward());
+                character->AddGold(m_dungeon.getQuestGoldReward());
+                
+                // Add quest item reward to backpack if there is one
+                Item questItem = m_dungeon.getQuestRewardItem();
+                if (!questItem.getItemID().empty())
+                {
+                    try
+                    {
+                        GetContext().GetBackpack()->addItem(questItem, 1);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "Exception: " << e.what() << std::endl;
+                        std::cerr << "Backpack is full, couldn't add quest reward item!" << std::endl;
+                    }
+                }
+            }
+            
             return StateChange {StateAction::POP};
         }
         if (necromancer)
@@ -385,6 +421,11 @@ void DungeonState::RenderUI()
         Unit* boss = GetContext().GetUnitManager()->GetUnitOfType<Unit>(m_mobsID[0]);
         m_bossHealthBar.render(*boss);
     }
+    // Render battle unit info
+    // m_battleUnitInfo.render(*m_character);
+    
+    // Render quest info
+    m_questInfo.render(m_dungeon);
 
     // Display exit confirmation popup
     if (m_showExitPopup)
