@@ -232,7 +232,8 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
             }
         }
         else
-        {}
+        {
+        }
         Necromancer* necromancer =
             GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(GetContext().GetCharacterId());
         if (necromancer)
