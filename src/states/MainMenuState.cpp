@@ -752,6 +752,7 @@ void MainMenuState::parseNonPlayerConfig(const std::string& folderPath)
 
     MobLootConfigParser mobLootConfigParser;
     mobLootConfigParser.ParseFromFile(folderPath);
+    
 
     std::cout << "MobLootConfigParser done" << std::endl;
 
@@ -759,6 +760,37 @@ void MainMenuState::parseNonPlayerConfig(const std::string& folderPath)
 
     QuestConfigParser questConfigParser;
     questConfigParser.ParseFromFile(folderPath);
+
+    try
+    {
+        GetContext().GetQuestGenerator()->loadQuestData(questConfigParser.GetQuestData());
+        std::cout << "ItemManager set" << std::endl;
+    }
+    catch (const std::exception& e)
+    {
+        std::string error = "QuestGenerator error: " + std::string(e.what());
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (const char* msg)
+    {
+        std::string error = "QuestGenerator error: ";
+        if (msg)
+            error += msg;
+        else
+            error += "(null message)";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
+    catch (...)
+    {
+        std::string error = "Unknown exception in QuestGenerator";
+        std::cout << error << std::endl;
+        showError(error);
+        return;
+    }
 
     std::cout << "QuestConfigParser done" << std::endl;
 
