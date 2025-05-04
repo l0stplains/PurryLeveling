@@ -565,9 +565,11 @@ void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
     charUnit->SetExp(std::stoi(parser.GetCharStats().at("EXP")));
     charUnit->SetMastery(std::stoi(parser.GetCharStats().at("MASTERY")));
 
-    // TODO: Configure type specific stats
-
     // Configure skills
+    for (const auto& skill : parser.GetSkillTree())
+    {
+        /* TODO: Construct skill tree */
+    }
 }
 
 void MainMenuState::showError(const std::string& message)
