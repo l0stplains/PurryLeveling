@@ -618,6 +618,12 @@ void MainMenuState::validateFolder(const std::string& folderPath)
         GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId())->SetActive(false);
 
         std::cout << "Unit created and added to UnitManager" << std::endl;
+
+        int gold = std::stoi(playerConfigParser.GetCharStats().at("GOLD"));
+        GetContext()
+            .GetUnitManager()
+            ->GetUnitOfType<Character>(GetContext().GetCharacterId())
+            ->SetGold(gold);
     }
     catch (const FileNotFoundException& e)
     {

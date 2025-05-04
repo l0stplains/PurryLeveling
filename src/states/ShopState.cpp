@@ -68,7 +68,9 @@ State::StateChange ShopState::Update(const sf::Time& dt)
     }
     */
 
-    m_exitButton.update(*window);
+    if (!m_shopMenu.IsModalOpen())
+        m_exitButton.update(*window);
+
     // Check if we have a pending state change from a button callback
     if (m_pendingStateChange.GetAction() != StateAction::NONE)
     {

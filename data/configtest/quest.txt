@@ -1,3 +1,3 @@
 # <Dungeon Rank> <Quest Type> <Damage Dealt/Mobs Killed> <Gold Reward> <Exp Reward> <Item ID>
-B KILL 10 100 50 EXC 
-C DAMAGE 20 200 100 MNP
+B KILL 10 100 50 ASS 
+C DAMAGE 20 200 100 FSS

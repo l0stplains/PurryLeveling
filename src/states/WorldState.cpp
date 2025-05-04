@@ -1,6 +1,7 @@
 #include "states/WorldState.hpp"
 
 #include <iostream>
+#include <memory>
 
 #include "core/ResourceManager.hpp"
 
@@ -8,6 +9,7 @@
 #include "rng/rng.hpp"
 #include "skill/characterSkill/Mastery1/Fury.hpp"
 #include "states/ChooseCharacterState.hpp"
+#include "states/DialogState.hpp"
 #include "states/DungeonState.hpp"
 #include "states/InventoryMenuState.hpp"
 #include "states/ShopState.hpp"
@@ -232,7 +234,10 @@ void WorldState::RenderUI()
     }
 
     if (m_showShopEnterModal)
+    {
         ImGui::OpenPopup("Do you want to enter the shop?");
+        m_showShopEnterModal = false;
+    }
 
     ImGui::SetNextWindowPos(
         ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -248,8 +253,21 @@ void WorldState::RenderUI()
             m_showShopEnterModal = false;
             ImGui::CloseCurrentPopup();
             GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId())->SetActive(false);
-            m_pendingStateChange =
-                StateChange {StateAction::PUSH, std::make_unique<ShopState>(GetContext())};
+
+            std::vector<std::string> textures     = {"shop_dialog_1"};
+            std::vector<std::string> descriptions = {"Welcome to my lovely shop, I'm Chiruzu!"};
+
+            // Create DialogState and pass it to StateManager
+            m_pendingStateChange = StateChange {
+                StateAction::PUSH,
+                std::make_unique<DialogState>(GetContext(),
+                                              textures,      // Texture for shop keeper
+                                              descriptions,  // Dialog text
+                                              1,  // dialogCount - indicating 1 dialog to show
+                                              std::make_unique<ShopState>(GetContext())  // Destination
+                                                                                         // after
+                                                                                         // dialog
+                                              )};
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel", ImVec2(100, 0)))
