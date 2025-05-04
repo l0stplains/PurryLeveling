@@ -35,14 +35,6 @@ public:
     void Render();
 
 private:
-    static constexpr int EQUIPMENT_SLOT_SIZE = 92;
-    static constexpr int SLOT_SIZE           = 92;
-    static constexpr int SLOT_PADDING        = 12;
-    static constexpr int MAX_STACK_SIZE      = 64;
-    static constexpr int EQUIP_SLOTS         = 5;
-    static constexpr int GRID_WIDTH          = 8;
-    static constexpr int GRID_HEIGHT         = 4;
-
     GameContext&                          m_gameContext;
     Backpack&                             m_backpack;
     Equipment&                            m_equipment;

@@ -212,11 +212,10 @@ void MainMenuState::RenderUI()
             }
             else
             {
-                
                 // OK to use this name
                 GetContext().SetCurrentFolderName(m_saveNameBuf);
                 ImGui::CloseCurrentPopup();
-                parseNonPlayerConfig(savePath.string());
+                parseNonPlayerConfig("resources/config");
                 m_pendingStateChange = StateChange {
                     StateAction::PUSH, std::make_unique<ChooseCharacterState>(GetContext())};
             }
@@ -251,13 +250,15 @@ void MainMenuState::RenderUI()
                 std::filesystem::path absPath = ImGuiFileDialog::Instance()->GetCurrentPath();
                 std::filesystem::path relPath;
 
-                try { 
+                try
+                {
                     relPath = std::filesystem::relative(absPath, std::filesystem::current_path());
                 }
-                catch (...) {
+                catch (...)
+                {
                     relPath = absPath.filename();
                 }
-                
+
                 m_selectedFolder = relPath.string();
 
                 try

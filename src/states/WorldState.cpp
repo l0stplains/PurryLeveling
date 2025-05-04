@@ -293,6 +293,7 @@ void WorldState::RenderUI()
             // Close dialog
             m_showFileDialog = false;
             ImGuiFileDialog::Instance()->Close();
+            GetContext().SetFirstSaveState(false);
         }
     }
 
@@ -365,7 +366,8 @@ void WorldState::RenderUI()
 
             std::string savePath = "data/" + GetContext().GetCurrentFolderName();
 
-            if (GetContext().GetFirstSaveState() == true) {
+            if (GetContext().GetFirstSaveState() == true)
+            {
                 try
                 {
                     std::filesystem::create_directories(savePath);
@@ -383,8 +385,8 @@ void WorldState::RenderUI()
                     try
                     {
                         std::filesystem::copy_file(cfgDir / fname,
-                        std::filesystem::path(savePath) / fname,
-                        std::filesystem::copy_options::overwrite_existing);
+                                                   std::filesystem::path(savePath) / fname,
+                                                   std::filesystem::copy_options::overwrite_existing);
                     }
                     catch (const std::exception& e)
                     {
