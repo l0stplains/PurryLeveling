@@ -10,26 +10,6 @@
 
 using namespace std;
 
-/*
-class MobUnit : public Unit
-{
-public:
-    MobUnit(const std::string& name) : Unit(name) {}
-
-    // Implement the pure virtual function from Unit
-    void UseSkill(int skillId, ActionCompletionCallback callback = nullptr) override
-    {
-        std::cout << GetName() << " uses skill ID: " << skillId << std::endl;
-
-        // Default behavior for mob skill
-        if (callback)
-        {
-            callback();
-        }
-    }
-};
-*/
-
 Chamber::Chamber(int          chamberNumber,
                  bool         isBossRoom,
                  double       difficultyMultiplier,
@@ -222,9 +202,10 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
                         cout << "Mob " << mobName << " dropped item " << item.getName()
                              << " (ID: " << itemId << ")" << endl;
                     }
-                    catch (const char* error)
+                    catch (const ItemNotFoundException& e)
                     {
-                        cerr << "Error retrieving item " << itemId << ": " << error << endl;
+                        cout << "Item ID not found in mob loot: " << itemId << ". Error: " << e.what() << endl;
+                        continue;
                     }
                 }
             }
