@@ -88,6 +88,10 @@ public:
      * This method renders the ImGui elements of the main menu state.
      */
     void RenderUI() override;
+    void renderNewSaveModal();
+    void renderLoadSaveModal();
+    void renderErrorModal();
+    void renderExitConfirmationModal();
 
     /**
      * @brief Exit the main menu state
@@ -114,7 +118,6 @@ private:
     sf::Sprite m_logoSprite;        ///< Logo sprite
     sf::Sprite m_logoShadowSprite;  ///< Logo shadow sprite
 
-    Button m_startButton;    ///< Start button
     Button m_newGameButton;  ///< New game button
     Button m_loadButton;     ///< Load game button
     Button m_exitButton;     ///< Exit button
@@ -141,6 +144,14 @@ private:
      * @param folderPath Path to the folder to check
      */
     void validateFolder(const std::string& folderPath);
+
+    void checkRequiredFiles(const std::string& folderPath);
+
+    void loadPlayerConfig(const std::string& folderPath);
+
+    void setupNavigationGrid();
+
+    void spawnCharacter(const PlayerConfigParser& parser);
 
     /**
      * @brief Parses non-player configuration files. Helper method for validateFolder.
