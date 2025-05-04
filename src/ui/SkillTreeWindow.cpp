@@ -514,7 +514,7 @@ void SkillTreeWindow::HandleSkillInteraction(Skill* skill)
     if (!skill)
         return;
 
-    // If skill is already learned, we don't allow toggling activation from the skill tree
+    // If skill is already learned, we don't allow learning it again
     if (skill->getIsLearned())
     {
         return;
@@ -528,7 +528,8 @@ void SkillTreeWindow::HandleSkillInteraction(Skill* skill)
         {
             // Update player's mastery points
             m_playerMasteryPoints = masteryPoints;
-            // Update activation status based on the new rule:
+            
+            // Update the activation status of skills based on the new learning state
             UpdateSkillActivationStatus(m_skillTree.getSkill().get());
         }
     }
@@ -564,7 +565,7 @@ void SkillTreeWindow::UpdateSkillActivationStatus(Skill* skill)
             skill->setActivated(true);
         }
     }
-    // For skills with no children (leaf skills), activate if learned
+    // For skills with no children (leaf skills), keep them activated if learned
     else if (skill->getIsLearned())
     {
         skill->setActivated(true);
@@ -610,4 +611,4 @@ void SkillTreeWindow::DrawSkillTooltip(const Skill* skill)
     }
 
     ImGui::EndTooltip();
-}
+}   
