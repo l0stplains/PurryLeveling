@@ -207,6 +207,7 @@ void MainMenuState::renderNewSaveModal()
         else
         {
             GetContext().SetCurrentFolderName(m_saveNameBuf);
+            GetContext().SetFirstSaveState(true);
             ImGui::CloseCurrentPopup();
             parseNonPlayerConfig("resources/config");
             m_pendingStateChange =
@@ -261,6 +262,7 @@ void MainMenuState::renderLoadSaveModal()
                     m_selectedFolder.erase(0, sizeof(dataPrefix) - 1);
 
                 GetContext().SetCurrentFolderName(m_selectedFolder);
+                GetContext().SetFirstSaveState(false);
                 m_pendingStateChange =
                     StateChange {StateAction::PUSH, std::make_unique<WorldState>(GetContext())};
                 std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
@@ -535,7 +537,7 @@ void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
     baseUnit->SetName(parser.GetUnitStats().at("NAME"));
     baseUnit->SetActive(false);
 
-    // Only Character has SetGold, so retrieve as Character
+    // Configure the character
     auto* charUnit = GetContext().GetUnitManager()->GetUnitOfType<Character>(id);
     charUnit->SetGold(std::stoi(parser.GetCharStats().at("GOLD")));
 }

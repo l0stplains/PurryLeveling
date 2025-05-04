@@ -357,7 +357,7 @@ void WorldState::RenderUI()
                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
     {
-        ImGui::Text("Are you sure you want to exit?");
+        ImGui::Text("Are you sure you want to exit? (Progress will be saved.)");
         ImGui::Dummy(ImVec2(0, 4.0f));  // Add some space
         ImGui::Separator();
         ImGui::Dummy(ImVec2(0, 4.0f));  // Add some space
