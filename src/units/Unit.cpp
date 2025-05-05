@@ -304,7 +304,6 @@ void Unit::RemoveEffect(const std::string& effectName)
 
 void Unit::Reset()
 {
-    // TODO: remove effect first then reset this shyt
     for (auto& effect : m_activeEffects)
     {
         m_stats -= effect->GetModifiers();
@@ -315,7 +314,7 @@ void Unit::Reset()
     m_active        = true;  // Ensure active is true
 }
 
-void Unit::RefreshEffects()
+void Unit::RefreshTurn()
 {
     if (!m_active || m_currentHealth <= 0)
         return;
@@ -332,5 +331,19 @@ void Unit::RefreshEffects()
         {
             ++it;
         }
+    }
+
+    if (m_currentHealth < m_maxHealth)
+    {
+        int regenAmount = static_cast<int>(m_healthRegen * m_healthRegenMultiplier);
+        regenAmount     = std::min(regenAmount, m_maxHealth - m_currentHealth);
+        Heal(regenAmount);
+    }
+
+    if (m_currentMana < m_maxMana)
+    {
+        int manaRegenAmount = static_cast<int>(m_manaRegen * m_manaRegenMultiplier);
+        manaRegenAmount     = std::min(manaRegenAmount, m_maxMana - m_currentMana);
+        RestoreMana(manaRegenAmount);
     }
 }

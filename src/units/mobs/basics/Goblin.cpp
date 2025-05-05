@@ -18,8 +18,8 @@ Goblin::Goblin(const std::string&  name,
 {
     // Fighter-specific stat overrides
     m_skillProbabability = 0.2f;
-    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.f;
+    m_moveSpeed          = 200.f;  // Maybe slightly slower, heavier armor?
+    m_attackRange        = 48.f;
 
     sf::Vector2i goblinFrameSize(32, 32);
 
@@ -254,7 +254,7 @@ bool Goblin::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCom
     {
         if (callback)
             callback();
-        return false; 
+        return false;
     }
 
     PlayAnimation(UnitAnimationType::JUMP, callback);

@@ -34,7 +34,8 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
                            {1160.f, 540.f},
                            {4.f, 4.f}),
       m_bossHealthBar(120.f),
-      m_pendingStateChange({StateAction::NONE})
+      m_pendingStateChange({StateAction::NONE}),
+      m_cheatConsole(*GetContext().GetWindow())
 {
     SetName("Dungeon State");
 
@@ -120,6 +121,48 @@ void DungeonState::Init()
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
 
+    m_useSkillButton.setOnClickCallback([this]() {
+        Mob*         closestMob = getClosestUnitOfType<Mob>(m_mobsID, m_character->GetPosition());
+        unsigned int targetId   = closestMob->GetId();
+        if (closestMob == nullptr)
+        {
+            std::cerr << "No mobs available to attack!" << std::endl;
+            return;
+        }
+
+        int                   initialHealth = closestMob->GetHealth();
+        std::function<void()> callback      = [this, initialHealth, targetId] {
+            m_triggerActionTurn = true;
+            m_character->RefreshTurn();
+            m_turnQueue.push(m_character->GetId());
+            Unit* attackedMob = GetContext().GetUnitManager()->GetUnitOfType<Mob>(targetId);
+            if (attackedMob && attackedMob->IsActive())
+            {
+                int damage = initialHealth - attackedMob->GetHealth();
+                if (m_dungeon.getQuest().getType() == QuestType::DAMAGE)
+                {
+                    m_dungeon.updateDamageQuestProgress(damage);
+                }
+            }
+            else
+            {
+                std::cerr << "Attacked mob not found!" << std::endl;
+            }
+        };
+
+        std::function<void()> onKill = [this, targetId] {
+            if (m_dungeon.getQuest().getType() == QuestType::KILL)
+            {
+                m_dungeon.updateKillQuestProgress(1);
+            }
+        };
+
+        if (m_character->UseSkill(*closestMob, callback, onKill))
+        {
+            m_turnQueue.pop();
+            m_isPlayerTurn = false;
+        }
+    });
     m_attackButton.setOnClickCallback([this]() {
         Mob*         closestMob = getClosestUnitOfType<Mob>(m_mobsID, m_character->GetPosition());
         unsigned int targetId   = closestMob->GetId();
@@ -128,20 +171,47 @@ void DungeonState::Init()
             std::cerr << "No mobs available to attack!" << std::endl;
             return;
         }
+        int initialHealth = closestMob->GetHealth();
+
         // set callback to trigger
         m_turnQueue.pop();
         m_isPlayerTurn                 = false;
-        std::function<void()> callback = [this, targetId] {
+        std::function<void()> callback = [this, initialHealth, targetId] {
+            m_character->RefreshTurn();
             m_triggerActionTurn = true;
             m_turnQueue.push(m_character->GetId());
+            Unit* attackedMob = GetContext().GetUnitManager()->GetUnitOfType<Mob>(targetId);
+            if (attackedMob && attackedMob->IsActive())
+            {
+                int damage = initialHealth - attackedMob->GetHealth();
+                if (m_dungeon.getQuest().getType() == QuestType::DAMAGE)
+                {
+                    m_dungeon.updateDamageQuestProgress(damage);
+                }
+            }
+            else
+            {
+                std::cerr << "Attacked mob not found!" << std::endl;
+            }
         };
 
-        std::function<void()> onKill = [this, targetId] {
+        std::function<void()> onKill = [this, initialHealth, targetId] {
             Mob* attackedMob = GetContext().GetUnitManager()->GetUnitOfType<Mob>(targetId);
             if (attackedMob)
             {
                 m_mobsID.erase(std::remove(m_mobsID.begin(), m_mobsID.end(), targetId),
                                m_mobsID.end());
+
+                if (m_dungeon.getQuest().getType() == QuestType::DAMAGE)
+                {
+                    m_dungeon.updateDamageQuestProgress(initialHealth);
+                }
+            }
+
+            // Update the quest progress when mobs are cleared
+            if (m_dungeon.getQuest().getType() == QuestType::KILL)
+            {
+                m_dungeon.updateKillQuestProgress(1);
             }
         };
         m_character->Attack(*closestMob, callback, onKill);
@@ -167,6 +237,7 @@ void DungeonState::Init()
 
     m_character =
         GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
+
     if (m_character)
     {
         m_character->SetScale({8.0f, 8.0f});
@@ -194,6 +265,8 @@ void DungeonState::Init()
     }
 
     m_triggerActionTurn = false;
+
+    initializeCheat();
 }
 
 State::StateChange DungeonState::ProcessEvent(const sf::Event& event)
@@ -206,11 +279,15 @@ State::StateChange DungeonState::ProcessEvent(const sf::Event& event)
         return change;
     }
 
+    m_cheatConsole.processEvent(event);
+
     return StateChange {};
 }
 
 State::StateChange DungeonState::Update(const sf::Time& dt)
 {
+    m_cheatConsole.update(dt.asSeconds());
+
     // checks if player die
     if (!m_walkToExit && m_turnQueue.front() == m_character->GetId() && !m_character->IsActive() &&
         !m_isTransitioning)
@@ -232,7 +309,8 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
             }
         }
         else
-        {}
+        {
+        }
         Necromancer* necromancer =
             GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(GetContext().GetCharacterId());
         if (necromancer)
@@ -248,6 +326,14 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
         {
             m_isTransitioning = false;
         }
+        int expPenalty  = 0;
+        int goldPenalty = 0;
+        m_dungeon.getPenalty(expPenalty, goldPenalty);
+        Character* character =
+            GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+        expPenalty = std::min(expPenalty, character->GetExp());
+        character->AddExp(-expPenalty);
+        character->AddGold(-goldPenalty);
         return StateChange {StateAction::POP};
     }
 
@@ -258,13 +344,6 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
         m_walkToExit = true;
         m_character->SetControlledByPlayer(true);
         std::cout << "MOB CLEARED" << std::endl;
-
-        // Update the quest progress when mobs are cleared
-        if (m_dungeon.getQuest().getType() == QuestType::KILL)
-        {
-            // TODO: update
-            m_dungeon.updateKillQuestProgress(0);
-        }
 
         m_dungeon.clearChamber(m_chamber->getChamberNumber() - 1);
         Character* character =
@@ -301,7 +380,7 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
             }
 
             // If quest is completed, add quest rewards to player
-            if (m_dungeon.isQuestCompleted())
+            if (m_dungeon.getQuest().isValid() && m_dungeon.isQuestCompleted())
             {
                 Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
                     GetContext().GetCharacterId());
@@ -414,6 +493,8 @@ void DungeonState::Draw(sf::RenderWindow& window)
 
 void DungeonState::RenderUI()
 {
+    m_cheatConsole.render();
+
     // m_battleUnitInfo.render(*m_character);
     if (m_chamber->getIsBossRoom() && m_mobsID.size() != 0)
     {
@@ -451,6 +532,14 @@ void DungeonState::RenderUI()
 
         if (ImGui::Button("Yes", ImVec2(buttonWidth, 0)))
         {
+            int expPenalty  = 0;
+            int goldPenalty = 0;
+            m_dungeon.getPenalty(expPenalty, goldPenalty);
+            Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
+                GetContext().GetCharacterId());
+            expPenalty = std::min(expPenalty, character->GetExp());
+            character->AddExp(-expPenalty);
+            character->AddGold(-goldPenalty);
             Necromancer* necromancer = GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(
                 GetContext().GetCharacterId());
             if (necromancer)
@@ -650,4 +739,259 @@ std::vector<sf::Vector2f> DungeonState::generateMobSpawnPoints(const sf::Vector2
     }
 
     return spawnPoints;
+}
+
+void DungeonState::initializeCheat()
+{
+    // Cheat console setup
+    m_cheatConsole.registerCommand(
+        "add_gold",
+        [this](const std::vector<std::string>& args) -> std::string {
+            int amount = 1000;
+            if (!args.empty())
+            {
+                try
+                {
+                    amount = std::stoi(args[0]);
+                }
+                catch (...)
+                {
+                    return "Invalid amount";
+                }
+            }
+            if (m_character)
+            {
+                Character* character =
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(m_character->GetId());
+                if (character)
+                {
+                    character->AddGold(amount);
+                    return "Added $" + std::to_string(amount) + ". New balance: $" +
+                           std::to_string(character->GetGold());
+                }
+                else
+                {
+                    return "Character not found";
+                }
+            }
+            return "Character not initialized";
+        },
+        "Add gold to the character");
+
+    m_cheatConsole.registerCommand(
+        "add_exp",
+        [this](const std::vector<std::string>& args) -> std::string {
+            int amount = 1000;
+            if (!args.empty())
+            {
+                try
+                {
+                    amount = std::stoi(args[0]);
+                }
+                catch (...)
+                {
+                    return "Invalid amount";
+                }
+            }
+            if (m_character)
+            {
+                Character* character =
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(m_character->GetId());
+                if (character)
+                {
+                    character->AddExp(amount);
+                    return "Added " + std::to_string(amount) +
+                           " EXP. New EXP: " + std::to_string(character->GetExp());
+                }
+                else
+                {
+                    return "Character not found";
+                }
+            }
+            return "Character not initialized";
+        },
+        "Add experience points to the character");
+
+    // Reset effects
+    m_cheatConsole.registerCommand(
+        "reset",
+        [this](const std::vector<std::string>& args) -> std::string {
+            if (m_character)
+            {
+                Character* character =
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(m_character->GetId());
+                if (character)
+                {
+                    character->Reset();
+                    return "Character reset";
+                }
+                else
+                {
+                    return "Character not found";
+                }
+            }
+            return "Character not initialized";
+        },
+        "Reset all effects and restore hp and mp on the character");
+
+    // God mode
+    m_cheatConsole.registerCommand(
+        "god_mode",
+        [this](const std::vector<std::string>& args) -> std::string {
+            if (m_character)
+            {
+                Character* character =
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(m_character->GetId());
+                if (character)
+                {
+                    if (args.size() > 0)
+                    {
+                        if (args[0] == "on")
+                        {
+                            Stats temp       = character->GetStats();
+                            temp.dodgeChance = 1.0f;
+                            character->SetStats(temp);
+                            character->SetAttackDamage(character->GetAttackDamage() *
+                                                       100.0f);  // set attack damage to
+                                                                 // 100x
+                            return "God mode enabled";
+                        }
+                        else if (args[0] == "off")
+                        {
+                            Stats temp       = character->GetStats();
+                            temp.dodgeChance = 0.0f;
+                            character->SetStats(temp);
+                            character->SetAttackDamage(character->GetAttackDamage() /
+                                                       100.0f);  // set attack damage to
+                                                                 // normal
+                            return "God mode disabled";
+                        }
+                        else
+                        {
+                            return "Invalid argument. Use 'on' or 'off'";
+                        }
+                    }
+                    else
+                    {
+                        return "Invalid argument. Use 'on' or 'off'";
+                    }
+                }
+                else
+                {
+                    return "Character not found";
+                }
+            }
+            return "Character not initialized";
+        },
+        "Toggle god mode on the character");
+
+    // finish chamber
+    m_cheatConsole.registerCommand(
+        "finish_chamber",
+        [this](const std::vector<std::string>& args) -> std::string {
+            if (m_chamber)
+            {
+                for (auto id : m_mobsID)
+                {
+                    GetContext().GetUnitManager()->RemoveUnit(id);
+                }
+                m_mobsID.clear();
+                while (m_turnQueue.size() > 0)
+                {
+                    m_turnQueue.pop();
+                }
+                m_turnQueue.push(m_character->GetId());
+                return "Chamber finished";
+            }
+            else
+            {
+                return "Chamber not found";
+            }
+        },
+        "Finish the current chamber");
+
+    // finish dungeon
+    m_cheatConsole.registerCommand(
+        "finish_dungeon",
+        [this](const std::vector<std::string>& args) -> std::string {
+            // clear mobs
+            for (auto id : m_mobsID)
+            {
+                GetContext().GetUnitManager()->RemoveUnit(id);
+            }
+            m_mobsID.clear();
+            // clear stack except for character
+            while (m_turnQueue.size() > 0)
+            {
+                m_turnQueue.pop();
+            }
+            m_turnQueue.push(m_character->GetId());
+
+            for (int i = 0; i < (int)m_dungeon.getChambers().size(); ++i)
+            {
+                if (!m_dungeon.getChamber(i).getIsCleared())
+                {
+                    Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
+                        GetContext().GetCharacterId());
+                    if (character)
+                    {
+                        character->AddExp(m_dungeon.getChamber(i).getExpReward());
+                        character->AddGold(m_dungeon.getChamber(i).getGoldReward());
+                    }
+
+                    m_dungeon.clearChamber(i);
+                }
+            }
+            m_dungeon.setCleared(true);
+            return "Dungeon finished";
+        },
+        "Finish the current dungeon");
+
+    // finish quest
+    m_cheatConsole.registerCommand(
+        "finish_quest",
+        [this](const std::vector<std::string>& args) -> std::string {
+            if (m_dungeon.getQuest().isValid())
+            {
+                if (m_dungeon.getQuest().getType() == QuestType::KILL)
+                {
+                    m_dungeon.updateKillQuestProgress(m_dungeon.getQuest().getTargetCount());
+                }
+                else if (m_dungeon.getQuest().getType() == QuestType::DAMAGE)
+                {
+                    m_dungeon.updateDamageQuestProgress(m_dungeon.getQuest().getTargetCount());
+                }
+                return "Quest finished";
+            }
+            else
+            {
+                return "No quest available";
+            }
+        },
+        "Finish the current quest");
+
+    // hesoyam
+    m_cheatConsole.registerCommand(
+        "hesoyam",
+        [this](const std::vector<std::string>& args) -> std::string {
+            if (m_character)
+            {
+                Character* character =
+                    GetContext().GetUnitManager()->GetUnitOfType<Character>(m_character->GetId());
+                if (character)
+                {
+                    character->SetHealth(character->GetMaxHealth());
+                    character->SetCurrentMana(character->GetMaxMana());
+                    character->AddGold(1000);
+                    character->AddExp(1000);
+                    return "HESOYAM activated";
+                }
+                else
+                {
+                    return "Character not found";
+                }
+            }
+            return "Character not initialized";
+        },
+        "Full health and mana");
 }

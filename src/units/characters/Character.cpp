@@ -39,6 +39,8 @@ void Character::SetLevel(int level)
 
     SetMaxHealth(100 * level / 4 * GetMaxHealthMultiplier());
     SetMaxMana(50 * GetMaxManaMultiplier());
+    SetCurrentMana(GetMaxMana());
+    SetHealth(GetMaxHealth());
     SetAttackDamage(15 * level / 4 * GetAttackDamageMultiplier());
 }
 

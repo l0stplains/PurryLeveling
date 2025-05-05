@@ -5,8 +5,7 @@
 
 #include <iostream>  // For debug
 
-Mob::Mob(const std::string& name)
-    : Unit(name)  // Call base constructor
+Mob::Mob(const std::string& name) : Unit(name)  // Call base constructor
 {
     // Mob specific stat initialization (can override AnimatedUnit defaults)
     m_maxHealth = 120;  // Example: Mobs slightly tougher

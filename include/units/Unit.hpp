@@ -98,7 +98,7 @@ public:
     void ApplyEffect(std::unique_ptr<Effect> effect);
     void RemoveEffectByName(const std::string& effectName);
 
-    void RefreshEffects();
+    void RefreshTurn();
 
 protected:
     unsigned int m_id;

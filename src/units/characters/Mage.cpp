@@ -146,6 +146,7 @@ void Mage::Attack(Unit& target, ActionCompletionCallback callback, ActionComplet
             if (done == (int)total && cb)
             {
                 summons->clear();
+                int extraMana = std::min(m_maxMana - m_currentMana, m_extraMana);
                 RestoreMana(m_extraMana);
                 cb();
             }
@@ -208,6 +209,23 @@ bool Mage::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompl
     int    randomIndex   = rng.generateInRange(0, filteredSkills.size() - 1);
     Skill* selectedSkill = filteredSkills[randomIndex];
     totalManaCost        = selectedSkill->getManaCost();
+
+    float      intelligenceMultiplier = 1.0f;
+    int        manaBonus              = 0;
+    MageSkill* mageSkill              = dynamic_cast<MageSkill*>(selectedSkill);
+    if (mageSkill)
+    {
+        intelligenceMultiplier *= mageSkill->getIntelligenceMultiplier();
+        manaBonus += mageSkill->getManaRegenBonus();
+    }
+
+    manaBonus = std::min(m_maxMana - m_currentMana, manaBonus);
+
+    if (manaBonus <= 0)
+    {
+        AddFloatingText("No mana to restore", sf::Color::Red);
+    }
+
     m_currentMana -= totalManaCost;
 
     float effectChance = rng.generateProbability();
@@ -221,18 +239,12 @@ bool Mage::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompl
             AddEffect(std::move(effectTemp));
         }
     }
-
-    float      intelligenceMultiplier = 1.0f;
-    int        manaBonus              = 0;
-    MageSkill* mageSkill              = dynamic_cast<MageSkill*>(selectedSkill);
-    if (mageSkill)
-    {
-        intelligenceMultiplier *= mageSkill->getIntelligenceMultiplier();
-        manaBonus += mageSkill->getManaRegenBonus();
-    }
     RestoreMana(manaBonus);
 
     m_attackDamageMultiplier = intelligenceMultiplier;
+
+    if (callback)
+        callback();
 
     return true;
 }

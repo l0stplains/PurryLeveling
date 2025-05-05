@@ -8,6 +8,8 @@
 
 #include "core/GameContext.hpp"
 
+#include "systems/CheatConsole.hpp"
+
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
 #include "ui/Button.hpp"
@@ -98,9 +100,13 @@ private:
     bool m_isTransitioning = false;
     bool m_walkToExit      = false;
 
+    CheatConsole m_cheatConsole;
+
     void playMobTurn();
 
     void nextChamber();
+
+    void initializeCheat();
 
     std::vector<sf::Vector2f> generateMobSpawnPoints(const sf::Vector2f& center,
                                                      unsigned int        mobCount,

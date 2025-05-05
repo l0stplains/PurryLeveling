@@ -18,8 +18,8 @@ Skeleton::Skeleton(const std::string&  name,
 {
     // Fighter-specific stat overrides
     m_skillProbabability = 0.25f;
-    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.f;
+    m_moveSpeed          = 200.f;  // Maybe slightly slower, heavier armor?
+    m_attackRange        = 48.f;
 
     sf::Vector2i skeletonFrameSize(32, 32);
 
@@ -261,7 +261,6 @@ bool Skeleton::UseSkill(Unit&                    target,
     }
 
     PlayAnimation(UnitAnimationType::JUMP, callback);
-
 
     return true;
 }

@@ -17,13 +17,12 @@ public:
     Mob& operator=(Mob&&)      = default;
 
     // --- RPG Stats Getters ---
-    int  GetLevel() const;
+    int   GetLevel() const;
     float GetSkillProbabability() const;
-    void SetLevel(int);  // virtual so it can be adjusted by basic or boss
+    void  SetLevel(int);  // virtual so it can be adjusted by basic or boss
 
 protected:
     // --- RPG Stats ---
-    int     m_level = 1;
+    int   m_level              = 1;
     float m_skillProbabability = 0.f;
-
 };

@@ -5,6 +5,8 @@
 
 #include "core/ResourceManager.hpp"
 
+#include "systems/CheatConsole.hpp"
+
 #include "imgui.h"
 #include "rng/rng.hpp"
 #include "skill/characterSkill/Mastery1/Fury.hpp"
@@ -47,7 +49,6 @@ void WorldState::Init()
         GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
     character->SetLevel(30);
     generatePortals();
-    character->SetLevel(100);  // NOTES: delete this levelling later
 
     // Background setup
     m_backgroundSprite.setOrigin({0, 0});
@@ -682,6 +683,7 @@ void WorldState::Resume()
         auto            navGrid = nav->GetGrid();
         animatedCharacter->SetActive(true);
         animatedCharacter->SetScale({4.0f, 4.0f});
+        animatedCharacter->SetShowUI(false);
         animatedCharacter->SetPosition(m_lastPosition);
         animatedCharacter->SetControlledByPlayer(true);
     }

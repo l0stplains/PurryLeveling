@@ -331,6 +331,9 @@ bool Assassin::UseSkill(Unit&                    target,
 
     m_agilityMultiplier = agilityMultiplier;
 
+    if (callback)
+        callback();
+
     return true;
 }
 void Assassin::SetLevel(int level)

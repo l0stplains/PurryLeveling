@@ -18,8 +18,8 @@ DarkKnight::DarkKnight(const std::string&  name,
 
     m_skillProbabability = 0.35f;
 
-    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.f;
+    m_moveSpeed   = 200.f;  // Maybe slightly slower, heavier armor?
+    m_attackRange = 48.f;
 
     sf::Vector2i darkKnightFrameSize(32, 32);
 
@@ -255,16 +255,16 @@ bool DarkKnight::UseSkill(Unit&                    target,
                           ActionCompletionCallback callback,
                           ActionCompletionCallback onDeath)
 {
-if (!m_active || m_currentHealth <= 0)
-{
-    if (callback)
-        callback();
-    return false;
-}
+    if (!m_active || m_currentHealth <= 0)
+    {
+        if (callback)
+            callback();
+        return false;
+    }
 
-PlayAnimation(UnitAnimationType::JUMP, callback);
+    PlayAnimation(UnitAnimationType::JUMP, callback);
 
-return true;
+    return true;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements

@@ -239,7 +239,9 @@ void Necromancer::KillSummons(ActionCompletionCallback callback)
     m_summons.clear();
 }
 
-bool Necromancer::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+bool Necromancer::UseSkill(Unit&                    target,
+                           ActionCompletionCallback callback,
+                           ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -285,27 +287,25 @@ bool Necromancer::UseSkill(Unit& target, ActionCompletionCallback callback, Acti
         }
     }
 
-    float lifeStealPercentage = m_lifestealPercentage;
-    NecromancerSkill* necromancerSkill              = dynamic_cast<NecromancerSkill*>(selectedSkill);
+    float             lifeStealPercentage = m_lifestealPercentage;
+    NecromancerSkill* necromancerSkill    = dynamic_cast<NecromancerSkill*>(selectedSkill);
     if (necromancerSkill)
     {
         lifeStealPercentage += necromancerSkill->getLifestealPercentage();
-
     }
 
     int targetLastHealth = target.GetHealth();
 
     auto wrappedCallback = [this, &target, targetLastHealth, lifeStealPercentage, callback]() mutable {
-        if (!target.IsActive() || target.GetHealth() <= 0) {
-            if(callback)
+        if (!target.IsActive() || target.GetHealth() <= 0)
+        {
+            if (callback)
                 callback();
-
         }
         int damageDone = targetLastHealth - target.GetHealth();
         if (damageDone > 0)
         {
-            int healAmount = static_cast<int>(damageDone * lifeStealPercentage);
-            Heal(healAmount);
+            Heal(damageDone);
         }
         if (callback)
             callback();
@@ -317,16 +317,14 @@ bool Necromancer::UseSkill(Unit& target, ActionCompletionCallback callback, Acti
             int damageDone = targetLastHealth - target.GetHealth();
             if (damageDone > 0)
             {
-                int healAmount = static_cast<int>(damageDone * lifeStealPercentage);
-                Heal(healAmount);
+                Heal(damageDone);
             }
         }
         if (onDeath)
             onDeath();
-    };  
+    };
 
-    target.TakeDamage(target.GetHealth(), callback, onDeath);
-
+    target.TakeDamage(target.GetHealth() * lifeStealPercentage, wrappedCallback, wrappedCallback);
 
     return true;
 }

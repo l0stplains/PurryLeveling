@@ -17,8 +17,8 @@ Lich::Lich(const std::string&  name,
     // Fighter-specific stat overrides
     m_skillProbabability = 0.2f;
 
-    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.f;
+    m_moveSpeed   = 200.f;  // Maybe slightly slower, heavier armor?
+    m_attackRange = 48.f;
 
     sf::Vector2i lichFrameSize(32, 32);
 

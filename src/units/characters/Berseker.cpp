@@ -257,8 +257,8 @@ void Berseker::PerformAttack(AnimatedUnit&            target,
 
 int Berseker::CalculateDamage(Unit& target)
 {
-    int totalDamage =
-        static_cast<int>(m_attackDamage * m_attackDamageMultiplier * m_rageMultiplier + m_stats.strength);
+    int totalDamage = static_cast<int>(
+        m_attackDamage * m_attackDamageMultiplier * m_rageMultiplier + m_stats.strength);
     totalDamage *= m_stats.buffMultiplier;
     RNG   rng;
     float critChance = rng.generateProbability();
@@ -271,7 +271,9 @@ int Berseker::CalculateDamage(Unit& target)
     return totalDamage;
 }
 
-bool Berseker::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+bool Berseker::UseSkill(Unit&                    target,
+                        ActionCompletionCallback callback,
+                        ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -317,18 +319,26 @@ bool Berseker::UseSkill(Unit& target, ActionCompletionCallback callback, ActionC
         }
     }
 
-    BerserkerSkill* bersekerSkill              = dynamic_cast<BerserkerSkill*>(selectedSkill);
+    BerserkerSkill* bersekerSkill = dynamic_cast<BerserkerSkill*>(selectedSkill);
     if (bersekerSkill)
     {
         m_rageAddition = bersekerSkill->getFuryMultiplier();
     }
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << m_rageAddition;
+    std::string addedText = "Rage added: " + oss.str();
+    AddFloatingText(addedText, sf::Color::Yellow);
+
+    if (callback)
+        callback();
 
     return true;
 }
 
 void Berseker::ResetRage()
 {
-    m_rageAddition   = 0.f;
+    m_rageAddition = 0.f;
 }
 
 void Berseker::SetLevel(int level)

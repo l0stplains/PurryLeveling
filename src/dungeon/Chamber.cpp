@@ -90,11 +90,11 @@ void Chamber::generateMobs(bool isBossRoom)
         int bossLevel        = rng.generateInRange(mobLevelMin, mobLevelMax);
         int healthMultiplier = 2;
 
-        bossMob->SetMaxHealth(100 * bossLevel / 10 * healthMultiplier * difficultyMultiplier);
+        bossMob->SetMaxHealth(100 * bossLevel / 8 * healthMultiplier * difficultyMultiplier);
         bossMob->SetHealth(bossMob->GetMaxHealth());
         bossMob->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
         bossMob->SetCurrentMana(bossMob->GetMaxMana());
-        bossMob->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
+        bossMob->SetAttackDamage(15 * bossLevel / 8 * difficultyMultiplier);
         bossMob->SetLevel(bossLevel);
 
         bossMob->SetLevel(bossLevel);
@@ -147,11 +147,11 @@ void Chamber::generateMobs(bool isBossRoom)
             // Set mob stats based on chamber difficulty
             int mobLevel = rng.generateInRange(mobLevelMin, mobLevelMax);
 
-            mob->SetMaxHealth(60 * mobLevel / 10 * difficultyMultiplier);
+            mob->SetMaxHealth(60 * mobLevel / 8 * difficultyMultiplier);
             mob->SetHealth(mob->GetMaxHealth());
             mob->SetMaxMana(30 * mobLevel / 10 * difficultyMultiplier);
             mob->SetCurrentMana(mob->GetMaxMana());
-            mob->SetAttackDamage(8 * mobLevel / 10 * difficultyMultiplier);
+            mob->SetAttackDamage(12 * mobLevel / 8 * difficultyMultiplier);
             mob->SetLevel(mobLevel);
             mob->SetActive(false);
 

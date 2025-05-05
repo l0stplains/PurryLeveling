@@ -2,8 +2,8 @@
 
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
-#include "rng/rng.hpp"
 
+#include "rng/rng.hpp"
 #include "skill/characterSkill/FighterSkill.hpp"
 #include "skill/characterSkill/Mastery1/Bravery.hpp"
 
@@ -17,8 +17,8 @@ Fighter::Fighter(const std::string&  name,
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
     // Fighter-specific stat overrides
-    m_moveSpeed    = 110.f;
-    m_attackRange  = 48.0f;
+    m_moveSpeed   = 110.f;
+    m_attackRange = 48.0f;
 
     m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<Bravery>()));
 
@@ -256,9 +256,9 @@ bool Fighter::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCo
         return false;
     }
 
-    RNG rng;
-    int totalManaCost = 0;
-    std::vector<Skill*> activeSkills = m_skillTree->getActiveSkill();
+    RNG                 rng;
+    int                 totalManaCost = 0;
+    std::vector<Skill*> activeSkills  = m_skillTree->getActiveSkill();
 
     // filter by mana cost lower or equal to current mana
     std::vector<Skill*> filteredSkills;
@@ -270,43 +270,49 @@ bool Fighter::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCo
         }
     }
 
-    if(filteredSkills.empty())
+    if (filteredSkills.empty())
     {
         AddFloatingText("Not enough mana", sf::Color::Yellow);  // Red text for no mana
         return false;
     }
 
-    int randomIndex = rng.generateInRange(0, filteredSkills.size() - 1);
-    Skill* selectedSkill = filteredSkills[randomIndex];
-    totalManaCost = selectedSkill->getManaCost();
+    int    randomIndex          = rng.generateInRange(0, filteredSkills.size() - 1);
+    Skill* selectedSkill        = filteredSkills[randomIndex];
+    totalManaCost               = selectedSkill->getManaCost();
+    int           totalStrength = m_stats.strength;
+    FighterSkill* fighterSkill  = dynamic_cast<FighterSkill*>(selectedSkill);
+    if (fighterSkill)
+    {
+        totalStrength *= fighterSkill->getStrengthMultiplier();
+    }
+
+    totalStrength = std::min(totalStrength, m_maxHealth - m_currentHealth);
+
+    if (totalStrength <= 0)
+    {
+        AddFloatingText("No health to heal", sf::Color::Red);  // Red text for no health
+        return false;
+    }
+
     m_currentMana -= totalManaCost;
 
     float effectChance = rng.generateProbability();
-    if(effectChance < selectedSkill->getEffectChance())
+    if (effectChance < selectedSkill->getEffectChance())
     {
         AddFloatingText("Effect applied", sf::Color::Green);
         // copy the unique ptr
         for (auto& effect : selectedSkill->getEffects())
         {
-        std::unique_ptr<Effect> effectTemp = std::make_unique<Effect>(*effect);
-        AddEffect(std::move(effectTemp));
+            std::unique_ptr<Effect> effectTemp = std::make_unique<Effect>(*effect);
+            AddEffect(std::move(effectTemp));
         }
-    }
-
-    int totalStrength = m_stats.strength;
-    FighterSkill* fighterSkill = dynamic_cast<FighterSkill*>(selectedSkill);
-    if(fighterSkill)
-    {
-        totalStrength *= fighterSkill->getStrengthMultiplier();
     }
 
     Heal(totalStrength, std::move(callback));
     return true;
 }
 
-void Fighter::TakeDamage(int                      damage,
-                          ActionCompletionCallback callback,
-                          ActionCompletionCallback onDeath)
+void Fighter::TakeDamage(int damage, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -315,12 +321,12 @@ void Fighter::TakeDamage(int                      damage,
         return;
     }
 
-    RNG rng;
+    RNG   rng;
     float blockChance = rng.generateProbability();
     if (blockChance < m_blockChance)
     {
         AddFloatingText("Blocked", sf::Color::White);  // Green block text
-        damage = 0;  // blocked damage
+        damage = 0;                                    // blocked damage
     }
     AnimatedUnit::TakeDamage(damage, std::move(callback), std::move(onDeath));
 }
@@ -341,11 +347,11 @@ int Fighter::CalculateDamage(Unit& target)
 {
     int totalDamage = m_attackDamage;
     totalDamage *= m_attackDamageMultiplier * m_stats.buffMultiplier;
-    RNG rng;
+    RNG   rng;
     float critChance = rng.generateProbability();
     if (critChance < m_stats.criticalStrikeChance)
     {
-        totalDamage= m_stats.criticalStrikeMultiplier * m_stats.buffMultiplier;
+        totalDamage = m_stats.criticalStrikeMultiplier * m_stats.buffMultiplier;
     }
     totalDamage = target.GetStats().physicalDefense;
     totalDamage = std::max(0, m_attackDamage);

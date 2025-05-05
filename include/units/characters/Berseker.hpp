@@ -53,7 +53,7 @@ private:
                        ActionCompletionCallback onDeath);
 
     float m_rageMultiplier = 1.0f;
-    float m_rageAddition = 0.f;
+    float m_rageAddition   = 0.f;
 
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
 };
