@@ -25,7 +25,7 @@ InventoryMenu::InventoryMenu(GameContext& gameContext)
       m_equipment(*gameContext.GetEquipment()),
       m_showErrorPopup(false)  // Initialize to false
 {
-    std::vector<std::shared_ptr<Effect>> effects;
+    std::vector<std::string> effects;
     m_draggedItem = std::make_unique<std::pair<Item, int>>(Item("", "", "", 'C', effects, ""), 0);
     m_isDraggingFromEquipment = false;
     m_equipmentSlotType       = "";
@@ -295,7 +295,7 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                     }
                     for (size_t i = 0; i < effects.size(); ++i)
                     {
-                        std::string effectName = effects[i]->GetName();
+                        std::string effectName = effects[i];
                         std::replace(effectName.begin(), effectName.end(), '_', ' ');
                         m_hoveredDescription += effectName + (i < effects.size() - 1 ? ", " : "");
                     }
@@ -689,7 +689,7 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
                 }
                 for (size_t j = 0; j < effects.size(); ++j)
                 {
-                    std::string effectName = effects[j]->GetName();
+                    std::string effectName = effects[j];
                     std::replace(effectName.begin(), effectName.end(), '_', ' ');
                     m_hoveredDescription += effectName + (j < effects.size() - 1 ? ", " : "");
                 }
