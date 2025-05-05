@@ -81,6 +81,8 @@ Purry Leveling is a strategic RPG-based game where players can use skills and it
  > - C++17
  > - Make
  > - Ubuntu/Debian/Arch Linux distro
+
+### Dependencies
  > - SFML
  > - Imgui
 
