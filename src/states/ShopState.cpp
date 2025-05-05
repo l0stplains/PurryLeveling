@@ -1,11 +1,5 @@
 #include "states/ShopState.hpp"
 
-#include <iostream>
-
-#include "core/ResourceManager.hpp"
-
-#include "imgui.h"
-
 // Constructor
 ShopState::ShopState(GameContext& context)
     : State(context),

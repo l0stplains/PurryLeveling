@@ -1,20 +1,13 @@
 #pragma once
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Graphics.hpp>
 
-#include <vector>
-
-#include "core/GameContext.hpp"
-
-#include "ui/Button.hpp"
-
-#include "props/Portal.hpp"
-#include "save/PlayerConfigSaver.hpp"
+#include "skill/characterSkill/Mastery1/Fury.hpp"
+#include "states/DialogState.hpp"
+#include "states/DungeonState.hpp"
+#include "states/InventoryMenuState.hpp"
+#include "states/MainMenuState.hpp"
+#include "states/ShopState.hpp"
 #include "states/State.hpp"
-
-// Include ImGuiFileDialog
-#include "dungeon/DungeonFactory.hpp"
-#include "external/ImGuiFileDialog.h"
+#include "states/SkillTreeState.hpp"
 
 class WorldState : public State
 {
@@ -60,9 +53,9 @@ private:
     sf::Texture m_squareButtonTexture;
     sf::Texture m_buttonTexture;  ///< Button texture
 
-    Button m_exitButton;       ///< Start button
-    Button m_inventoryButton;  ///< Start button
-    Button m_skillTreeButton;  ///< Start button
+    Button m_exitButton;       ///< Exit button
+    Button m_inventoryButton;  ///< Inventory button
+    Button m_skillTreeButton;  ///< Skill tree button
 
     sf::Font m_font;      ///< Font for UI text
     sf::Font m_boldFont;  ///< Font for UI text
@@ -72,30 +65,24 @@ private:
     bool m_showPortalEnterModal = false;  ///< Flag for showing portal enter modal
     bool m_showShopEnterModal   = false;  ///< Flag for showing shop enter modal
     bool m_showExitPopup        = false;  ///< Flag to show exit confirmation popup
-    bool m_showSaveAsPopup      = false;  ///< Flag to show save as popup
-    char m_saveFolderBuf[256]   = {0};    ///< Buffer for save folder input
     bool m_wasInShop            = false;  ///< Flag for showing shop enter modal
-    bool m_wasInPortal          = false;
+    bool m_wasInPortal          = false;  ///< Flag for tracking portal entry
 
-    // File dialog related members
-    bool        m_showFileDialog = false;  ///< Flag to show file dialog
-    std::string m_selectedFolder;          ///< Selected folder path
+    // Error handling
     bool        m_showErrorPopup = false;  ///< Flag to show error popup
     std::string m_errorMessage;            ///< Error message to display
 
-    const std::vector<std::string> m_requiredFiles = {
-        "item.txt", "shop.txt", "backpack.txt", "mobloot.txt", "equipment.txt"};  ///< Required
-                                                                                  ///< files for
-                                                                                  ///< save files
-                                                                                  ///< validation
+    // UI rendering methods
+    void RenderPortalEnterModal();
+    void RenderShopEnterModal(AnimatedUnit* character);
+    void RenderErrorModal();
+    void RenderExitConfirmationModal();
+    void RenderPlayerInfo();
 
-    /**
-     * @brief Validates if the selected folder contains all required files
-     *
-     * @param folderPath Path to the folder to check
-     * @return true if all required files exist, false otherwise
-     */
-    bool validateFolder(const std::string& folderPath);
+    // Helper methods for modals
+    void PushModalStyle(const ImVec4& borderColor = ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    void PopModalStyle();
+    bool RenderStyledButton(const char* label, const ImVec2& size, bool isAction = false);
 
     /**
      * @brief Shows an error message in an ImGui popup

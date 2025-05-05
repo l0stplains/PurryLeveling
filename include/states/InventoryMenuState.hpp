@@ -1,12 +1,5 @@
 #pragma once
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Graphics.hpp>
 
-#include <vector>
-
-#include "core/GameContext.hpp"
-
-#include "ui/Button.hpp"
 #include "ui/InventoryMenu.hpp"
 
 #include "states/State.hpp"
