@@ -30,6 +30,19 @@ void ItemConfigParser::ParseFromFile(const std::string& filename)
         // rec[4] is BaseAtk—ignore if Item ctor doesn't use it
 
         // 2) up to 3 effects at rec[5..7], stop on "-"
+
+        // std::vector<std::unique_ptr<Effect>> effects;
+        // Effect factory;
+        // for (size_t i = 5; i < rec.size(); ++i)
+        // {
+        //     if (rec[i] == "-")
+        //         break;
+        //     // create the Effect pointer and add it
+        //     std::unique_ptr<Effect> child = factory.createEffect(rec[i]);
+        //     effects.push_back(std::move(child));
+        // }
+        //
+
         std::vector<std::shared_ptr<Effect>> effects;
         size_t                               idx = 5;
         for (; idx < rec.size() && idx < 8; ++idx)
