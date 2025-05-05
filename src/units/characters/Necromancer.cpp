@@ -1,9 +1,13 @@
 #include "units/characters/Necromancer.hpp"
 
+#include <atomic>
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
 
+#include "rng/rng.hpp"
 #include "skill/characterSkill/Mastery1/LifeSteal.hpp"
+#include "units/summons/Summon.hpp"
+#include "units/summons/Zombie.hpp"
 
 Necromancer::Necromancer(const std::string&  name,
                          const sf::Vector2f& position,
@@ -14,16 +18,7 @@ Necromancer::Necromancer(const std::string&  name,
       Character(name),
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
-    // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 25;
-    m_healthRegen  = 3;
-    m_manaRegen    = 3;
-    m_moveSpeed    = 180.f;
-    m_attackRange  = 48.f;
+    m_summonedUnits = 2;
 
     m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<LifeSteal>()));
 
@@ -91,96 +86,11 @@ Necromancer::Necromancer(const std::string&  name,
                    necromancerShadowTexturePaths);
 }
 
-void Necromancer::Attack(Unit& target, ActionCompletionCallback callback)
+void Necromancer::Attack(Unit&                    target,
+                         ActionCompletionCallback callback,
+                         ActionCompletionCallback onDeath)
 {
-    if (!m_active || m_currentHealth <= 0 || !target.IsActive())
-    {  // Check self and target state
-        if (callback)
-            callback();  // Cannot attack, call callback immediately
-        return;
-    }
-
-    AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
-
-    sf::Vector2f vectorToTarget = animatedTarget->GetPosition() - m_position;
-    float        distanceToTarget =
-        std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
-
-    if (distanceToTarget > m_attackRange)
-    {
-        // Target out of range, move closer first
-        // Calculate a position just within attack range
-        sf::Vector2f direction       = vectorToTarget / distanceToTarget;
-        sf::Vector2f positionInRange = animatedTarget->GetPosition() -
-                                       direction * (m_attackRange * 0.9f);  // Move 90% of the way
-
-        std::cout << GetName() << " moving to attack " << target.GetName() << std::endl;  // Debug
-
-        // Move, and chain the PerformAttack call as the callback for Move
-        Move(positionInRange,
-             [this,
-              animatedTarget,
-              initialPosition = m_position,
-              initialDir      = m_direction,
-              cb              = std::move(callback)]() mutable {
-                 // This lambda is called when Move() finishes (reaches destination or gets blocked)
-                 sf::Vector2f vec  = animatedTarget->GetPosition() - m_position;
-                 float        dist = std::sqrt(vec.x * vec.x + vec.y * vec.y);
-
-                 if (dist <= m_attackRange * 1.1f)
-                 {  // Check range again (allow small tolerance)
-                     std::cout << GetName() << " reached target, performing attack on "
-                               << animatedTarget->GetName() << std::endl;  // Debug
-
-                     // Create a wrapped callback that will handle returning to position
-                     // We need to wrap this in a std::shared_ptr to avoid potential lifetime issues
-                     auto wrappedCallback = std::make_shared<ActionCompletionCallback>(
-                         [this, initialPosition, initialDir, originalCb = std::move(cb)]() mutable {
-                             std::cout << GetName()
-                                       << " attack completed, returning to initial position"
-                                       << std::endl;
-
-                             // Move back to initial position
-                             Move(initialPosition,
-                                  [this, initialDir, originalCb = std::move(originalCb)]() mutable {
-                                      // After moving back, set direction
-                                      SetDirection(initialDir);
-
-                                      // Call original callback
-                                      if (originalCb)
-                                          originalCb();
-                                  });
-                         });
-
-                     // Call the original PerformAttack with our wrapped callback
-                     // The lambda captures a shared_ptr by value to ensure it stays alive
-                     this->PerformAttack(*animatedTarget, [wrappedCb = wrappedCallback]() {
-                         // Execute our wrapped callback when PerformAttack finishes
-                         if (*wrappedCb)
-                             (*wrappedCb)();
-                     });
-                 }
-                 else
-                 {
-                     std::cout << GetName()
-                               << " move finished but target still out of range or blocked."
-                               << std::endl;  // Debug
-                     if (cb)
-                         cb();  // Call original callback if attack couldn't proceed
-                 }
-             });
-    }
-    else
-    {
-        // Target already in range
-        std::cout << GetName() << " is in range, performing attack on " << target.GetName()
-                  << std::endl;  // Debug
-        PerformAttack(*animatedTarget, std::move(callback));
-    }
-}
-
-void Necromancer::PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback)
-{
+    // Early‑out if we can't act or target is invalid
     if (!m_active || m_currentHealth <= 0 || !target.IsActive())
     {
         if (callback)
@@ -188,70 +98,146 @@ void Necromancer::PerformAttack(AnimatedUnit& target, ActionCompletionCallback c
         return;
     }
 
-    // Face the target
-    UpdateDirection(target.GetPosition() - m_position);
+    // Capture the actual target pointer so we don't reference a dead stack frame
+    Unit* targetPtr = &target;
 
-    // Play attack animation. The lambda executes *after* the animation finishes.
-    PlayAnimation(UnitAnimationType::ATTACK, [this, &target, cb = std::move(callback)]() mutable {
-        // --- Animation Finished Callback ---
-        std::cout << GetName() << "'s attack animation finished." << std::endl;  // Debug
+    // --- If we have no summons, try summoning ---
+    if (m_summons.empty())
+    {
+        // Prepare a callback that runs after the jump animation
+        std::function<void()> jumpCallback = [this,
+                                              targetPtr,
+                                              summonCount = m_summonedUnits,
+                                              chanceProb  = m_summonChance,
+                                              cb          = std::move(callback),
+                                              od          = std::move(onDeath)]() mutable {
+            RNG rng;
+            if (rng.generateProbability() < chanceProb)
+            {
+                // Generate spawn points
+                sf::Vector2f basePos = m_position;
+                basePos.x += 100;
+                auto spawnPts = Summon::generateSummonSpawnPoints(basePos, summonCount, true);
 
-        // Check if target is STILL valid and in range after animation delay
-        if (target.IsActive() && target.GetHealth() > 0)
+                // Summon each Zombie exactly once
+                for (int i = 0; i < summonCount; ++i)
+                {
+                    auto z = std::make_unique<Zombie>(
+                        "Zombie", spawnPts[i], m_navGrid, false, m_gameContext);
+                    z->SetScale(8.f, 8.f);
+                    z->SetActive(true);
+                    z->SetControlledByPlayer(false);
+                    z->SetNavGrid(m_navGrid);
+                    z->SetShowUI(true);
+                    z->SetLevel(m_level);
+                    z->SetDirection(Direction::EAST);
+
+                    // Keep the raw pointer so we can grab its ID after registration
+                    Zombie* rawZ = z.get();
+                    m_gameContext.GetUnitManager()->AddUnit(std::move(z));
+                    m_summons.push_back(rawZ->GetId());
+                }
+
+                std::cout << "Summoned " << summonCount << " zombies!" << std::endl;
+            }
+            // In either case, call the callback so the mage's turn can finish
+            if (cb)
+                cb();
+        };
+
+        // Play the jump animation, then run our summoning logic
+        PlayAnimation(UnitAnimationType::JUMP, std::move(jumpCallback));
+        return;
+    }
+
+    // --- Otherwise, we already have summons: let them attack ---
+
+    // First: remove dead summons from the list
+    bool anyAlive = false;
+    for (auto it = m_summons.begin(); it != m_summons.end();)
+    {
+        if (auto* u = m_gameContext.GetUnitManager()->GetUnit(*it);
+            u && u->IsActive() && u->GetHealth() > 0)
         {
-            sf::Vector2f vectorToTarget = target.GetPosition() - m_position;
-            float        distanceToTarget =
-                std::sqrt(vectorToTarget.x * vectorToTarget.x + vectorToTarget.y * vectorToTarget.y);
-
-            // Deal damage if still in range (maybe slightly larger range check here?)
-            if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
-            {
-                std::cout << GetName() << " deals " << m_attackDamage << " damage to "
-                          << target.GetName() << std::endl;  // Debug
-                // Cast target back to AnimatedUnit if TakeDamage is needed
-                // This is risky if target might not be AnimatedUnit, but necessary for TakeDamage
-                AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
-                if (animatedTarget)
-                {
-                    animatedTarget->TakeDamage(m_attackDamage);  // Target takes damage
-                }
-                else
-                {
-                    std::cerr << "Warning: Target " << target.GetName()
-                              << " is not an AnimatedUnit, cannot TakeDamage." << std::endl;
-                }
-            }
-            else
-            {
-                std::cout << GetName()
-                          << " dealt no damage, target moved out of range during animation."
-                          << std::endl;  // Debug
-            }
+            anyAlive = true;
+            ++it;
         }
         else
         {
-            std::cout << GetName() << " dealt no damage, target is no longer valid."
-                      << std::endl;  // Debug
+            it = m_summons.erase(it);
         }
+    }
 
-        // Set cooldown AFTER attack attempt
-        // m_currentAttackCooldown = m_attackCooldown;
+    // If all summons died, clear and retry summoning
+    if (!anyAlive)
+    {
+        m_summons.clear();
+        // Retry attack, which will go into the summon‑branch
+        Attack(target, std::move(callback), std::move(onDeath));
+        return;
+    }
 
-        // Default back to idle if not moving etc.
-        if (!m_isMoving)
+    // Play a quick jump to signal the attack phase
+    PlayAnimation(UnitAnimationType::JUMP);
+
+    // Setup the counter and final callback
+    size_t total   = m_summons.size();
+    auto   counter = std::make_shared<std::atomic_int>(0);
+    auto   finalCb = std::move(callback);
+
+    auto makeOnDamageDone = [counter, total, finalCb]() mutable {
+        int done = counter->fetch_add(1, std::memory_order_relaxed) + 1;
+        std::cout << "Summon damage done: " << done << "/" << total << std::endl;
+        if (done == (int)total && finalCb)
         {
-            PlayAnimation(UnitAnimationType::IDLE);
+            finalCb();
         }
+    };
 
-        // Call the original completion callback if provided
-        if (cb)
+    auto wrappedOnDeath = [makeOnDamageDone, od = std::move(onDeath)]() mutable {
+        makeOnDamageDone();
+        if (od)
+            od();
+    };
+
+    // Instruct each zombie to attack
+    for (int id : m_summons)
+    {
+        if (auto* s = m_gameContext.GetUnitManager()->GetUnit(id);
+            s && s->IsActive() && targetPtr && targetPtr->IsActive())
         {
-            cb();
+            s->Attack(*targetPtr, makeOnDamageDone, wrappedOnDeath);
         }
-    });
+        else
+        {
+            std::cerr << "Skipping attack for dead/missing summon " << id << "\n";
+        }
+    }
 }
 
-void Necromancer::UseSkill(Unit& target, ActionCompletionCallback callback)
+void Necromancer::KillSummons(ActionCompletionCallback callback)
+{
+    if (m_summons.empty())
+    {
+        if (callback)
+            callback();
+        return;
+    }
+
+    for (const auto& summonId : m_summons)
+    {
+        Unit* summon = m_gameContext.GetUnitManager()->GetUnit(summonId);
+        if (summon && summon->IsActive() && summon->GetHealth() > 0)
+        {
+            summon->TakeDamage(summon->GetHealth(), callback);
+        }
+    }
+    m_summons.clear();
+}
+
+void Necromancer::UseSkill(Unit&                    target,
+                           ActionCompletionCallback callback,
+                           ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -261,8 +247,38 @@ void Necromancer::UseSkill(Unit& target, ActionCompletionCallback callback)
     }
 }
 
+const std::vector<unsigned int>& Necromancer::GetSummons() const
+{
+    return m_summons;
+}
+
 // Optional: Override RenderUI if Fighter has unique elements
 // void Necromancer::RenderUI(sf::RenderWindow& window) {
 //     Character::RenderUI(window); // Call base UI rendering
 //     // Add fighter-specific UI elements here (e.g., rage bar?)
 // }
+
+float Necromancer::GetSummonChance() const
+{
+    return m_summonChance;
+}
+int Necromancer::GetSummonedUnits() const
+{
+    return m_summonedUnits;
+}
+float Necromancer::GetLifestealPercentage() const
+{
+    return m_lifestealPercentage;
+}
+void Necromancer::SetSummonChance(float chance)
+{
+    m_summonChance = chance;
+}
+void Necromancer::SetSummonedUnits(int units)
+{
+    m_summonedUnits = units;
+}
+void Necromancer::SetLifestealPercentage(float percentage)
+{
+    m_lifestealPercentage = percentage;
+}

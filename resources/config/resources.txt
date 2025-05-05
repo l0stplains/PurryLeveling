@@ -18,8 +18,9 @@ lava_button = resources/textures/ui/lava_button.png
 crystal_button = resources/textures/ui/crystal_button.png
 world_background = resources/textures/ui/world_background.jpg
 inventory_background = resources/textures/ui/inventory_background.jpg
-shop_background = resources/textures/ui/shop_background.png
-skill_tree_bg = resources/textures/ui/skill_tree_bg.jpg
+shop_background = resources/textures/ui/shop_background.jpg
+shop_dialog_1 = resources/textures/ui/shop_dialog_1.jpg
+skill_tree_bg = resources/textures/ui/skill_tree_bg.png
 
 # Items
 ice_potion = resources/textures/items/ice_potion.png
@@ -92,6 +93,7 @@ crystal_boss = resources/textures/ui/crystal_boss.jpg
 
 # Props
 empty_prop = resources/textures/props/empty.png
+pointer_prop = resources/textures/props/pointer.png
 portal_e = resources/textures/props/portal_e.png
 portal_d = resources/textures/props/portal_d.png
 portal_c = resources/textures/props/portal_c.png

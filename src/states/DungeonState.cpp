@@ -3,13 +3,15 @@
 #include <iostream>
 
 #include "units/AnimatedUnit.hpp"
-#include "units/mobs/basics/Slime.hpp"
+#include "units/characters/Necromancer.hpp"
 #include "units/summons/Summon.hpp"
+#include "units/summons/Wildfire.hpp"
 
 // Constructor
 DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon)
     : State(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
+      m_bossBackgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
       m_buttonHoverSound(GetContext().GetResourceManager()->GetSoundBuffer("button_hover")),
       m_buttonClickSound(GetContext().GetResourceManager()->GetSoundBuffer("button_click")),
@@ -21,10 +23,17 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_font(GetContext().GetResourceManager()->GetFont("main_font")),
       m_boldFont(GetContext().GetResourceManager()->GetFont("main_bold_font")),
       m_navGrid(GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
+      m_mobNavGrid(
+          GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_battleUnitInfo(context),
+      m_questInfo(context, 250.0f, 150.0f),  // Initialize QuestInfo with reasonable size
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
       m_chamber(&dungeon.getChamber(0)),
+      m_chamberExitPointer(GetContext().GetResourceManager()->GetTexture("pointer_prop"),
+                           {1160.f, 540.f},
+                           {4.f, 4.f}),
+      m_bossHealthBar(120.f),
       m_pendingStateChange({StateAction::NONE})
 {
     SetName("Dungeon State");
@@ -33,20 +42,24 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
     switch (dimension)
     {
         case DimensionType::LAVA:
-            m_buttonTexture     = resources->GetTexture("lava_button");
-            m_backgroundTexture = resources->GetTexture("lava_base");
+            m_buttonTexture         = resources->GetTexture("lava_button");
+            m_backgroundTexture     = resources->GetTexture("lava_base");
+            m_bossBackgroundTexture = resources->GetTexture("lava_boss");
             break;
         case DimensionType::MISTY:
-            m_buttonTexture     = resources->GetTexture("misty_button");
-            m_backgroundTexture = resources->GetTexture("misty_base");
+            m_buttonTexture         = resources->GetTexture("misty_button");
+            m_backgroundTexture     = resources->GetTexture("misty_base");
+            m_bossBackgroundTexture = resources->GetTexture("misty_boss");
             break;
         case DimensionType::CRYSTAL:
-            m_buttonTexture     = resources->GetTexture("crystal_button");
-            m_backgroundTexture = resources->GetTexture("crystal_base");
+            m_buttonTexture         = resources->GetTexture("crystal_button");
+            m_backgroundTexture     = resources->GetTexture("crystal_base");
+            m_bossBackgroundTexture = resources->GetTexture("crystal_boss");
             break;
         case DimensionType::NORMAL:
-            m_buttonTexture     = resources->GetTexture("normal_button");
-            m_backgroundTexture = resources->GetTexture("normal_base");
+            m_buttonTexture         = resources->GetTexture("normal_button");
+            m_backgroundTexture     = resources->GetTexture("normal_base");
+            m_bossBackgroundTexture = resources->GetTexture("normal_boss");
             break;
     }
     m_backgroundSprite.setTexture(m_backgroundTexture);
@@ -57,7 +70,27 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
 
     // setup door enter area
         m_chamberExitArea.setOrigin({0, 0});
-    m_chamberExitArea.setPosition({628.f, 350.f});
+    m_chamberExitArea.setScale({2.f, 25.f});
+    m_chamberExitArea.setPosition({1200.f, 0.f});
+
+    std::vector<std::vector<bool>> grid = {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+
+    m_navGrid.SetGrid(grid);
 }
 
 void DungeonState::Init()
@@ -86,6 +119,7 @@ void DungeonState::Init()
     m_exitButton.setClickSound(m_buttonClickSound);
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
+
     m_attackButton.setOnClickCallback([this]() {
         Mob*         closestMob = getClosestUnitOfType<Mob>(m_mobsID, m_character->GetPosition());
         unsigned int targetId   = closestMob->GetId();
@@ -94,22 +128,23 @@ void DungeonState::Init()
             std::cerr << "No mobs available to attack!" << std::endl;
             return;
         }
-        m_turnQueue.pop();
         // set callback to trigger
+        m_turnQueue.pop();
+        m_isPlayerTurn                 = false;
         std::function<void()> callback = [this, targetId] {
             m_triggerActionTurn = true;
-            m_isPlayerTurn      = false;
             m_turnQueue.push(m_character->GetId());
+        };
+
+        std::function<void()> onKill = [this, targetId] {
             Mob* attackedMob = GetContext().GetUnitManager()->GetUnitOfType<Mob>(targetId);
-            if (!attackedMob->IsActive())
+            if (attackedMob)
             {
                 m_mobsID.erase(std::remove(m_mobsID.begin(), m_mobsID.end(), targetId),
                                m_mobsID.end());
-                // TODO: remove unit from unit manager
-                // GetContext().GetUnitManager()->RemoveUnit(targetId);
             }
         };
-        m_character->Attack(*closestMob, callback);
+        m_character->Attack(*closestMob, callback, onKill);
     });
 
     m_mobsID = m_chamber->getMobsId();
@@ -125,7 +160,7 @@ void DungeonState::Init()
         mob->SetActive(true);
         mob->SetPosition(spawnPoints[i]);
         mob->SetControlledByPlayer(false);
-        mob->SetNavGrid(m_navGrid);
+        mob->SetNavGrid(m_mobNavGrid);
         mob->SetShowUI(true);
         mob->SetDirection(Direction::WEST);
     }
@@ -140,6 +175,7 @@ void DungeonState::Init()
         m_character->SetDirection(Direction::EAST);
         m_character->SetShowUI(true);
         m_character->SetControlledByPlayer(false);
+
         m_character->SetNavGrid(m_navGrid);
         m_character->SetMoveSpeed(m_character->GetMoveSpeed() * 1.5f);
         m_battleUnitInfo.updateSpriteTexture(*m_character);
@@ -157,7 +193,7 @@ void DungeonState::Init()
         m_turnQueue.push(id);
     }
 
-    m_triggerActionTurn = true;
+    m_triggerActionTurn = false;
 }
 
 State::StateChange DungeonState::ProcessEvent(const sf::Event& event)
@@ -176,7 +212,8 @@ State::StateChange DungeonState::ProcessEvent(const sf::Event& event)
 State::StateChange DungeonState::Update(const sf::Time& dt)
 {
     // checks if player die
-    if (m_turnQueue.front() == m_character->GetId() && !m_character->IsActive())
+    if (!m_walkToExit && m_turnQueue.front() == m_character->GetId() && !m_character->IsActive() &&
+        !m_isTransitioning)
     {
         if (m_dungeon.getRank() == Dungeon::RANK_SPECIAL)
         {
@@ -195,21 +232,48 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
             }
         }
         else
+        {}
+        Necromancer* necromancer =
+            GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(GetContext().GetCharacterId());
+        if (necromancer)
         {
+            m_isTransitioning              = true;
+            std::function<void()> callback = [this]() {
+                m_isTransitioning = false;
+                return StateChange {StateAction::POP};
+            };
+            necromancer->KillSummons(callback);
+        }
+        else
+        {
+            m_isTransitioning = false;
         }
         return StateChange {StateAction::POP};
     }
 
     // checks if mob clears
-    if (m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId())
+    if (!m_walkToExit && m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId() &&
+        !m_isTransitioning)
     {
+        m_walkToExit = true;
+        m_character->SetControlledByPlayer(true);
         std::cout << "MOB CLEARED" << std::endl;
+
+        // Update the quest progress when mobs are cleared
+        if (m_dungeon.getQuest().getType() == QuestType::KILL)
+        {
+            // TODO: update
+            m_dungeon.updateKillQuestProgress(0);
+        }
+
         m_dungeon.clearChamber(m_chamber->getChamberNumber() - 1);
         Character* character =
             GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
         character->AddExp(m_chamber->getExpReward());
         character->AddGold(m_chamber->getGoldReward());
 
+        Necromancer* necromancer =
+            GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(GetContext().GetCharacterId());
         // checks if player finish dungeon
         if (m_dungeon.areAllChambersCleared())
         {
@@ -226,26 +290,59 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
                     std::cerr << "Backpack is full!" << std::endl;
                 }
             }
+            if (necromancer)
+            {
+                m_isTransitioning              = true;
+                std::function<void()> callback = [this]() {
+                    m_isTransitioning = false;
+                    return StateChange {StateAction::POP};
+                };
+                necromancer->KillSummons(callback);
+            }
+
+            // If quest is completed, add quest rewards to player
+            if (m_dungeon.isQuestCompleted())
+            {
+                Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
+                    GetContext().GetCharacterId());
+                character->AddExp(m_dungeon.getQuestExpReward());
+                character->AddGold(m_dungeon.getQuestGoldReward());
+
+                // Add quest item reward to backpack if there is one
+                Item questItem = m_dungeon.getQuestRewardItem();
+                if (!questItem.getItemID().empty())
+                {
+                    try
+                    {
+                        GetContext().GetBackpack()->addItem(questItem, 1);
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "Exception: " << e.what() << std::endl;
+                        std::cerr << "Backpack is full, couldn't add quest reward item!" << std::endl;
+                    }
+                }
+            }
+
             return StateChange {StateAction::POP};
         }
-        nextChamber();
+        if (necromancer)
+        {
+            m_isTransitioning              = true;
+            std::function<void()> callback = [this]() { m_isTransitioning = false; };
+            necromancer->KillSummons(callback);
+        }
     }
 
     AnimatedUnit* character =
         GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
 
-    if (m_turnQueue.front() == m_character->GetId())
-    {
-        m_isPlayerTurn = true;
-    }
+    m_exitButton.setActive(m_isPlayerTurn);
+    m_attackButton.setActive(m_isPlayerTurn);
+    m_useSkillButton.setActive(m_isPlayerTurn);
+    m_useItemButton.setActive(m_isPlayerTurn);
 
-    bool isPlayerPlaying = m_turnQueue.front() == m_character->GetId();
-    m_exitButton.setActive(isPlayerPlaying);
-    m_attackButton.setActive(isPlayerPlaying);
-    m_useSkillButton.setActive(isPlayerPlaying);
-    m_useItemButton.setActive(isPlayerPlaying);
-
-    if (m_triggerActionTurn && !m_isPlayerTurn)
+    if (!m_walkToExit && m_triggerActionTurn && !m_isPlayerTurn)
     {
         std::cout << "Mob turn triggered." << std::endl;
         m_triggerActionTurn = false;
@@ -265,18 +362,27 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
 
     if (isInChamberExit && !m_wasInChamberExit)
     {
-        if (character)
-            character->SetControlledByPlayer(false);  // ← lock movement
+        sf::Vector2u windowSize = GetContext().GetWindow()->getSize();
+        character->SetPosition(
+            {windowSize.x / 2.0f - 400.f * windowSize.x / 1820.f, 780.0f * windowSize.y / 1024.f});
+        character->SetControlledByPlayer(false);
+        m_walkToExit = false;
+        nextChamber();
     }
 
     m_wasInChamberExit = isInChamberExit;
 
-    if (!(m_showExitPopup))
+    if (!(m_showExitPopup || m_walkToExit))
     {
         m_attackButton.update(*GetContext().GetWindow());
         m_useSkillButton.update(*GetContext().GetWindow());
         m_useItemButton.update(*GetContext().GetWindow());
         m_exitButton.update(*GetContext().GetWindow());
+    }
+
+    if (m_walkToExit)
+    {
+        m_chamberExitPointer.Update(dt);
     }
 
     // handle any pending state-change (from your buttons, etc)
@@ -293,15 +399,32 @@ void DungeonState::Draw(sf::RenderWindow& window)
     window.draw(m_backgroundSprite);
 
     window.draw(m_chamberExitArea);
-    m_attackButton.draw(window);
-    m_useSkillButton.draw(window);
-    m_useItemButton.draw(window);
-    m_exitButton.draw(window);
+    if (!m_walkToExit)
+    {
+        m_attackButton.draw(window);
+        m_useSkillButton.draw(window);
+        m_useItemButton.draw(window);
+        m_exitButton.draw(window);
+    }
+    else
+    {
+        m_chamberExitPointer.Draw(window);
+    }
 }
 
 void DungeonState::RenderUI()
 {
     // m_battleUnitInfo.render(*m_character);
+    if (m_chamber->getIsBossRoom() && m_mobsID.size() != 0)
+    {
+        Unit* boss = GetContext().GetUnitManager()->GetUnitOfType<Unit>(m_mobsID[0]);
+        m_bossHealthBar.render(*boss);
+    }
+    // Render battle unit info
+    // m_battleUnitInfo.render(*m_character);
+
+    // Render quest info
+    m_questInfo.render(m_dungeon);
 
     // Display exit confirmation popup
     if (m_showExitPopup)
@@ -328,8 +451,23 @@ void DungeonState::RenderUI()
 
         if (ImGui::Button("Yes", ImVec2(buttonWidth, 0)))
         {
-            ImGui::CloseCurrentPopup();
-            m_pendingStateChange = StateChange {StateAction::POP};
+            Necromancer* necromancer = GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(
+                GetContext().GetCharacterId());
+            if (necromancer)
+            {
+                m_isTransitioning              = true;
+                std::function<void()> callback = [this]() {
+                    m_isTransitioning = false;
+                    ImGui::CloseCurrentPopup();
+                    m_pendingStateChange = StateChange {StateAction::POP};
+                };
+                necromancer->KillSummons(callback);
+            }
+            else
+            {
+                ImGui::CloseCurrentPopup();
+                m_pendingStateChange = StateChange {StateAction::POP};
+            }
         }
         // ImGui::PopStyleColor(3);
         ImGui::SameLine();
@@ -360,7 +498,6 @@ void DungeonState::Exit()
     if (character)
     {
         character->SetMoveSpeed(character->GetMoveSpeed() / 1.5f);
-        character->SetShowUI(false);
     }
 
     // Save everything related to the user loaded thing
@@ -397,16 +534,27 @@ void DungeonState::playMobTurn()
         m_triggerActionTurn = true;
         m_turnQueue.pop();
         m_turnQueue.push(mob->GetId());
+        if (m_turnQueue.front() == m_character->GetId())
+        {
+            m_isPlayerTurn      = true;
+            m_triggerActionTurn = false;
+        }
     };
 
     AnimatedUnit* summon = getClosestUnitOfType<AnimatedUnit>(summonIDs, mob->GetPosition());
     if (summon == nullptr)
     {
-        std::cout << "No summons available to attack!" << std::endl;
         mob->Attack(*character, callback);
+        return;
     }
     else
     {
+        Wildfire* wildfire = GetContext().GetUnitManager()->GetUnitOfType<Wildfire>(summon->GetId());
+        if (wildfire)
+        {
+            mob->Attack(*character, callback);
+            return;
+        }
         // compare distance to character and summon and choose the closest
         float mobDist = std::sqrt(std::pow(mob->GetPosition().x - character->GetPosition().x, 2) +
                                   std::pow(mob->GetPosition().y - character->GetPosition().y, 2));
@@ -436,6 +584,15 @@ void DungeonState::nextChamber()
     m_chamber = &m_dungeon.getChamber(m_chamber->getChamberNumber());
     m_mobsID  = m_chamber->getMobsId();
 
+    if (m_chamber->getIsBossRoom())
+    {
+        m_backgroundSprite.setTexture(m_bossBackgroundTexture);
+    }
+    else
+    {
+        m_backgroundSprite.setTexture(m_backgroundTexture);
+    }
+
     // spawn new mobs
     std::vector<sf::Vector2f> spawnPoints =
         generateMobSpawnPoints({GetContext().GetWindow()->getSize().x / 2.0f +
@@ -450,12 +607,14 @@ void DungeonState::nextChamber()
         mob->SetActive(true);
         mob->SetPosition(spawnPoints[i]);
         mob->SetControlledByPlayer(false);
-        mob->SetNavGrid(m_navGrid);
+        mob->SetNavGrid(m_mobNavGrid);
         mob->SetShowUI(true);
         mob->SetDirection(Direction::WEST);
 
         m_turnQueue.push(m_mobsID[i]);
     }
+    m_triggerActionTurn = false;
+    m_isPlayerTurn      = true;
 }
 
 std::vector<sf::Vector2f> DungeonState::generateMobSpawnPoints(const sf::Vector2f& center,

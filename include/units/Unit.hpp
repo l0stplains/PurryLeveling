@@ -30,16 +30,24 @@ public:
     Unit(Unit&&)                 = default;
     Unit& operator=(Unit&&)      = default;
 
-    virtual void Attack(Unit& target, ActionCompletionCallback callback = nullptr);
-    virtual void TakeDamage(int damage, ActionCompletionCallback callback = nullptr);
+    virtual void Attack(Unit&                    target,
+                        ActionCompletionCallback callback = nullptr,
+                        ActionCompletionCallback onDeath  = nullptr);
+    virtual void TakeDamage(int                      damage,
+                            ActionCompletionCallback callback = nullptr,
+                            ActionCompletionCallback onDeath  = nullptr);
     virtual void Heal(int amount, ActionCompletionCallback callback = nullptr);
 
     virtual void RestoreMana(int amount);
 
+    virtual int CalculateDamage(Unit& target);
+
     /**
      * @brief Uses a skill, playing a generic skill animation.
      */
-    virtual void UseSkill(Unit& target, ActionCompletionCallback callback = nullptr) = 0;
+    virtual void UseSkill(Unit&                    target,
+                          ActionCompletionCallback callback = nullptr,
+                          ActionCompletionCallback onDeath  = nullptr) = 0;
 
     virtual void AddEffect(std::unique_ptr<Effect> effect);
     virtual void RemoveEffect(const std::string& effectName);

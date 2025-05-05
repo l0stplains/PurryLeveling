@@ -31,12 +31,18 @@ public:
     /**
      * @brief Fighter's attack implementation. Checks range, moves if necessary, deals damage.
      */
-    void Attack(Unit& target, ActionCompletionCallback callback = nullptr) override;
+    void Attack(Unit&                    target,
+                ActionCompletionCallback callback = nullptr,
+                ActionCompletionCallback onDeath  = nullptr) override;
 
     /**
      * @brief Fighter's skill implementation.
      */
-    void UseSkill(Unit& target, ActionCompletionCallback callback = nullptr) override;
+    void UseSkill(Unit&                    target,
+                  ActionCompletionCallback callback = nullptr,
+                  ActionCompletionCallback onDeath  = nullptr) override;
+
+    int CalculateDamage(Unit& target) override;
 
     // void TakeDamage(int damage, ActionCompletionCallback callback = nullptr) override;
 
@@ -51,7 +57,9 @@ private:
     /**
      * @brief Helper function to perform the attack animation and damage after range check.
      */
-    void PerformAttack(AnimatedUnit& target, ActionCompletionCallback callback);
+    void PerformAttack(AnimatedUnit&            target,
+                       ActionCompletionCallback callback,
+                       ActionCompletionCallback onDeath);
 
     // --- Fighter Specific Stats ---
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)

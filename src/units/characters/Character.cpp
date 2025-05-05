@@ -35,8 +35,6 @@ int Character::GetMastery() const
 
 void Character::SetLevel(int level)
 {
-    if (!m_active)
-        return;
     m_level = level;
 
     SetMaxHealth(100 * level / 4 * GetMaxHealthMultiplier());
@@ -48,43 +46,30 @@ void Character::SetLevel(int level)
 
 void Character::SetExp(int exp)
 {
-    if (!m_active)
-        return;
     m_exp = exp;
     CheckLevelUp();
 }
 void Character::SetGold(int gold)
 {
-    if (!m_active)
-        return;
     m_gold = gold;
 }
 void Character::SetMastery(int mastery)
 {
-    if (!m_active)
-        return;
-
     m_mastery = mastery;
 }
 void Character::AddExp(int amount)
 {
-    if (!m_active)
-        return;
     m_exp += amount;
     CheckLevelUp();
 }
 
 void Character::AddGold(int amount)
 {
-    if (!m_active)
-        return;
     m_gold += amount;
 }
 
 void Character::AddMastery(int amount)
 {
-    if (!m_active)
-        return;
     m_mastery += amount;
 }
 

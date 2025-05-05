@@ -2,7 +2,14 @@
 
 #include <cstring>
 
-int BACKPACK_SLOT_SIZE = 107;
+static constexpr int BACKPACK_SLOT_SIZE  = 112;
+static constexpr int EQUIPMENT_SLOT_SIZE = 100;
+static constexpr int SLOT_SIZE           = 92;
+static constexpr int SLOT_PADDING        = 12;
+static constexpr int MAX_STACK_SIZE      = 64;
+static constexpr int EQUIP_SLOTS         = 5;
+static constexpr int GRID_WIDTH          = 8;
+static constexpr int GRID_HEIGHT         = 4;
 
 InventoryMenu::DragDropPayload::DragDropPayload(bool fromEquip, int x, int y, const std::string& type)
     : fromEquipment(fromEquip), sourceX(x), sourceY(y)
@@ -15,32 +22,13 @@ InventoryMenu::DragDropPayload::DragDropPayload(bool fromEquip, int x, int y, co
 InventoryMenu::InventoryMenu(GameContext& gameContext)
     : m_gameContext(gameContext),
       m_backpack(*gameContext.GetBackpack()),
-      m_equipment(*gameContext.GetEquipment())
+      m_equipment(*gameContext.GetEquipment()),
+      m_showErrorPopup(false)  // Initialize to false
 {
     std::vector<std::shared_ptr<Effect>> effects;
     m_draggedItem = std::make_unique<std::pair<Item, int>>(Item("", "", "", 'C', effects, ""), 0);
     m_isDraggingFromEquipment = false;
     m_equipmentSlotType       = "";
-
-    // Initialize some sample items in m_backpack
-    // Using proper Item constructor: Item(itemID, name, type, rarity, effects)
-    m_backpack.addItem(Item("IPS", "Ice Potion", "Potion", 'A', effects, "Googoo"), 10);
-    m_backpack.addItem(Item("DHB", "Diamond", "resource", 'S', effects, "Gaagaa"), 5);
-    m_backpack.addItem(Item("FFS", "Iron", "resource", 'C', effects, "Hahaha"), 45);
-    m_backpack.addItem(Item("GHC", "Gold", "resource", 'B', effects, "Lolelole"), 12);
-    m_backpack.addItem(Item("WPC", "Wood", "resource", 'C', effects, "Wooden item"), 32);
-    m_backpack.addItem(Item("SRE", "Stone", "resource", 'C', effects, "Rocky item"), 64);
-
-    // Add some m_equipment items
-    m_backpack.addItem(Item("ASS", "Iron Sword", "Weapon", 'B', effects, "A sharp blade"), 5);
-    m_backpack.addItem(
-        Item("LFD", "Leather Helmet", "HeadArmor", 'C', effects, "Protective headgear"), 1);
-    m_backpack.addItem(
-        Item("CBD", "Chain Mail", "BodyArmor", 'B', effects, "Heavy armor for protection"), 1);
-    m_backpack.addItem(
-        Item("LBD", "Leather Boots", "FootArmor", 'C', effects, "Comfortable footwear"), 1);
-    m_backpack.addItem(
-        Item("FRS", "Magic Amulet", "Pendant", 'A', effects, "Grants magical protection"), 1);
 }
 
 void InventoryMenu::Render()
@@ -69,8 +57,8 @@ void InventoryMenu::Render()
                GRID_HEIGHT * EQUIPMENT_SLOT_SIZE + SLOT_PADDING * 2 +
                    EQUIP_SLOTS * EQUIPMENT_SLOT_SIZE + 40));
 
-    // Calculate positions for grid
-    ImVec2 curPos = {125.f, 150.f};
+    // Calculate positions for grid - Adjusted to start higher
+    ImVec2 curPos = {110.f, 130.f};
     float  startX = curPos.x + SLOT_PADDING;
     float  startY = curPos.y + SLOT_PADDING;
 
@@ -78,79 +66,209 @@ void InventoryMenu::Render()
     RenderBackpack(startX, startY);
 
     // Render m_equipment slots (to the right of m_backpack)
-    float equipmentStartX = startX + GRID_WIDTH * EQUIPMENT_SLOT_SIZE + SLOT_PADDING;
+    // Move equipment slots further to the right
+    float equipmentStartX = startX + GRID_WIDTH * EQUIPMENT_SLOT_SIZE + SLOT_PADDING + 150;
     RenderEquipment(equipmentStartX, startY);
 
-    // Add some control buttons
-    ImGui::SetCursorScreenPos(ImVec2(startX, startY + GRID_HEIGHT * EQUIPMENT_SLOT_SIZE + 10));
-    /**
-    if (ImGui::Button("Add Random Items"))
-    {
-        AddRandomItems();
-    }
+    // Render description box
+    RenderDescriptionBox(startX, startY);
 
-    ImGui::SameLine();
-    if (ImGui::Button("Clear All"))
-    {
-        ClearInventory();
-    }
-        */
+    // Render any error popups
+    RenderErrorPopups();
 
-    ImGui::SetCursorScreenPos(
-        ImVec2(startX - 32, startY + GRID_HEIGHT * BACKPACK_SLOT_SIZE + SLOT_PADDING - 10));
-    float descW = GRID_WIDTH * BACKPACK_SLOT_SIZE;
-    float descH = 30.0f;
+    ImGui::PopStyleVar(4);  // pop WindowPadding, ItemSpacing, ItemInnerSpacing, FramePadding
+    ImGui::End();
+}
+
+void InventoryMenu::RenderDescriptionBox(float startX, float startY)
+{
+    // Description box with brownish theme
+    ImGui::SetCursorScreenPos(ImVec2(startX - 32, startY + GRID_HEIGHT * (BACKPACK_SLOT_SIZE - 2)));
+
+    float descW = GRID_WIDTH * BACKPACK_SLOT_SIZE - 11;
+    float descH = 52.0f;
+
+    // Set up brown box style for description
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.25f, 0.15f, 0.1f, 0.9f));  // Dark brown
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 3.0f);
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));  // Darker brown
+                                                                                // border
+
+    // begin child w/ border
+    ImGui::SetCursorScreenPos(ImVec2(startX - 32, startY + GRID_HEIGHT * (BACKPACK_SLOT_SIZE - 2)));
+    ImGui::BeginChild("ItemDescription",
+                      ImVec2(descW, descH),
+                      /*border=*/true);
+
     // pick up whatever description or fallback
     std::string txt = m_hoveredDescription.empty() ? "Hover over an item to see its description."
                                                    : m_hoveredDescription;
 
-    // begin child w/ border
-    ImGui::SetCursorScreenPos(ImVec2(startX - 32, startY + GRID_HEIGHT * BACKPACK_SLOT_SIZE + 4));
-    ImGui::BeginChild("ItemDescription",
-                      ImVec2(descW, descH),
-                      /*border=*/false);
+    // Get window size for proper vertical centering
+    ImVec2 windowSize = ImGui::GetWindowSize();
+    ImVec2 textSize   = ImGui::CalcTextSize(txt.c_str());
 
-    // figure out available region and text size
-    ImVec2 avail = ImGui::GetContentRegionAvail();
-    ImVec2 tsize = ImGui::CalcTextSize(txt.c_str());
+    // Calculate position to center both horizontally and vertically
+    float posX = (windowSize.x - textSize.x) * 0.5f;
+    float posY = (windowSize.y - textSize.y) * 0.5f;
 
-    // center in X and Y
-    float offX = (avail.x - tsize.x) * 0.5f;
-    float offY = (avail.y - tsize.y) * 0.5f;
-    ImGui::SetCursorPos(ImVec2(offX, offY));
+    // Set cursor position for perfect centering
+    ImGui::SetCursorPos(ImVec2(posX, posY));
 
-    // draw the one‐liner (no wrap, since it’s short)
+    // draw the text
     ImGui::TextUnformatted(txt.c_str());
 
-    ImGui::PopStyleVar(4);  // pop WindowPadding, ItemSpacing, ItemInnerSpacing, FramePadding
     ImGui::EndChild();
-    ImGui::End();
+
+    // Pop description box styles
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(2);
+}
+
+void InventoryMenu::RenderErrorPopups()
+{
+    // Check if we need to show any error popup
+    if (!m_showErrorPopup)
+    {
+        return;
+    }
+
+    // Determine the popup title based on the error message
+    std::string popupTitle = "Error";
+
+    if (m_errorMessage.find("backpack is full") != std::string::npos)
+    {
+        popupTitle = "Backpack Full";
+    }
+    else if (m_errorMessage.find("Cannot equip") != std::string::npos)
+    {
+        popupTitle = "Wrong Item Type";
+    }
+    else if (m_errorMessage.find("Equipment to equipment") != std::string::npos)
+    {
+        popupTitle = "Unsupported Operation";
+    }
+
+    // Open the popup with the appropriate title
+    ImGui::OpenPopup(popupTitle.c_str());
+
+    // Center the popup
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    // Apply consistent styling for all error popups
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20, 20));
+
+    // Handle all possible error popup types
+    if (ImGui::BeginPopupModal(popupTitle.c_str(),
+                               NULL,
+                               ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav |
+                                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+                                   ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoTitleBar))
+    {
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "%s", m_errorMessage.c_str());  // Error
+                                                                                           // message
+                                                                                           // in red
+
+        // Add spacing between error message and button
+        ImGui::Dummy(ImVec2(0, 20));  // Add 20 pixels of vertical spacing
+
+        float windowWidth  = ImGui::GetWindowSize().x;
+        float buttonWidth  = 120.0f;
+        float buttonStartX = (windowWidth - buttonWidth) * 0.5f;
+
+        // Set cursor position to center the button
+        ImGui::SetCursorPosX(buttonStartX);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.35f, 0.35f, 0.35f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+
+        if (ImGui::Button("OK", ImVec2(buttonWidth, 30)))
+        {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::PopStyleColor(4);
+        ImGui::PopStyleVar(2);
+
+        ImGui::EndPopup();
+    }
+
+    // Reset the flag after attempting to show the popup
+    // Only reset if the popup is not showing (this is a critical fix)
+    if (!ImGui::IsPopupOpen(popupTitle.c_str()))
+    {
+        m_showErrorPopup = false;
+    }
+
+    ImGui::PopStyleVar(3);
+    ImGui::PopStyleColor(3);
 }
 
 void InventoryMenu::RenderBackpack(float startX, float startY)
 {
+    // Calculate precise window dimensions for backpack
+    float windowWidth  = GRID_WIDTH * (BACKPACK_SLOT_SIZE - 2) + 2;
+    float windowHeight = GRID_HEIGHT * (BACKPACK_SLOT_SIZE - 2) + 2;
+
+    // Position the window
+    ImVec2 windowPos = ImVec2(startX - 31, startY);
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight));
+
+    // Apply brownish style similar to ShopMenu
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+
+    // Set colors to match brownish background
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Brownish
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));    // Frame border
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);  // Window border size
+
+    ImGui::Begin("BackpackGrid",
+                 nullptr,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_NoScrollbar);
+
     for (int y = 0; y < GRID_HEIGHT; y++)
     {
         for (int x = 0; x < GRID_WIDTH; x++)
         {
-            // Set position for this slot
-            ImGui::SetCursorScreenPos(
-                ImVec2(startX - 31 + x * BACKPACK_SLOT_SIZE, startY + y * BACKPACK_SLOT_SIZE));
+            // Set position for this slot - no padding between slots
+            float slotX = x * (BACKPACK_SLOT_SIZE - 2);
+            float slotY = y * (BACKPACK_SLOT_SIZE - 2);
+
+            ImGui::SetCursorPos(ImVec2(slotX, slotY));
 
             // Create a selectable area for the slot
             ImGui::PushID(y * GRID_WIDTH + x);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+
+            // Brownish style for slots
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.45f, 0.25f, 0.15f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.3f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));
 
             ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
             ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-            ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetStyle().Colors[ImGuiCol_Border]);
 
             bool slotClicked =
                 ImGui::Button("", ImVec2(BACKPACK_SLOT_SIZE - 2, BACKPACK_SLOT_SIZE - 2));
-            ImGui::PopStyleColor();
+
             ImGui::PopStyleVar(3);
 
             if (slotClicked)
@@ -167,11 +285,20 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                 if (ImGui::IsItemHovered())
                 {
                     // Show item description on hover
-                    m_hoveredDescription = item.getDescription();
-                    std::cout << y << ", " << x << std::endl;
-
-                    std::cout << "Hovered item: " << item.getName() << std::endl;
-                    std::cout << "Hovered item description: " << m_hoveredDescription << std::endl;
+                    std::string itemName = item.getName();
+                    std::replace(itemName.begin(), itemName.end(), '_', ' ');
+                    m_hoveredDescription = itemName + " | " + item.getDescription();
+                    const auto& effects  = item.getEffects();
+                    if (effects.size() > 0)
+                    {
+                        m_hoveredDescription += " | Effects: ";
+                    }
+                    for (size_t i = 0; i < effects.size(); ++i)
+                    {
+                        std::string effectName = effects[i]->GetName();
+                        std::replace(effectName.begin(), effectName.end(), '_', ' ');
+                        m_hoveredDescription += effectName + (i < effects.size() - 1 ? ", " : "");
+                    }
                 }
 
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
@@ -180,8 +307,29 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                     if (itemType == "Weapon" || itemType == "HeadArmor" ||
                         itemType == "BodyArmor" || itemType == "FootArmor" || itemType == "Pendant")
                     {
-                        m_equipment.equipItemFromBackpack(m_backpack, y, x, itemType);
-                        // TODO: handle full inventory
+                        try
+                        {
+                            m_equipment.equipItemFromBackpack(m_backpack, y, x, itemType);
+                        }
+                        catch (const InvalidEquipmentTypeException& e)
+                        {
+                            // Fixed to use m_showErrorPopup
+                            m_showErrorPopup = true;
+                            m_errorMessage   = "Cannot equip " + itemType + ": " + e.what();
+                            std::cerr << "ERROR: " << e.what() << std::endl;
+                        }
+                        catch (const BackpackOvercapacityException& e)
+                        {
+                            m_showErrorPopup = true;
+                            m_errorMessage = "Your backpack is full! Cannot unequip current item.";
+                            std::cerr << "ERROR: " << e.what() << std::endl;
+                        }
+                        catch (const std::exception& e)
+                        {
+                            m_showErrorPopup = true;
+                            m_errorMessage   = "An error occurred: " + std::string(e.what());
+                            std::cerr << "ERROR: " << e.what() << std::endl;
+                        }
                     }
                 }
                 // Drag source - create for non-empty slots
@@ -201,38 +349,42 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                     ImGui::EndDragDropSource();
                 }
 
-                // Render the item
-                ImGui::SetCursorScreenPos(ImVec2(startX + x * BACKPACK_SLOT_SIZE - 31 + 7,
-                                                 startY + y * BACKPACK_SLOT_SIZE + 7));
+                // Get slot center for proper texture positioning
+                // Use window position for proper positioning
+                ImVec2 buttonMin = ImGui::GetItemRectMin();
+                ImVec2 buttonMax = ImGui::GetItemRectMax();
+                ImVec2 buttonCenter((buttonMin.x + buttonMax.x) * 0.5f,
+                                    (buttonMin.y + buttonMax.y) * 0.5f);
 
+                // Render the item texture centered in the slot
                 sf::Texture* texture =
-                    &m_gameContext.GetResourceManager()->GetTexture(item.getItemID());  // Get
-                                                                                        // texture
+                    &m_gameContext.GetResourceManager()->GetTexture(item.getItemID());
+
                 if (texture)
                 {
                     ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
-                    ImGui::Image(textureId, ImVec2(BACKPACK_SLOT_SIZE - 16, BACKPACK_SLOT_SIZE - 16));
+
+                    // Calculate texture size and position to center it
+                    ImVec2 textureSize(BACKPACK_SLOT_SIZE - 16, BACKPACK_SLOT_SIZE - 16);
+                    ImVec2 texturePos(buttonCenter.x - textureSize.x * 0.5f,
+                                      buttonCenter.y - textureSize.y * 0.5f);
+
+                    // Set position and draw the image
+                    ImGui::SetCursorScreenPos(texturePos);
+                    ImGui::Image(textureId, textureSize);
                 }
                 else
                 {
-                    // Current implementation using colored buttons
-                    ImGui::PushStyleColor(ImGuiCol_Button,
-                                          GetItemColor(item.getName(), item.getType()));
+                    // Fallback to colored button when texture not available
+                    ImVec2 buttonSize(BACKPACK_SLOT_SIZE - 16, BACKPACK_SLOT_SIZE - 16);
+                    ImVec2 buttonPos(buttonCenter.x - buttonSize.x * 0.5f,
+                                     buttonCenter.y - buttonSize.y * 0.5f);
 
-                    ImGui::Button(item.getName().c_str(),
-                                  ImVec2(BACKPACK_SLOT_SIZE - 16, BACKPACK_SLOT_SIZE - 16));
+                    ImGui::SetCursorScreenPos(buttonPos);
+                    ImGui::PushStyleColor(ImGuiCol_Button, Color::GetTypeColor(item.getType()));
+                    ImGui::Button(item.getName().c_str(), buttonSize);
                     ImGui::PopStyleColor();
                 }
-
-                /**
-                // Current implementation using colored buttons
-                ImGui::PushStyleColor(ImGuiCol_Button, GetItemColor(item.getName(),
-                item.getType()));
-
-                ImGui::Button(item.getName().c_str(), ImVec2(EQUIPMENT_SLOT_SIZE - 16,
-                EQUIPMENT_SLOT_SIZE - 16)); ImGui::PopStyleColor();
-
-                */
 
                 // Show stack count for items with count > 1
                 if (count > 1)
@@ -240,31 +392,48 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                     std::string countText = std::to_string(count);
                     ImVec2      textSize  = ImGui::CalcTextSize(countText.c_str());
                     ImVec2      textPos =
-                        ImVec2(startX - 31 + 3 + (x + 1) * BACKPACK_SLOT_SIZE - textSize.x - 15,
-                               startY + (y + 1) * BACKPACK_SLOT_SIZE - textSize.y - 15 + 3);
+                        ImVec2(buttonMax.x - textSize.x - 12, buttonMax.y - textSize.y - 12);
 
-                    // draw it directly—does NOT create a new ImGui item!
-                    ImGui::GetWindowDrawList()->AddText(textPos,
-                                                        IM_COL32(255, 255, 255, 255),  // white,
-                                                                                       // full
-                                                                                       // opacity
-                                                        countText.c_str());
+                    // Draw with pink color like in ShopMenu
+                    ImGui::GetWindowDrawList()->AddText(
+                        textPos, IM_COL32(255, 192, 203, 255), countText.c_str());
                 }
+
+                // Rarity indicator in colored format like ShopMenu
                 char        r = item.getRarity();
                 std::string rarityText(1, r);
-                ImVec2      rarityTextSize = ImGui::CalcTextSize(rarityText.c_str());
-                ImVec2      textPos        = ImVec2(startX - 31 + 3 + x * BACKPACK_SLOT_SIZE + 7,
-                                        startY + y * BACKPACK_SLOT_SIZE + 5 + 3);
+                ImVec2      textPos = ImVec2(buttonMin.x + 12, buttonMin.y + 10);
 
-                ImGui::GetWindowDrawList()->AddText(textPos,
-                                                    IM_COL32(255, 255, 255, 255),  // white,
-                                                                                   // full
-                                                                                   // opacity
-                                                    rarityText.c_str());
+                // Get color based on rarity
+                ImVec4 rarityColor    = Color::GetRarityColor(r);
+                ImU32  rarityColorU32 = ImGui::ColorConvertFloat4ToU32(rarityColor);
+
+                ImGui::GetWindowDrawList()->AddText(textPos, rarityColorU32, rarityText.c_str());
             }
             catch (const std::exception& e)
             {
-                // No item in this slot
+                // No item in this slot - check for NOL texture
+                ImVec2 buttonMin = ImGui::GetItemRectMin();
+                ImVec2 buttonMax = ImGui::GetItemRectMax();
+                ImVec2 buttonCenter((buttonMin.x + buttonMax.x) * 0.5f,
+                                    (buttonMin.y + buttonMax.y) * 0.5f);
+
+                // Try to render the "NOL" (null) texture if it exists
+                sf::Texture* texture = &m_gameContext.GetResourceManager()->GetTexture("NOL");
+
+                if (texture)
+                {
+                    ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
+
+                    // Calculate texture size and position to center it
+                    ImVec2 textureSize(BACKPACK_SLOT_SIZE - 16, BACKPACK_SLOT_SIZE - 16);
+                    ImVec2 texturePos(buttonCenter.x - textureSize.x * 0.5f,
+                                      buttonCenter.y - textureSize.y * 0.5f);
+
+                    // Set position and draw the image
+                    ImGui::SetCursorScreenPos(texturePos);
+                    ImGui::Image(textureId, textureSize);
+                }
             }
 
             // Drop target - for m_backpack slots
@@ -277,118 +446,140 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                     bool        shift   = (io.KeyMods & ImGuiKey_ModShift) != 0;
                     bool        ctrl    = (io.KeyMods & ImGuiKey_ModCtrl) != 0;
 
-                    // 1) Detect empty slot without swallowing all logic in a try/catch:
-                    bool slotEmpty = false;
                     try
                     {
-                        m_backpack.getItemAtTile(y, x);
-                    }
-                    catch (const std::exception&)
-                    {
-                        slotEmpty = true;
-                    }
-
-                    // 2) Handle equip→m_backpack first:
-                    if (payload->fromEquipment)
-                    {
-                        m_equipment.unequipItemToBackpack(m_backpack, y, x, payload->slotType);
-                        // TODO: handle full inventory
-                    }
-                    else
-                    {
-                        // 3a) EMPTY destination
-                        if (slotEmpty)
+                        // 1) Detect empty slot without swallowing all logic in a try/catch:
+                        bool slotEmpty = false;
+                        try
                         {
-                            if (shift)
-                            {
-                                // Shift: take exactly one
-                                if (m_backpack.getQuantityAtTile(payload->sourceY,
-                                                                 payload->sourceX) > 1)
-                                {
-                                    Item one = m_backpack.takeItemAtTile(
-                                        payload->sourceY, payload->sourceX, 1);
-                                    m_backpack.addItemAtTile(y, x, one, 1);
-                                }
-                            }
-                            else if (ctrl)
-                            {
-                                // Ctrl: take half
-                                int qty =
-                                    m_backpack.getQuantityAtTile(payload->sourceY, payload->sourceX);
-                                if (qty > 1)
-                                {
-                                    int  half     = qty / 2;
-                                    Item halfItem = m_backpack.takeItemAtTile(
-                                        payload->sourceY, payload->sourceX, half);
-                                    m_backpack.addItemAtTile(y, x, halfItem, half);
-                                }
-                            }
-                            else
-                            {
-                                // No modifier: move entire stack
-                                m_backpack.moveItem(payload->sourceY, payload->sourceX, y, x);
-                            }
+                            m_backpack.getItemAtTile(y, x);
                         }
-                        // 3b) NON-EMPTY destination
+                        catch (const std::exception&)
+                        {
+                            slotEmpty = true;
+                        }
+
+                        // 2) Handle equip→m_backpack first:
+                        if (payload->fromEquipment)
+                        {
+                            m_equipment.unequipItemToBackpack(m_backpack, y, x, payload->slotType);
+                        }
                         else
                         {
-                            Item dest = m_backpack.getItemAtTile(y, x);
-                            Item src = m_backpack.getItemAtTile(payload->sourceY, payload->sourceX);
-
-                            // 3b–i) Same item → stack them
-                            if (dest.getName() == src.getName())
+                            // 3a) EMPTY destination
+                            if (slotEmpty)
                             {
-                                int srcQty =
-                                    m_backpack.getQuantityAtTile(payload->sourceY, payload->sourceX);
-                                int dstQty   = m_backpack.getQuantityAtTile(y, x);
-                                int transfer = std::min(srcQty, MAX_STACK_SIZE - dstQty);
-                                if (transfer > 0)
+                                if (shift)
                                 {
-                                    m_backpack.addItemAtTile(y, x, dest, transfer);
-                                    m_backpack.takeItemAtTile(
-                                        payload->sourceY, payload->sourceX, transfer);
+                                    // Shift: take exactly one
+                                    if (m_backpack.getQuantityAtTile(payload->sourceY,
+                                                                     payload->sourceX) > 1)
+                                    {
+                                        Item one = m_backpack.takeItemAtTile(
+                                            payload->sourceY, payload->sourceX, 1);
+                                        m_backpack.addItemAtTile(y, x, one, 1);
+                                    }
+                                }
+                                else if (ctrl)
+                                {
+                                    // Ctrl: take half
+                                    int qty = m_backpack.getQuantityAtTile(payload->sourceY,
+                                                                           payload->sourceX);
+                                    if (qty > 1)
+                                    {
+                                        int  half     = qty / 2;
+                                        Item halfItem = m_backpack.takeItemAtTile(
+                                            payload->sourceY, payload->sourceX, half);
+                                        m_backpack.addItemAtTile(y, x, halfItem, half);
+                                    }
+                                }
+                                else
+                                {
+                                    // No modifier: move entire stack
+                                    m_backpack.moveItem(payload->sourceY, payload->sourceX, y, x);
                                 }
                             }
-                            // 3b–ii) Different item → respect shift/ctrl/move
-                            else if (shift)
-                            {
-                                // Shift: take exactly one
-                                if (m_backpack.getQuantityAtTile(payload->sourceY,
-                                                                 payload->sourceX) > 1)
-                                {
-                                    Item one = m_backpack.takeItemAtTile(
-                                        payload->sourceY, payload->sourceX, 1);
-                                    m_backpack.addItemAtTile(y, x, one, 1);
-                                }
-                            }
-                            else if (ctrl)
-                            {
-                                // Ctrl: take half
-                                int qty =
-                                    m_backpack.getQuantityAtTile(payload->sourceY, payload->sourceX);
-                                if (qty > 1)
-                                {
-                                    int  half     = qty / 2;
-                                    Item halfItem = m_backpack.takeItemAtTile(
-                                        payload->sourceY, payload->sourceX, half);
-                                    m_backpack.addItemAtTile(y, x, halfItem, half);
-                                }
-                            }
+                            // 3b) NON-EMPTY destination
                             else
                             {
-                                // No modifier: full move swaps positions
-                                m_backpack.moveItem(payload->sourceY, payload->sourceX, y, x);
+                                Item dest = m_backpack.getItemAtTile(y, x);
+                                Item src =
+                                    m_backpack.getItemAtTile(payload->sourceY, payload->sourceX);
+
+                                // 3b–i) Same item → stack them
+                                if (dest.getName() == src.getName())
+                                {
+                                    int srcQty   = m_backpack.getQuantityAtTile(payload->sourceY,
+                                                                              payload->sourceX);
+                                    int dstQty   = m_backpack.getQuantityAtTile(y, x);
+                                    int transfer = std::min(srcQty, MAX_STACK_SIZE - dstQty);
+                                    if (transfer > 0)
+                                    {
+                                        m_backpack.addItemAtTile(y, x, dest, transfer);
+                                        m_backpack.takeItemAtTile(
+                                            payload->sourceY, payload->sourceX, transfer);
+                                    }
+                                }
+                                // 3b–ii) Different item → respect shift/ctrl/move
+                                else if (shift)
+                                {
+                                    // Shift: take exactly one
+                                    if (m_backpack.getQuantityAtTile(payload->sourceY,
+                                                                     payload->sourceX) > 1)
+                                    {
+                                        Item one = m_backpack.takeItemAtTile(
+                                            payload->sourceY, payload->sourceX, 1);
+                                        m_backpack.addItemAtTile(y, x, one, 1);
+                                    }
+                                }
+                                else if (ctrl)
+                                {
+                                    // Ctrl: take half
+                                    int qty = m_backpack.getQuantityAtTile(payload->sourceY,
+                                                                           payload->sourceX);
+                                    if (qty > 1)
+                                    {
+                                        int  half     = qty / 2;
+                                        Item halfItem = m_backpack.takeItemAtTile(
+                                            payload->sourceY, payload->sourceX, half);
+                                        m_backpack.addItemAtTile(y, x, halfItem, half);
+                                    }
+                                }
+                                else
+                                {
+                                    // No modifier: full move swaps positions
+                                    m_backpack.moveItem(payload->sourceY, payload->sourceX, y, x);
+                                }
                             }
                         }
+                    }
+                    catch (const BackpackOvercapacityException& e)
+                    {
+                        m_showErrorPopup = true;
+                        m_errorMessage   = "Your backpack is full! Cannot perform this action.";
+                        std::cerr << "ERROR: " << e.what() << std::endl;
+                    }
+                    catch (const std::exception& e)
+                    {
+                        m_showErrorPopup = true;
+                        m_errorMessage   = "An error occurred: " + std::string(e.what());
+                        std::cerr << "ERROR: " << e.what() << std::endl;
                     }
                 }
                 ImGui::EndDragDropTarget();
             }
 
-            ImGui::PopStyleColor(3);
+            ImGui::PopStyleColor(4);
             ImGui::PopID();
         }
     }
+
+    // End the backpack window
+    ImGui::End();
+
+    // Pop the backpack grid styles
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(2);
 }
 
 void InventoryMenu::RenderEquipment(float startX, float startY)
@@ -401,37 +592,61 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
     const std::string slotTypes[EQUIP_SLOTS] = {
         "Weapon", "HeadArmor", "BodyArmor", "FootArmor", "Pendant"};
 
+    // Calculate precise window dimensions for equipment
+    float windowWidth  = EQUIPMENT_SLOT_SIZE;
+    float windowHeight = EQUIP_SLOTS * (EQUIPMENT_SLOT_SIZE - 2) + 2;
+
+    // Position the window
+    ImVec2 windowPos = ImVec2(startX, startY);
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(ImVec2(windowWidth, windowHeight));
+
+    // Apply brownish style similar to ShopMenu
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+
+    // Set colors to match brownish background
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Brownish
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));    // Frame border
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 5.0f);  // Window border size
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);    // Rounded corners
+
+    ImGui::Begin("EquipmentGrid",
+                 nullptr,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_NoScrollbar);
+
     for (int i = 0; i < EQUIP_SLOTS; i++)
     {
-        // compute size of the label
-        ImVec2 labelSize = ImGui::CalcTextSize(slotNames[i].c_str());
-
-        // position it just to the right of the slot
-        float textX = startX                 // left edge of the equipment panel
-                      + EQUIPMENT_SLOT_SIZE  // width of the slot
-                      + 200;                 // small gap you can tweak
-
-        float textY = startY + i * EQUIPMENT_SLOT_SIZE               // row
-                      + (EQUIPMENT_SLOT_SIZE - labelSize.y) * 0.5f;  // vertically centered
-
-        ImGui::SetCursorScreenPos(ImVec2(textX, textY));
-        ImGui::Text("%s", slotNames[i].c_str());
-
-        // Position the actual slot
-        ImGui::SetCursorScreenPos(ImVec2(startX + 200, startY + i * EQUIPMENT_SLOT_SIZE));
+        // Position the slot within the window
+        float slotY = i * (EQUIPMENT_SLOT_SIZE - 2);
+        ImGui::SetCursorPos(ImVec2(0, slotY));
 
         // Create a selectable area for the m_equipment slot
         ImGui::PushID(1000 + i);  // Use a different ID range than m_backpack slots
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.4f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.5f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.6f, 1.0f));
+
+        // Use brownish style for slots
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.45f, 0.25f, 0.15f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.3f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));
 
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-        ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetStyle().Colors[ImGuiCol_Border]);
 
-        if (ImGui::Button("", ImVec2(EQUIPMENT_SLOT_SIZE - 8, EQUIPMENT_SLOT_SIZE - 8)))
+        bool slotClicked =
+            ImGui::Button("", ImVec2(EQUIPMENT_SLOT_SIZE - 2, EQUIPMENT_SLOT_SIZE - 2));
+
+        // Get the button rect for better positioning
+        ImVec2 buttonMin = ImGui::GetItemRectMin();
+        ImVec2 buttonMax = ImGui::GetItemRectMax();
+        ImVec2 buttonCenter((buttonMin.x + buttonMax.x) * 0.5f, (buttonMin.y + buttonMax.y) * 0.5f);
+
+        if (slotClicked)
         {
             // Single-click handling for m_equipment slots
             std::cout << "Clicked on " << slotNames[i] << " slot" << std::endl;
@@ -461,11 +676,57 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
         // If there's an item equipped, render it and set up drag source
         if (!equippedItem.isNull())
         {
+            if (ImGui::IsItemHovered())
+            {
+                // Show item description on hover with formatted text
+                std::string itemName = equippedItem.getName();
+                std::replace(itemName.begin(), itemName.end(), '_', ' ');
+                m_hoveredDescription = itemName + " | " + equippedItem.getDescription();
+                const auto& effects  = equippedItem.getEffects();
+                if (effects.size() > 0)
+                {
+                    m_hoveredDescription += " | Effects: ";
+                }
+                for (size_t j = 0; j < effects.size(); ++j)
+                {
+                    std::string effectName = effects[j]->GetName();
+                    std::replace(effectName.begin(), effectName.end(), '_', ' ');
+                    m_hoveredDescription += effectName + (j < effects.size() - 1 ? ", " : "");
+                }
+            }
+
             if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
             {
-                // 0 0 so it forces the function to find the best position
-                m_equipment.unequipItemToBackpack(m_backpack, 0, 0, slotTypes[i]);
+                try
+                {
+                    // Try to unequip this item to the first empty slot
+                    std::vector<std::pair<int, int>> emptySlots = m_backpack.findEmptyTile();
+                    if (!emptySlots.empty())
+                    {
+                        // We have at least one empty slot, use that
+                        m_equipment.unequipItemToBackpack(
+                            m_backpack, emptySlots[0].first, emptySlots[0].second, slotTypes[i]);
+                    }
+                    else
+                    {
+                        // No empty slots, just try position 0, 0 and let error handling take over
+                        m_equipment.unequipItemToBackpack(m_backpack, 0, 0, slotTypes[i]);
+                    }
+                }
+                catch (const BackpackOvercapacityException& e)
+                {
+                    m_showErrorPopup = true;
+                    m_errorMessage   = "Your backpack is full! Cannot unequip item.";
+                    std::cerr << "ERROR: " << e.what() << std::endl;
+                }
+                catch (const std::exception& e)
+                {
+                    m_showErrorPopup = true;
+                    m_errorMessage   = "An error occurred: " + std::string(e.what());
+                    std::cerr << "ERROR: " << e.what() << std::endl;
+                }
             }
+
             // Create drag source for m_equipment
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
             {
@@ -485,71 +746,156 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
 
                 ImGui::EndDragDropSource();
             }
-            // Render the equipped item
-            ImGui::SetCursorScreenPos(
-                ImVec2(startX + 200 + 20, startY + i * EQUIPMENT_SLOT_SIZE + 20));
 
-            /*
-            // OPTION: To use images for m_equipment items
-            sf::Texture* texture = textureManager.getTexture(equippedItem.getID());
-            if (texture) {
+            // Render the equipped item centered in the slot
+            sf::Texture* texture =
+                &m_gameContext.GetResourceManager()->GetTexture(equippedItem.getItemID());
+
+            if (texture)
+            {
                 ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
-                ImGui::Image(textureId, ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
-            } else {
-                // Fallback to colored button
-                ImGui::PushStyleColor(ImGuiCol_Button, getItemColor(equippedItem.getName(),
-            equippedItem.getType())); ImGui::Button(equippedItem.getName().c_str(),
-            ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16)); ImGui::PopStyleColor();
+
+                // Calculate texture size and position to center it
+                ImVec2 textureSize(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16);
+                ImVec2 texturePos(buttonCenter.x - textureSize.x * 0.5f,
+                                  buttonCenter.y - textureSize.y * 0.5f);
+
+                // Set position and draw the image
+                ImGui::SetCursorScreenPos(texturePos);
+                ImGui::Image(textureId, textureSize);
             }
-            */
+            else
+            {
+                // Fallback to colored button when texture not available
+                ImVec2 buttonSize(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16);
+                ImVec2 buttonPos(buttonCenter.x - buttonSize.x * 0.5f,
+                                 buttonCenter.y - buttonSize.y * 0.5f);
 
-            // Current implementation using colored buttons
+                ImGui::SetCursorScreenPos(buttonPos);
+                ImGui::PushStyleColor(ImGuiCol_Button, Color::GetTypeColor(equippedItem.getType()));
+                ImGui::Button(equippedItem.getName().c_str(), buttonSize);
+                ImGui::PopStyleColor();
+            }
 
-            ImGui::PushStyleColor(ImGuiCol_Button,
-                                  GetItemColor(equippedItem.getName(), equippedItem.getType()));
-            ImGui::Button(equippedItem.getName().c_str(),
-                          ImVec2(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16));
-            ImGui::PopStyleColor();
-            // capture hover description
-
+            // Draw rarity indicator
             char        r = equippedItem.getRarity();
             std::string rarityText(1, r);
-            ImVec2      rarityTextSize = ImGui::CalcTextSize(rarityText.c_str());
-            ImVec2      textPos =
-                ImVec2(startX * EQUIPMENT_SLOT_SIZE + 7, startY + (i)*EQUIPMENT_SLOT_SIZE + 5);
+            ImVec2      textPos = ImVec2(buttonMin.x + 12, buttonMin.y + 10);
 
-            ImGui::GetWindowDrawList()->AddText(textPos,
-                                                IM_COL32(255, 255, 255, 255),  // white,
-                                                                               // full
-                                                                               // opacity
-                                                rarityText.c_str());
+            // Get color based on rarity
+            ImVec4 rarityColor    = Color::GetRarityColor(r);
+            ImU32  rarityColorU32 = ImGui::ColorConvertFloat4ToU32(rarityColor);
+
+            ImGui::GetWindowDrawList()->AddText(textPos, rarityColorU32, rarityText.c_str());
+        }
+        else
+        {
+            // Empty equipment slot - add centered text with the slot type
+            // Get a NOL texture if it exists
+            sf::Texture* texture = &m_gameContext.GetResourceManager()->GetTexture("NOL");
+
+            if (texture)
+            {
+                ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
+
+                // Calculate texture size and position to center it
+                ImVec2 textureSize(EQUIPMENT_SLOT_SIZE - 16, EQUIPMENT_SLOT_SIZE - 16);
+                ImVec2 texturePos(buttonCenter.x - textureSize.x * 0.5f,
+                                  buttonCenter.y - textureSize.y * 0.5f);
+
+                // Set position and draw the image
+                ImGui::SetCursorScreenPos(texturePos);
+                ImGui::Image(textureId, textureSize);
+            }
+
+            // Calculate text size for centering
+            // Use the displayable name (shorter and more readable)
+            ImVec2 textSize = ImGui::CalcTextSize(slotNames[i].c_str());
+
+            // Calculate position to center the text
+            ImVec2 textPos =
+                ImVec2(buttonCenter.x - textSize.x * 0.5f, buttonCenter.y - textSize.y * 0.5f);
+
+            // Draw white text with black outline for visibility
+            // First draw black outline by drawing text 5 times with slight offsets
+            ImU32 blackColor = IM_COL32(0, 0, 0, 255);
+            ImU32 whiteColor = IM_COL32(255, 255, 255, 255);
+
+            // Draw outline
+            for (int dx = -1; dx <= 1; dx += 1)
+            {
+                for (int dy = -1; dy <= 1; dy += 1)
+                {
+                    if (dx != 0 || dy != 0)
+                    {  // Skip the center position
+                        ImVec2 outlinePos = ImVec2(textPos.x + dx, textPos.y + dy);
+                        ImGui::GetForegroundDrawList()->AddText(
+                            outlinePos, blackColor, slotNames[i].c_str());
+                    }
+                }
+            }
+
+            // Draw the actual text in white
+            ImGui::GetForegroundDrawList()->AddText(textPos, whiteColor, slotNames[i].c_str());
         }
 
         // Create drop target for m_equipment slots
         if (ImGui::BeginDragDropTarget())
         {
-            if (const ImGuiPayload* imgui_payload = ImGui::AcceptDragDropPayload("INVENTORY_"
-                                                                                 "ITEM"))
+            if (const ImGuiPayload* imgui_payload = ImGui::AcceptDragDropPayload("INVENTORY_ITEM"))
             {
                 const DragDropPayload* payload = (const DragDropPayload*)imgui_payload->Data;
                 if (!payload->fromEquipment)
                 {
                     // Try to equip from backpack to this slot
-                    // Fix: Pass the correct coordinates to equipItemFromBackpack
                     try
                     {
                         m_equipment.equipItemFromBackpack(
                             m_backpack, payload->sourceY, payload->sourceX, slotTypes[i]);
                     }
-                    catch (InvalidEquipmentTypeException e)
+                    catch (const InvalidEquipmentTypeException& e)
                     {
-                        std::cerr << e.what() << std::endl;
+                        m_showErrorPopup = true;
+                        try
+                        {
+                            Item item = m_backpack.getItemAtTile(payload->sourceY, payload->sourceX);
+                            std::string itemType = item.getType();
+
+                            if (itemType == "HeadArmor" || itemType == "BodyArmor" ||
+                                itemType == "FootArmor")
+                                itemType.insert(4, " ");
+
+                            m_errorMessage =
+                                "Cannot equip " + item.getType() + " in " + slotNames[i] + " slot.";
+                        }
+                        catch (const std::exception&)
+                        {
+                            // Fallback if we can't access the item
+                            m_errorMessage =
+                                "Cannot equip item: wrong item type for " + slotNames[i] + " slot.";
+                        }
+                        std::cerr << "ERROR: " << e.what() << std::endl;
+                    }
+                    catch (const BackpackOvercapacityException& e)
+                    {
+                        m_showErrorPopup = true;
+                        m_errorMessage   = "Your backpack is full! Cannot unequip current item.";
+                        std::cerr << "ERROR: " << e.what() << std::endl;
+                    }
+                    catch (const std::exception& e)
+                    {
+                        m_showErrorPopup = true;
+                        m_errorMessage   = "An error occurred: " + std::string(e.what());
+                        std::cerr << "ERROR: " << e.what() << std::endl;
                     }
                 }
                 else
                 {
-                    // Equipment to equipment swap logic could be added here if needed
-                    std::cout << "Equipment to equipment transfer not implemented" << std::endl;
+                    // Equipment to equipment swap - show error popup
+                    m_showErrorPopup = true;
+                    m_errorMessage   = "Equipment to equipment transfers are not supported.";
+                    std::cerr << "ERROR: Equipment to equipment transfer not implemented"
+                              << std::endl;
                 }
             }
             ImGui::EndDragDropTarget();
@@ -559,18 +905,11 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
         ImGui::PopStyleVar(3);  // pop FrameBorderSize, FramePadding, FrameRounding
         ImGui::PopID();
     }
-}
 
-// Helper function to get color for item visualization
-ImVec4 InventoryMenu::GetItemColor(const std::string& itemName, const std::string& itemType)
-{
-    // m_equipment type colors
-    if (itemType == "Weapon")
-        return ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
-    if (itemType == "HeadArmor" || itemType == "BodyArmor" || itemType == "FootArmor")
-        return ImVec4(0.2f, 0.6f, 0.8f, 1.0f);
-    if (itemType == "Pendant")
-        return ImVec4(0.8f, 0.6f, 0.2f, 1.0f);
+    // End the equipment window
+    ImGui::End();
 
-    return ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+    // Pop the equipment grid styles
+    ImGui::PopStyleVar(6);
+    ImGui::PopStyleColor(2);
 }
