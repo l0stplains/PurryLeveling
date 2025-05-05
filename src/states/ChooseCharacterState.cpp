@@ -428,23 +428,21 @@ void ChooseCharacterState::RenderUI()
         ImGui::Separator();
         ImGui::Spacing();
 
-        // Buttons
+        // Disable "Finish" when name is empty
+        bool hasName = (m_userNameBuffer[0] != '\0');
+        ImGui::BeginDisabled(!hasName);
         if (ImGui::Button("Finish", ImVec2(100, 0)))
         {
             GetContext().SetCharacterId(m_selectedCharacterId);
             m_showNameModal = false;
 
-            // Clear up the units except the selected one
-
             unsigned int characterIds[] = {
-                m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
-
+                m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId
+            };
             for (const auto& id : characterIds)
             {
                 if (m_selectedCharacterId != id)
-                {
                     GetContext().GetUnitManager()->RemoveUnit(id);
-                }
             }
 
             Character* character =
@@ -455,6 +453,8 @@ void ChooseCharacterState::RenderUI()
                 StateChange {StateAction::REPLACE, std::make_unique<WorldState>(GetContext())};
             ImGui::CloseCurrentPopup();
         }
+        ImGui::EndDisabled();
+
         ImGui::SameLine();
         if (ImGui::Button("Cancel", ImVec2(100, 0)))
         {

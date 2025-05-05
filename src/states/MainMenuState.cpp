@@ -201,6 +201,7 @@ void MainMenuState::renderNewSaveModal()
     ImGui::InputText("##SaveName", m_saveNameBuf, sizeof(m_saveNameBuf));
     ImGui::Separator();
 
+    // Lambda to perform the actual save-confirm action
     auto confirmSave = [&]() {
         const auto fullPath = std::filesystem::path("data") / m_saveNameBuf;
         if (std::filesystem::exists(fullPath))
@@ -218,14 +219,20 @@ void MainMenuState::renderNewSaveModal()
         }
     };
 
+    // Disable OK if the user hasn't typed anything
+    bool hasName = (m_saveNameBuf[0] != '\0');
+    ImGui::BeginDisabled(!hasName);
     if (ImGui::Button("OK", ImVec2(BtnWidth, 0)))
         confirmSave();
+    ImGui::EndDisabled();
+
     ImGui::SameLine();
     if (ImGui::Button("Cancel", ImVec2(BtnWidth, 0)))
         ImGui::CloseCurrentPopup();
 
     ImGui::EndPopup();
 }
+
 
 void MainMenuState::renderLoadSaveModal()
 {
@@ -324,111 +331,6 @@ void MainMenuState::renderLoadSaveModal()
 
     ImGui::EndPopup();
 }
-
-
-/*
-void MainMenuState::renderLoadSaveModal()
-{
-    if (!m_showFileDialog)
-        return;
-
-    ImVec2 screenSize((float)GetContext().GetWindow()->getSize().x,
-                      (float)GetContext().GetWindow()->getSize().y);
-    ImVec2 dialogSize(800, 600);
-    ImVec2 dialogPos((screenSize.x - dialogSize.x) * 0.5f, (screenSize.y - dialogSize.y) * 0.5f);
-
-    ImGui::SetNextWindowPos(dialogPos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(dialogSize, ImGuiCond_Always);
-
-    if (ImGuiFileDialog::Instance()->Display("ChooseFolderDlgKey"))
-    {
-        if (ImGuiFileDialog::Instance()->IsOk())
-        {
-            std::filesystem::path absPath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            std::filesystem::path relPath;
-            try
-            {
-                relPath = std::filesystem::relative(absPath, std::filesystem::current_path());
-            }
-            catch (...)
-            {
-                relPath = absPath.filename();
-            }
-
-            m_selectedFolder = relPath.string();
-
-            try
-            {
-                validateFolder(m_selectedFolder);
-                constexpr char dataPrefix[] = "data/";
-                if (m_selectedFolder.rfind(dataPrefix, 0) == 0)
-                    m_selectedFolder.erase(0, sizeof(dataPrefix) - 1);
-
-                GetContext().SetCurrentFolderName(m_selectedFolder);
-                GetContext().SetFirstSaveState(false);
-                m_pendingStateChange =
-                    StateChange {StateAction::PUSH, std::make_unique<WorldState>(GetContext())};
-                std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
-            }
-            catch (const FileNotFoundException& e)
-            {
-                std::string message = "File not found: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
-            }
-            catch (const LineTooShortException& e)
-            {
-                std::string message = "Line too short in file: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
-            }
-            catch (const InvalidFormatException& e)
-            {
-                std::string message = "Invalid format in file: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
-            }
-            catch (const ResourceNotFoundException& e)
-            {
-                std::string message = "Resource not found: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
-            }
-            catch (const MissingFileException& e)
-            {
-                std::string message = "Missing file: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
-            }
-            catch (const InvalidCharacterTypeException& e)
-            {
-                std::string message = std::string("Invalid character type: ") + e.what();
-                std::cout << message << std::endl;
-                showError(message);
-            }
-            catch (const std::exception& e)
-            {
-                std::string message = std::string("An error occurred: ") + e.what();
-                std::cout << message << std::endl;
-                showError(message);
-            }
-        }
-
-        m_showFileDialog = false;
-        ImGuiFileDialog::Instance()->Close();
-    }
-}
-*/
 
 void MainMenuState::renderErrorModal()
 {
