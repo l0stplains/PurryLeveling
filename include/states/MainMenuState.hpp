@@ -1,32 +1,8 @@
 #pragma once
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Graphics.hpp>
 
-#include <atomic>
-#include <filesystem>
-#include <mutex>
-#include <string>
-#include <thread>
-#include <vector>
-
-#include "core/GameContext.hpp"
-
-#include "ui/Button.hpp"
-
-#include "parser/ItemConfigParser.hpp"
-#include "parser/MobLootConfigParser.hpp"
-#include "parser/PlayerConfigParser.hpp"
-#include "parser/QuestConfigParser.hpp"
-#include "parser/ShopConfigParser.hpp"
+#include "states/ChooseCharacterState.hpp"
 #include "states/State.hpp"
-#include "units/characters/Assassin.hpp"
-#include "units/characters/Berseker.hpp"
-#include "units/characters/Fighter.hpp"
-#include "units/characters/Mage.hpp"
-#include "units/characters/Necromancer.hpp"
-
-// Include ImGuiFileDialog
-#include "external/ImGuiFileDialog.h"
+#include "states/WorldState.hpp"
 
 /**
  * @class MainMenuState

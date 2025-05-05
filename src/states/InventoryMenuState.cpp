@@ -1,11 +1,5 @@
 #include "states/InventoryMenuState.hpp"
 
-#include <iostream>
-
-#include "core/ResourceManager.hpp"
-
-#include "imgui.h"
-
 // Constructor
 InventoryMenuState::InventoryMenuState(GameContext& context)
     : State(context),

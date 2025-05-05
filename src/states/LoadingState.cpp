@@ -1,15 +1,5 @@
 #include "states/LoadingState.hpp"
 
-#include <atomic>
-#include <iostream>
-#include <mutex>
-#include <thread>
-
-#include "core/ResourceManager.hpp"
-
-#include "imgui.h"
-#include "states/MainMenuState.hpp"
-
 // Constructor
 LoadingState::LoadingState(GameContext& context)
     : State(context),

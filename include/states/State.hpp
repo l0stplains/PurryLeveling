@@ -1,9 +1,48 @@
 #pragma once
-#include <SFML/Graphics.hpp>
 
+#include <SFML/Audio/Sound.hpp>
+#include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>  // brings in sf::Time, sf::milliseconds, etc.
+#include <SFML/System/Clock.hpp>
+#include <SFML/Window.hpp>  // brings in Event, Keyboard, Mouse, etc.
+
+#include <atomic>
+#include <cmath>
+#include <filesystem>
+#include <iostream>
 #include <memory>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <thread>
+#include <vector>
 
 #include "core/GameContext.hpp"
+#include "core/ResourceManager.hpp"
+
+#include "ui/Button.hpp"
+
+#include "dungeon/Dungeon.hpp"
+#include "dungeon/DungeonFactory.hpp"
+#include "exception/Exception.hpp"
+#include "imgui.h"
+#include "parser/ItemConfigParser.hpp"
+#include "parser/MobLootConfigParser.hpp"
+#include "parser/PlayerConfigParser.hpp"
+#include "parser/QuestConfigParser.hpp"
+#include "parser/ShopConfigParser.hpp"
+#include "props/Pointer.hpp"
+#include "props/Portal.hpp"
+#include "rng/rng.hpp"
+#include "save/PlayerConfigSaver.hpp"
+#include "states/Enums.hpp"
+#include "units/AnimatedUnit.hpp"
+#include "units/NavigationGrid.hpp"
+#include "units/characters/Assassin.hpp"
+#include "units/characters/Berseker.hpp"
+#include "units/characters/Fighter.hpp"
+#include "units/characters/Mage.hpp"
+#include "units/characters/Necromancer.hpp"
 
 /**
  * @class State
