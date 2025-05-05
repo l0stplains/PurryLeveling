@@ -1,7 +1,7 @@
 #include "parser/ItemConfigParser.hpp"
 
-#include <sstream>
 #include <iostream>
+#include <sstream>
 
 #include "effects/Effect.hpp"
 #include "effects/EffectFactory.hpp"
@@ -32,9 +32,9 @@ void ItemConfigParser::ParseFromFile(const std::string& filename)
         // rec[4] is BaseAtk—ignore if Item ctor doesn't use it
 
         // 2) up to 3 effects at rec[5..7], stop on "-"
-        
+
         std::vector<std::string> effects;
-        size_t                               idx = 5;
+        size_t                   idx = 5;
         for (; idx < rec.size() && idx < 8; ++idx)
         {
             if (rec[idx] == "-")
@@ -42,7 +42,7 @@ void ItemConfigParser::ParseFromFile(const std::string& filename)
                 ++idx;
                 break;
             }
-            effects.emplace_back(rec[idx]); // Store effect names as strings
+            effects.emplace_back(rec[idx]);  // Store effect names as strings
         }
 
         // 3) remaining tokens are description

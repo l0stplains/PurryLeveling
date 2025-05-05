@@ -6,9 +6,11 @@
 #include "ui/BossHealthBar.hpp"
 #include "ui/Button.hpp"
 #include "ui/CharacterInfo.hpp"
+#include "ui/Color.hpp"
 #include "ui/MobInfo.hpp"
 #include "ui/QuestInfo.hpp"
 
+#include "effects/EffectFactory.hpp"
 #include "states/State.hpp"
 #include "units/summons/Summon.hpp"
 #include "units/summons/Wildfire.hpp"
@@ -73,9 +75,9 @@ private:
     MobInfo        m_mobInfo;         ///< Mob information UI
     CharacterInfo  m_characterInfo;   ///< Character information UI
 
-    bool m_isPlayerTurn     = true;
-    bool m_wasInChamberExit = false;
-
+    bool m_isPlayerTurn      = true;
+    bool m_wasInChamberExit  = false;
+    bool m_showPotionMenu    = false;  // New flag to control potion menu visibility
     bool m_triggerActionTurn = false;
 
     bool     m_showExitPopup = false;  ///< Flag to show exit confirmation popup
@@ -101,6 +103,8 @@ private:
     void nextChamber();
 
     void initializeCheat();
+
+    void renderPotion();
 
     std::vector<sf::Vector2f> generateMobSpawnPoints(const sf::Vector2f& center,
                                                      unsigned int        mobCount,

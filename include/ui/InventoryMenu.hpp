@@ -9,6 +9,7 @@
 
 #include "ui/Color.hpp"
 
+#include "effects/EffectFactory.hpp"
 #include "inventory/Backpack.hpp"
 #include "inventory/Equipment.hpp"
 #include "items/Item.hpp"

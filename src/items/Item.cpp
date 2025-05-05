@@ -2,12 +2,12 @@
 
 Item::Item() : itemID("NOL"), name(""), type(""), rarity(' '), effects({}), description("") {}
 
-Item::Item(std::string                                itemID,
-           const std::string&                         name,
-           const std::string&                         type,
-           char                                       rarity,
-           const std::vector<std::string>               effects,
-           const std::string&                         description)
+Item::Item(std::string                    itemID,
+           const std::string&             name,
+           const std::string&             type,
+           char                           rarity,
+           const std::vector<std::string> effects,
+           const std::string&             description)
     : itemID(itemID), name(name), type(type), rarity(rarity), effects(effects), description(description)
 {}
 

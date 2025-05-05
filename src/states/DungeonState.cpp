@@ -119,6 +119,8 @@ void DungeonState::Init()
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
 
+    m_useItemButton.setOnClickCallback([this]() { m_showPotionMenu = true; });
+
     m_useSkillButton.setOnClickCallback([this]() {
         Mob*         closestMob = getClosestUnitOfType<Mob>(m_mobsID, m_character->GetPosition());
         unsigned int targetId   = closestMob->GetId();
@@ -305,8 +307,7 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
             }
         }
         else
-        {
-        }
+        {}
         Necromancer* necromancer =
             GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(GetContext().GetCharacterId());
         if (necromancer)
@@ -366,6 +367,22 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
                     std::cerr << "Backpack is full!" << std::endl;
                 }
             }
+
+            vector<Item> mobloots = m_dungeon.getMobLoot();
+            for (auto& mobloot : mobloots)
+            {
+                try
+                {
+                    GetContext().GetBackpack()->addItem(mobloot, 1);
+                    std::cout << "Loot added to backpack: " << mobloot.getName() << std::endl;
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << "Exception: " << e.what() << std::endl;
+                    std::cerr << "Backpack is full!" << std::endl;
+                }
+            }
+
             if (necromancer)
             {
                 m_isTransitioning              = true;
@@ -521,26 +538,62 @@ void DungeonState::RenderUI()
         m_mobInfo.render(m_mobsID, isBossRoom);
     }
 
+    // Render potion menu if flag is set
+    if (m_showPotionMenu)
+    {
+        renderPotion();
+    }
+
     // Display exit confirmation popup
     if (m_showExitPopup)
     {
+        // Center the modal window
+        ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+        ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(320, 160));
+
         ImGui::OpenPopup("Surrender Confirmation");
         m_showExitPopup = false;  // prevent reopening every frame
     }
+
     if (ImGui::BeginPopupModal("Surrender Confirmation",
                                nullptr,
                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
+                                   ImGuiWindowFlags_NoScrollbar |
+                                   ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoNav |
+                                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("Do you really want to surrender?");
-        ImGui::Dummy(ImVec2(0, 4.0f));  // Add some space
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2(0, 4.0f));  // Add some space
-        float buttonWidth = 60.0f;
-        float buttonPosX  = (ImGui::GetContentRegionAvail().x - 2 * buttonWidth - 10.0f);
-        ImGui::SetCursorPosX(buttonPosX);
+        // Apply styling directly inside the modal
+        const float sectionSpacing = 3.0f;
 
-        if (ImGui::Button("Yes", ImVec2(buttonWidth, 0)))
+        // Header
+        ImGui::SetWindowFontScale(1.3f);
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Surrender Dungeon");
+        ImGui::SetWindowFontScale(1.0f);
+
+        ImGui::Dummy(ImVec2(0, sectionSpacing));
+        ImGui::Separator();
+        ImGui::Dummy(ImVec2(0, sectionSpacing * 0.75f));
+
+        // Confirmation message
+        ImGui::TextWrapped("Do you really want to surrender? You will lose EXP and Gold!");
+
+        ImGui::Dummy(ImVec2(0, sectionSpacing + 1.0f));
+
+        // Buttons at the bottom
+        float contentWidth = ImGui::GetContentRegionAvail().x;
+        float buttonWidth  = 120.0f;
+        float startPos     = (contentWidth - (buttonWidth * 2)) / 2.0f + 12.0f;
+
+        ImGui::SetCursorPosX(startPos);
+
+        // Yes button (red for warning)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.7f, 0.3f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.4f, 0.4f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        if (ImGui::Button("Yes", ImVec2(buttonWidth, 40)))
         {
             int expPenalty  = 0;
             int goldPenalty = 0;
@@ -569,16 +622,501 @@ void DungeonState::RenderUI()
                 m_pendingStateChange = StateChange {StateAction::POP};
             }
         }
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(buttonPosX + buttonWidth + 10.0f);
 
-        if (ImGui::Button("No", ImVec2(buttonWidth, 0)))
+        // Pop the yes button styles
+        ImGui::PopStyleColor(4);
+
+        ImGui::SameLine();
+
+        // No button (green for continue)
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.8f, 0.4f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+
+        if (ImGui::Button("No", ImVec2(buttonWidth, 40)))
         {
             ImGui::CloseCurrentPopup();
         }
 
+        // Pop the no button styles
+        ImGui::PopStyleColor(4);
+
         ImGui::EndPopup();
     }
+}
+
+void DungeonState::renderPotion()
+{
+    // Filter potions from backpack
+    std::vector<std::pair<Item, int>*> potionItems;
+
+    std::vector<std::vector<std::pair<Item, int>>> backpack =
+        GetContext().GetBackpack()->getBackpackData();
+
+    // Iterate through backpack to find potions
+    for (int i = 0; i < backpack.size(); ++i)
+    {
+        for (int j = 0; j < backpack[i].size(); ++j)
+        {
+            Item& item = backpack[i][j].first;
+            if (item.getType() == "Potion")
+            {
+                potionItems.push_back(&backpack[i][j]);
+            }
+        }
+    }
+
+    // Debug all of all backpack items
+    std::cout << "Backpack items:" << std::endl;
+    for (const auto& backpackRow : backpack)
+    {
+        for (const auto& itemPair : backpackRow)
+        {
+            std::cout << "Item: " << itemPair.first.getName() << ", Quantity: " << itemPair.second
+                      << std::endl;
+        }
+    }
+
+    // Consolidate identical potions
+    std::map<std::string, std::pair<Item, int>> consolidatedPotions;
+    for (auto& pair : potionItems)
+    {
+        if (pair)
+        {  // Check if the pointer is valid
+            const Item& item     = pair->first;
+            int         quantity = pair->second;
+
+            if (!item.isNull())
+            {  // Make sure item is valid
+                // If item already exists, add quantity
+                if (consolidatedPotions.find(item.getItemID()) != consolidatedPotions.end())
+                {
+                    consolidatedPotions[item.getItemID()].second += quantity;
+                }
+                else
+                {
+                    consolidatedPotions[item.getItemID()] = {item, quantity};
+                }
+            }
+        }
+    }
+
+    // Convert to vector for grid display
+    std::vector<std::pair<Item, int>> potionList;
+    for (auto& [_, pair] : consolidatedPotions)
+    {
+        potionList.push_back(pair);
+    }
+
+    // Create semi-transparent overlay background
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));  // Semi-transparent
+                                                                               // black
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+
+    ImGui::Begin("PotionOverlay",
+                 nullptr,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+    // Define grid dimensions
+    static constexpr int SLOT_SIZE  = 138;
+    static constexpr int GRID_WIDTH = 4;
+    int GRID_HEIGHT = (potionList.size() + GRID_WIDTH - 1) / GRID_WIDTH;  // Ceiling division
+    if (GRID_HEIGHT == 0)
+        GRID_HEIGHT = 1;  // Ensure at least 1 row
+
+    // Position the grid window in the center of the screen
+    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+    ImVec2 gridSize    = ImVec2(GRID_WIDTH * SLOT_SIZE + 13, std::min(4, GRID_HEIGHT) * SLOT_SIZE);
+    ImVec2 windowPos   = ImVec2((displaySize.x - gridSize.x) * 0.5f,
+                              (displaySize.y - gridSize.y) * 0.5f - 65);  // Centered, adjusted up
+                                                                            // for description box
+
+    // Close button at the top right of the overlay
+    ImVec2 closeButtonPos = ImVec2(displaySize.x - 50, 10);
+    ImGui::SetCursorPos(closeButtonPos);
+    if (ImGui::Button("X", ImVec2(40, 40)))
+    {
+        m_showPotionMenu = false;  // Set the flag to close the menu
+        ImGui::End();
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor();
+        return;
+    }
+
+    // Position the grid window
+    ImGui::SetNextWindowPos(windowPos);
+    ImGui::SetNextWindowSize(gridSize);
+
+    // Style for grid window
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+
+    // Colors to match brownish background
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Brownish
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, ImVec4(0.55f, 0.30f, 0.20f, 0.9f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabHovered, ImVec4(0.65f, 0.40f, 0.25f, 0.9f));
+    ImGui::PushStyleColor(ImGuiCol_ScrollbarGrabActive, ImVec4(0.70f, 0.45f, 0.30f, 0.9f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+
+    ImGui::Begin("PotionGrid",
+                 nullptr,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings |
+                     ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
+    // Track hovered item for description
+    static Item hoveredItem;
+    bool        hasHoveredItem = false;
+
+    // Draw the grid
+    int idx = 0;
+    for (int y = 0; y < GRID_HEIGHT; y++)
+    {
+        for (int x = 0; x < GRID_WIDTH; x++)
+        {
+            // Calculate position
+            float slotX = x * SLOT_SIZE;
+            float slotY = y * SLOT_SIZE;
+
+            // Set cursor position
+            ImGui::SetCursorPos(ImVec2(slotX, slotY));
+
+            // Generate unique ID
+            ImGui::PushID(y * GRID_WIDTH + x);
+
+            Item item;
+            int  quantity    = 0;
+            bool isEmptySlot = true;
+
+            // Get item if available
+            if (idx < potionList.size())
+            {
+                item        = potionList[idx].first;
+                quantity    = potionList[idx].second;
+                isEmptySlot = false;
+                idx++;
+            }
+
+            // Apply styling
+            if (isEmptySlot)
+            {
+                // For empty slots - no hover/click effect
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                      ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // No hover effect
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                                      ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // No click effect
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));
+            }
+            else
+            {
+                // For item slots - normal hover/click effects
+                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.45f, 0.25f, 0.15f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.55f, 0.35f, 0.25f, 1.0f));
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));
+            }
+
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+
+            // Draw button slot
+            bool clicked = ImGui::Button("", ImVec2(SLOT_SIZE - 2, SLOT_SIZE - 2));
+
+            // Check for hover - only for non-empty slots
+            if (ImGui::IsItemHovered() && !isEmptySlot)
+            {
+                hoveredItem    = item;
+                hasHoveredItem = true;
+            }
+
+            // Handle click - only for non-empty slots
+            if (clicked && !isEmptySlot)
+            {
+                // Get Character
+                Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
+                    GetContext().GetCharacterId());
+                if (character)
+                {
+                    try
+                    {
+                        // First remove item from backpack
+                        Item usedItem = GetContext().GetBackpack()->takeItem(item, 1);
+                        std::cout << "Using potion: " << usedItem.getName() << std::endl;
+
+                        // Apply each effect from the potion
+                        const std::vector<std::string>& effects = item.getEffects();
+                        for (const std::string& effectName : effects)
+                        {
+                            try
+                            {
+                                std::cout << "Applying effect: " << effectName << std::endl;
+                                auto effect = EffectFactory::CreateUnique(effectName);
+                                character->AddEffect(std::move(effect));
+                            }
+                            catch (const std::exception& e)
+                            {
+                                std::cerr << "Failed to apply effect " << effectName << ": "
+                                          << e.what() << std::endl;
+                            }
+                        }
+
+                        // Don't close the potion grid, just refresh the display
+                        // We need to recalculate the list after using an item
+                        potionItems = GetContext().GetBackpack()->filterItemsByType("Potion");
+
+                        // Update consolidated potions
+                        consolidatedPotions.clear();
+                        for (auto& pair : potionItems)
+                        {
+                            if (pair)
+                            {  // Check if the pointer is valid
+                                const Item& updatedItem     = pair->first;
+                                int         updatedQuantity = pair->second;
+
+                                if (!updatedItem.isNull())
+                                {  // Make sure item is valid
+                                    if (consolidatedPotions.find(updatedItem.getItemID()) !=
+                                        consolidatedPotions.end())
+                                    {
+                                        consolidatedPotions[updatedItem.getItemID()].second +=
+                                            updatedQuantity;
+                                    }
+                                    else
+                                    {
+                                        consolidatedPotions[updatedItem.getItemID()] = {
+                                            updatedItem, updatedQuantity};
+                                    }
+                                }
+                            }
+                        }
+
+                        // Rebuild the potion list
+                        potionList.clear();
+                        for (auto& [_, pair] : consolidatedPotions)
+                        {
+                            potionList.push_back(pair);
+                        }
+
+                        // If no more potions, close the grid
+                        if (potionList.empty())
+                        {
+                            m_showPotionMenu = false;  // Set flag to close the menu
+                            ImGui::End();              // End grid
+                            ImGui::End();              // End overlay
+                            ImGui::PopStyleVar(6);
+                            ImGui::PopStyleColor(7);
+
+                            // Update turn (using an item takes the player's turn)
+                            m_triggerActionTurn = true;
+                            m_character->RefreshTurn();
+                            m_turnQueue.push(m_character->GetId());
+                            m_turnQueue.pop();
+                            m_isPlayerTurn = false;
+                            return;
+                        }
+
+                        Stats stats = character->GetStats();
+                        std::cout << "Strength: " << stats.strength << std::endl;
+                        std::cout << "Agility: " << stats.agility << std::endl;
+                        std::cout << "Intelligence: " << stats.intelligence << std::endl;
+                        std::cout << "Buff Multiplier: " << stats.buffMultiplier << std::endl;
+                        std::cout << "Critical Strike Multiplier: " << stats.criticalStrikeMultiplier
+                                  << std::endl;
+                        std::cout << "Critical Strike Chance: " << stats.criticalStrikeChance
+                                  << std::endl;
+                        std::cout << "Skip Turn Chance: " << stats.skipTurnChance << std::endl;
+                        std::cout << "Luck: " << stats.luck << std::endl;
+                        std::cout << "Physical Defense: " << stats.physicalDefense << std::endl;
+                        std::cout << "Magic Defense: " << stats.magicDefense << std::endl;
+                        std::cout << "Dodge Chance: " << stats.dodgeChance << std::endl;
+                        std::cout << "Accuracy: " << stats.accuracy << std::endl;
+                        std::cout << "Status Resistance: " << stats.statusResistance << std::endl;
+                        std::cout << "Haste Multiplier: " << stats.hasteMultiplier << std::endl;
+                        std::cout << "Resource Cost Multiplier: " << stats.resourceCostMul
+                                  << std::endl;
+
+                        // Update turn (using an item takes the player's turn)
+                        m_triggerActionTurn = true;
+                        m_character->RefreshTurn();
+                        m_turnQueue.push(m_character->GetId());
+                        m_turnQueue.pop();
+                        m_isPlayerTurn   = false;
+                        m_showPotionMenu = false;
+                    }
+                    catch (const std::exception& e)
+                    {
+                        std::cerr << "Failed to use potion: " << e.what() << std::endl;
+                    }
+                }
+            }
+
+            // Get the position where we drew the button
+            ImVec2 buttonPos = ImGui::GetItemRectMin();
+            ImVec2 buttonCenter =
+                ImVec2(buttonPos.x + (SLOT_SIZE - 2) / 2.0f, buttonPos.y + (SLOT_SIZE - 2) / 2.0f);
+
+            // Render item texture or empty slot texture
+            if (isEmptySlot)
+            {
+                // Try to render empty slot texture if available
+                try
+                {
+                    sf::Texture* emptyTexture = &GetContext().GetResourceManager()->GetTexture("NO"
+                                                                                               "L");
+                    if (emptyTexture)
+                    {
+                        ImTextureID textureId =
+                            (ImTextureID)(intptr_t)emptyTexture->getNativeHandle();
+                        ImVec2 imageSize(SLOT_SIZE - 16, SLOT_SIZE - 16);
+                        ImVec2 imagePos(buttonCenter.x - imageSize.x / 2.0f,
+                                        buttonCenter.y - imageSize.y / 2.0f);
+                        ImGui::SetCursorScreenPos(imagePos);
+                        ImGui::Image(textureId, imageSize);
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    // If texture not found, just skip rendering the empty texture
+                    std::cerr << "Empty slot texture not found: " << e.what() << std::endl;
+                }
+            }
+            else
+            {
+                // Render item texture
+                try
+                {
+                    sf::Texture* texture =
+                        &GetContext().GetResourceManager()->GetTexture(item.getItemID());
+                    if (texture)
+                    {
+                        ImTextureID textureId = (ImTextureID)(intptr_t)texture->getNativeHandle();
+                        ImVec2      imageSize(SLOT_SIZE - 16, SLOT_SIZE - 16);
+                        ImVec2      imagePos(buttonCenter.x - imageSize.x / 2.0f,
+                                        buttonCenter.y - imageSize.y / 2.0f);
+                        ImGui::SetCursorScreenPos(imagePos);
+                        ImGui::Image(textureId, imageSize);
+
+                        // Increase font size for item details
+                        ImGui::SetWindowFontScale(1.1f);
+
+                        // Rarity label
+                        char r = item.getRarity();
+                        ImGui::SetCursorScreenPos(ImVec2(buttonPos.x + 12, buttonPos.y + 10));
+                        ImVec4 rarityColor = Color::GetRarityColor(r);
+                        ImGui::PushStyleColor(ImGuiCol_Text, rarityColor);
+                        ImGui::Text("%c", r);
+                        ImGui::PopStyleColor();
+
+                        // Quantity label
+                        ImGui::SetCursorScreenPos(
+                            ImVec2(buttonPos.x + SLOT_SIZE - 30, buttonPos.y + SLOT_SIZE - 26));
+                        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.75f, 0.8f, 1.0f));
+                        ImGui::Text("%d", quantity);
+                        ImGui::PopStyleColor();
+
+                        // Reset font scale
+                        ImGui::SetWindowFontScale(1.0f);
+                    }
+                }
+                catch (const std::exception& e)
+                {
+                    std::cerr << "Failed to load texture for item " << item.getItemID() << ": "
+                              << e.what() << std::endl;
+                }
+            }
+
+            // Pop style and ID
+            ImGui::PopStyleVar(3);
+            ImGui::PopStyleColor(4);
+            ImGui::PopID();
+        }
+    }
+
+    ImGui::End();  // End PotionGrid
+
+    ImGui::PopStyleColor(6);
+    ImGui::PopStyleVar(6);
+
+    // Force exact content height
+    ImGui::SetCursorPos(ImVec2(0, GRID_HEIGHT * SLOT_SIZE - 1));
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.0f);
+    ImGui::Button("##endspacer", ImVec2(SLOT_SIZE, 1));
+    ImGui::PopStyleVar();
+
+    // Render description box below the grid
+    if (hasHoveredItem && !hoveredItem.isNull())
+    {
+        // Potion description box
+        ImVec2 descPos = ImVec2(windowPos.x, windowPos.y + gridSize.y + 10);
+        ImGui::SetNextWindowPos(descPos);
+        ImGui::SetNextWindowSize(ImVec2(gridSize.x, 75.0f));
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.25f, 0.15f, 0.1f, 0.9f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+
+        ImGui::Begin("PotionDescription",
+                     nullptr,
+                     ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+        // Item name
+        std::string itemName = hoveredItem.getName();
+        std::replace(itemName.begin(), itemName.end(), '_', ' ');
+
+        // Set color based on item type
+        ImVec4 itemColor = Color::GetTypeColor(hoveredItem.getType());
+        ImGui::PushStyleColor(ImGuiCol_Text, itemColor);
+        ImGui::Text("%s", itemName.c_str());
+        ImGui::PopStyleColor();
+
+        // Effects
+        std::vector<std::string> effects = hoveredItem.getEffects();
+        std::string              effectText;
+        for (size_t i = 0; i < effects.size(); ++i)
+        {
+            if (i > 0)
+                effectText += ", ";
+            effectText += effects[i];
+        }
+
+        if (!effectText.empty())
+        {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
+            ImGui::Text("Effects: %s", effectText.c_str());
+            ImGui::PopStyleColor();
+        }
+        else
+        {
+            ImGui::Text("Effects: None");
+        }
+
+        // Description
+        ImGui::TextWrapped("%s", hoveredItem.getDescription().c_str());
+
+        ImGui::End();
+        ImGui::PopStyleVar(3);
+        ImGui::PopStyleColor(2);
+    }
+
+    ImGui::End();  // End overlay
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
 }
 
 void DungeonState::Pause()

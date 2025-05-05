@@ -6,8 +6,8 @@
 #include "states/InventoryMenuState.hpp"
 #include "states/MainMenuState.hpp"
 #include "states/ShopState.hpp"
-#include "states/State.hpp"
 #include "states/SkillTreeState.hpp"
+#include "states/State.hpp"
 
 class WorldState : public State
 {

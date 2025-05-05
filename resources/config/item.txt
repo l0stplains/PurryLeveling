@@ -1,54 +1,54 @@
 #<Item ID> <Item Name> <Item Type> <Rarity> <Base Atk> <Effect1> <term “-”> <Description>
-HPS Healing_Potion   Potion    S  0 RestoreHealth   - Heals a large amount.
-PPS Poison_Potion    Potion    S  0 PoisonDamage    - Inflicts a deadly toxin.
-IPS Ice_Potion       Potion    A  0 SlowEffect      - Freezes target briefly.
-FPA Flaming_Potion   Potion    A  0 BurnEffect      - Sets target ablaze.
-RPD Rock_Potion      Potion    B  0 StoneSkin       - Temporarily hardens skin.
-MPB Manipulation_Potion Potion C 0 MindControl     - Controls a single creature.
-WPD Wealth_Potion    Potion    D  0 GoldBoost       - Increases gold gain.
-HPE Heart_Potion     Potion    E  0 HealthBoost     - Small heal over time.
-ASS Azure_Sword      Weapon    S  900 Critical_Strike - Legendary azure blade.
-FSS Flaming_Sword    Weapon    S 1000 BurnEffect     - Engulfs blade in flames.
-AAS Amethyst_Axe     Weapon    S  850 ManaDrain      - Leaches mana on hit.
-AAA Asgard_Axe       Weapon    A  800 ThunderStrike  - Calls down a storm.
-SSA Silver_Sword     Weapon    A  750 Reflect        - Reflects light back.
-FPB Flaming_Pickaxe  Weapon    B  600 BurnEffect     - Ignites rock on hit.
-SAB Silver_Axe       Weapon    B  650 PoisonDamage   - Coated in venom.
-WPC Wooden_Pickaxe   Weapon    C  300 None           - Cheap, sturdy pickaxe.
-BKC Basic_Knife      Weapon    C  200 None           - Simple cutting tool.
-BND Banana           Weapon    D   50 SlipEffect     - Slippery, comedic weapon.
-BTD Basic_Torch      Weapon    D  100 LightSource    - Provides dim light.
-WSD Wooden_Spoon     Weapon    D   25 None           - Utensil with pointy end.
-DNE Doughnut         Weapon    E   10 SugarRush      - Temporarily boosts speed.
-WSE Wooden_Stick     Weapon    E   20 None           - Simple walking stick.
-PHS Pumpkin_Head     HeadArmor S  400 FearAura        - Intimidates nearby foes.
-CHA Caesar_Head      HeadArmor A  350 Leadership      - Boosts party morale.
-DHB Diamond_Head     HeadArmor B  300 Reflect         - Dazzles attackers.
-GHC Golden_Head      HeadArmor C  250 WealthAura      - Attracts gold.
-SHD Silver_Head      HeadArmor D  200 None            - Sturdy, shiny headgear.
-BPE Basic_Pan        HeadArmor E  150 CookBonus       - Improves cooking.
-ABS Azure_Body       BodyArmor  S  700 MagicShield     - Blocks magical attacks.
-FBS Flaming_Body     BodyArmor  S  750 BurnEffect      - Damages melee attackers.
-ABA Amethyst_Body    BodyArmor  A  650 ManaBoost       - Speeds spellcasting.
-GBA Golden_Body      BodyArmor  A  600 WealthAura      - Increases gold find.
-ABB Asgard_Body      BodyArmor  B  550 ThunderGuard    - Reduces stun.
-SBC Silver_Body      BodyArmor  C  400 Reflect         - Shines foes away.
-CBD Cotton_Body     BodyArmor  D  200 None            - Light protection.
-TBE Torn_Body       BodyArmor  E  100 None            - Threadbare cover.
-FFS Flaming_Foot     FootArmor  S  300 SpeedBoost      - Leaves fire trail.
-SFS Speedy_Foot      FootArmor  S  350 Dash            - Quick short sprint.
-IFA Icy_Foot         FootArmor  A  280 SlowAura        - Slows nearby enemies.
-DFB Diamond_Foot     FootArmor  B  250 Reflect         - Shards fly outward.
-GFC Golden_Foot      FootArmor  C  200 WealthAura      - Gold magnets.
-LFD Leather_Foot     FootArmor  D  150 None            - Standard boots.
-RFE Rotten_Foot      FootArmor  E   80 PoisonAura      - Damages standing foes.
-TPS Totem_Pendant    Pendant    S    0 SpiritLink      - Bonds with spirit.
-FRS Flaming_Ring     Pendant    S    0 BurnAura         - Burns attackers.
-IBA Intelligence_Book Pendant A  0 MindBoost       - Raises intelligence.
-FBA Flaming_Belt     Pendant    A    0 BurnEffect      - Ignites wearer.
-DRA Dragon_Ring     Pendant    A    0 FireBreath      - Exhales flame.
-JRB Jade_Ring       Pendant    B    0 PoisonResistance - Natural antitoxin.
-ABC Amethyst_Book   Pendant    C    0 ManaBoost       - Speeds mana regen.
-LBC Leather_Belt    Pendant    C    0 None            - Sturdy simple belt.
-LBD Leather_Book    Pendant    D    0 None            - Worn tome.
-SRE Stone_Ring      Pendant    E    0 EarthGuard      - Reduces knockback.
+HPS Healing_Potion        Potion    S   0 ArcanePrecision           - Heals a large amount.
+PPS Poison_Potion         Potion    S   0 BattleFocus               - Inflicts a deadly toxin.
+IPS Ice_Potion            Potion    A   0 BloodThirst               - Freezes target briefly.
+FPA Flaming_Potion        Potion    A   0 Brittle                   - Sets target ablaze.
+RPD Rock_Potion           Potion    B   0 Chronoflux                - Temporarily hardens skin.
+MPB Manipulation_Potion   Potion    C   0 CurseOfFragility          - Controls a single creature.
+WPD Wealth_Potion         Potion    D   0 EtherealForm              - Increases gold gain.
+HPE Heart_Potion          Potion    E   0 FighterMight              - Small heal over time.
+ASS Azure_Sword           Weapon    S 900 FortuneCall             - Legendary azure blade.
+FSS Flaming_Sword         Weapon    S1000 GladiatorMight         - Engulfs blade in flames.
+AAS Amethyst_Axe          Weapon    S 850 HarmoniousEmpowerment  - Leaches mana on hit.
+AAA Asgard_Axe            Weapon    A 800 IronCurtain             - Calls down a storm.
+SSA Silver_Sword          Weapon    A 750 MysticBarrier           - Reflects light back.
+FPB Flaming_Pickaxe       Weapon    B 600 Overclock               - Ignites rock on hit.
+SAB Silver_Axe            Weapon    B 650 Shadowstep              - Coated in venom.
+WPC Wooden_Pickaxe        Weapon    C 300 Silence                 - Cheap, sturdy pickaxe.
+BKC Basic_Knife           Weapon    C 200 StalwartResolve         - Simple cutting tool.
+BND Banana                Weapon    D  50 TimeWarp                - Slippery, comedic weapon.
+BTD Basic_Torch           Weapon    D 100 ArcanePrecision         - Provides dim light.
+WSD Wooden_Spoon          Weapon    D  25 BattleFocus             - Utensil with pointy end.
+DNE Doughnut              Weapon    E  10 BloodThirst              - Temporarily boosts speed.
+WSE Wooden_Stick          Weapon    E  20 Brittle                  - Simple walking stick.
+PHS Pumpkin_Head          HeadArmor S 400 Chronoflux               - Intimidates nearby foes.
+CHA Caesar_Head           HeadArmor A 350 CurseOfFragility         - Boosts party morale.
+DHB Diamond_Head          HeadArmor B 300 EtherealForm             - Dazzles attackers.
+GHC Golden_Head           HeadArmor C 250 FighterMight             - Attracts gold.
+SHD Silver_Head           HeadArmor D 200 FortuneCall              - Sturdy, shiny headgear.
+BPE Basic_Pan             HeadArmor E 150 GladiatorMight           - Improves cooking.
+ABS Azure_Body            BodyArmor  S 700 HarmoniousEmpowerment  - Blocks magical attacks.
+FBS Flaming_Body          BodyArmor  S 750 IronCurtain             - Damages melee attackers.
+ABA Amethyst_Body         BodyArmor  A 650 MysticBarrier           - Speeds spellcasting.
+GBA Golden_Body           BodyArmor  A 600 Overclock               - Increases gold find.
+ABB Asgard_Body           BodyArmor  B 550 Shadowstep              - Reduces stun.
+SBC Silver_Body           BodyArmor  C 400 Silence                 - Shines foes away.
+CBD Cotton_Body           BodyArmor  D 200 StalwartResolve         - Light protection.
+TBE Torn_Body             BodyArmor  E 100 TimeWarp                - Threadbare cover.
+FFS Flaming_Foot          FootArmor  S 300 ArcanePrecision         - Leaves fire trail.
+SFS Speedy_Foot           FootArmor  S 350 BattleFocus             - Quick short sprint.
+IFA Icy_Foot              FootArmor  A 280 BloodThirst              - Slows nearby enemies.
+DFB Diamond_Foot          FootArmor  B 250 Brittle                  - Shards fly outward.
+GFC Golden_Foot           FootArmor  C 200 Chronoflux               - Gold magnets.
+LFD Leather_Foot          FootArmor  D 150 CurseOfFragility         - Standard boots.
+RFE Rotten_Foot           FootArmor  E  80 EtherealForm             - Damages standing foes.
+TPS Totem_Pendant         Pendant    S   0 FighterMight              - Bonds with spirit.
+FRS Flaming_Ring          Pendant    S   0 FortuneCall               - Burns attackers.
+IBA Intelligence_Book     Pendant    A   0 GladiatorMight           - Raises intelligence.
+FBA Flaming_Belt          Pendant    A   0 HarmoniousEmpowerment    - Ignites wearer.
+DRA Dragon_Ring           Pendant    A   0 IronCurtain              - Exhales flame.
+JRB Jade_Ring             Pendant    B   0 MysticBarrier            - Natural antitoxin.
+ABC Amethyst_Book         Pendant    C   0 Overclock                - Speeds mana regen.
+LBC Leather_Belt          Pendant    C   0 Shadowstep               - Sturdy simple belt.
+LBD Leather_Book          Pendant    D   0 Silence                  - Worn tome.
+SRE Stone_Ring            Pendant    E   0 StalwartResolve          - Reduces knockback.
