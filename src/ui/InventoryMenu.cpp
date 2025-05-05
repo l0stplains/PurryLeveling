@@ -309,7 +309,26 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                     {
                         try
                         {
+                            Item item = m_backpack.getItemAtTile(y, x);
                             m_equipment.equipItemFromBackpack(m_backpack, y, x, itemType);
+                            const std::vector<std::string>& effects = item.getEffects();
+                            for (const std::string& effectName : effects)
+                            {
+                                try
+                                {
+                                    std::cout << "Applying effect: " << effectName << std::endl;
+                                    auto effect = EffectFactory::CreateUnique(effectName);
+
+                                    m_gameContext.GetUnitManager()
+                                        ->GetUnitOfType<Character>(m_gameContext.GetCharacterId())
+                                        ->AddEffect(std::move(effect));
+                                }
+                                catch (const std::exception& e)
+                                {
+                                    std::cerr << "Failed to apply effect " << effectName << ": "
+                                              << e.what() << std::endl;
+                                }
+                            }
                         }
                         catch (const InvalidEquipmentTypeException& e)
                         {
@@ -463,6 +482,25 @@ void InventoryMenu::RenderBackpack(float startX, float startY)
                         if (payload->fromEquipment)
                         {
                             m_equipment.unequipItemToBackpack(m_backpack, y, x, payload->slotType);
+                            Item                            item = m_backpack.getItemAtTile(y, x);
+                            const std::vector<std::string>& effects = item.getEffects();
+                            for (const std::string& effectName : effects)
+                            {
+                                try
+                                {
+                                    std::cout << "Applying effect: " << effectName << std::endl;
+                                    auto effect = EffectFactory::CreateUnique(effectName);
+
+                                    m_gameContext.GetUnitManager()
+                                        ->GetUnitOfType<Character>(m_gameContext.GetCharacterId())
+                                        ->AddEffect(std::move(effect));
+                                }
+                                catch (const std::exception& e)
+                                {
+                                    std::cerr << "Failed to apply effect " << effectName << ": "
+                                              << e.what() << std::endl;
+                                }
+                            }
                         }
                         else
                         {
@@ -706,6 +744,27 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
                         // We have at least one empty slot, use that
                         m_equipment.unequipItemToBackpack(
                             m_backpack, emptySlots[0].first, emptySlots[0].second, slotTypes[i]);
+
+                        Item item =
+                            m_backpack.getItemAtTile(emptySlots[0].first, emptySlots[0].second);
+                        const std::vector<std::string>& effects = item.getEffects();
+                        for (const std::string& effectName : effects)
+                        {
+                            try
+                            {
+                                std::cout << "Applying effect: " << effectName << std::endl;
+                                auto effect = EffectFactory::CreateUnique(effectName);
+
+                                m_gameContext.GetUnitManager()
+                                    ->GetUnitOfType<Character>(m_gameContext.GetCharacterId())
+                                    ->AddEffect(std::move(effect));
+                            }
+                            catch (const std::exception& e)
+                            {
+                                std::cerr << "Failed to apply effect " << effectName << ": "
+                                          << e.what() << std::endl;
+                            }
+                        }
                     }
                     else
                     {
@@ -850,8 +909,28 @@ void InventoryMenu::RenderEquipment(float startX, float startY)
                     // Try to equip from backpack to this slot
                     try
                     {
+                        Item item = m_backpack.getItemAtTile(payload->sourceY, payload->sourceX);
                         m_equipment.equipItemFromBackpack(
                             m_backpack, payload->sourceY, payload->sourceX, slotTypes[i]);
+
+                        const std::vector<std::string>& effects = item.getEffects();
+                        for (const std::string& effectName : effects)
+                        {
+                            try
+                            {
+                                std::cout << "Applying effect: " << effectName << std::endl;
+                                auto effect = EffectFactory::CreateUnique(effectName);
+
+                                m_gameContext.GetUnitManager()
+                                    ->GetUnitOfType<Character>(m_gameContext.GetCharacterId())
+                                    ->AddEffect(std::move(effect));
+                            }
+                            catch (const std::exception& e)
+                            {
+                                std::cerr << "Failed to apply effect " << effectName << ": "
+                                          << e.what() << std::endl;
+                            }
+                        }
                     }
                     catch (const InvalidEquipmentTypeException& e)
                     {
