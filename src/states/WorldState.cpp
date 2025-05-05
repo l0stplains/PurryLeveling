@@ -22,6 +22,7 @@
 // Constructor
 WorldState::WorldState(GameContext& context)
     : State(context),
+        m_backsound(GetContext().GetResourceManager()->GetSoundBuffer("world_backsound")),
       m_dungeonFactory(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
@@ -46,6 +47,10 @@ WorldState::WorldState(GameContext& context)
 
 void WorldState::Init()
 {
+    m_backsound.setLooping(true);
+    m_backsound.setVolume(25);
+    m_backsound.play();
+
     Character* character =
         GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
     character->SetLevel(30);
@@ -670,6 +675,7 @@ vector<std::string> WorldState::generateDungeonRank(int level)
 
 void WorldState::Pause()
 {
+    m_backsound.pause();
     m_lastPosition = GetContext()
                          .GetUnitManager()
                          ->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId())
@@ -678,6 +684,7 @@ void WorldState::Pause()
 
 void WorldState::Resume()
 {
+    m_backsound.play();
     generatePortals();
     sf::Vector2u  windowSize  = GetContext().GetWindow()->getSize();
     unsigned int  characterId = GetContext().GetCharacterId();
@@ -705,6 +712,7 @@ void WorldState::Resume()
 
 void WorldState::Exit()
 {
+    m_backsound.stop();
     GetContext().GetUnitManager()->Clear();
 
     // Save everything related to the user loaded thing

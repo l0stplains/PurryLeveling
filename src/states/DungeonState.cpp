@@ -9,6 +9,7 @@
 
 DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon)
     : State(context),
+    m_bossBacksound(GetContext().GetResourceManager()->GetSoundBuffer("boss_backsound")),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_bossBackgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
@@ -95,6 +96,9 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
 
 void DungeonState::Init()
 {
+    m_bossBacksound.setLooping(true);
+    m_bossBacksound.setVolume(30);
+
     // Background setup
     m_backgroundSprite.setOrigin({0, 0});
     sf::Vector2u windowSize = GetContext().GetWindow()->getSize();
@@ -579,12 +583,26 @@ void DungeonState::RenderUI()
     }
 }
 
-void DungeonState::Pause() {}
+void DungeonState::Pause() {
+    if(m_chamber->getIsBossRoom())
+    {
+        m_bossBacksound.stop();
+    }
+}
 
-void DungeonState::Resume() {}
+void DungeonState::Resume() {
+    if(m_chamber->getIsBossRoom())
+    {
+        m_bossBacksound.play();
+    }
+}
 
 void DungeonState::Exit()
 {
+    if(m_chamber->getIsBossRoom())
+    {
+        m_bossBacksound.stop();
+    }
     for (auto id : m_mobsID)
     {
         GetContext().GetUnitManager()->RemoveUnit(id);
@@ -683,6 +701,7 @@ void DungeonState::nextChamber()
 
     if (m_chamber->getIsBossRoom())
     {
+        m_bossBacksound.play();
         m_backgroundSprite.setTexture(m_bossBackgroundTexture);
     }
     else

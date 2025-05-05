@@ -56,6 +56,8 @@ public:
     void Resume() override;
 
 private:
+    sf::Sound m_bossBacksound;
+
     sf::Texture m_backgroundTexture;
     sf::Texture m_bossBackgroundTexture;
     sf::Sprite  m_backgroundSprite;
