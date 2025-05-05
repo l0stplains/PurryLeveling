@@ -437,8 +437,7 @@ void ChooseCharacterState::RenderUI()
             m_showNameModal = false;
 
             unsigned int characterIds[] = {
-                m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId
-            };
+                m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
             for (const auto& id : characterIds)
             {
                 if (m_selectedCharacterId != id)

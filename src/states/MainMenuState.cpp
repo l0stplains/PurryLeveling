@@ -233,10 +233,9 @@ void MainMenuState::renderNewSaveModal()
     ImGui::EndPopup();
 }
 
-
 void MainMenuState::renderLoadSaveModal()
 {
-    constexpr char PopupId[] = "Load Game";
+    constexpr char  PopupId[]      = "Load Game";
     constexpr float CancelBtnWidth = 100.0f;
 
     // 1) Trigger popup
@@ -247,10 +246,8 @@ void MainMenuState::renderLoadSaveModal()
     }
 
     // 2) Begin modal
-    if (!ImGui::BeginPopupModal(PopupId,
-                                nullptr,
-                                ImGuiWindowFlags_AlwaysAutoResize |
-                                ImGuiWindowFlags_NoMove))
+    if (!ImGui::BeginPopupModal(
+            PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
         return;
 
     ImGui::Text("Select a save folder:");
@@ -278,10 +275,8 @@ void MainMenuState::renderLoadSaveModal()
                     m_selectedFolder.erase(0, sizeof(dataPrefix) - 1);
 
                 GetContext().SetCurrentFolderName(m_selectedFolder);
-                m_pendingStateChange = StateChange {
-                    StateAction::PUSH,
-                    std::make_unique<WorldState>(GetContext())
-                };
+                m_pendingStateChange =
+                    StateChange {StateAction::PUSH, std::make_unique<WorldState>(GetContext())};
                 std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
                 ImGui::CloseCurrentPopup();
             }
@@ -495,38 +490,47 @@ void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
     NavigationGrid*   navGrid    = GetContext().GetNavigationGrid();
     sf::Vector2u      windowSize = GetContext().GetWindow()->getSize();
 
-    std::unique_ptr<Character> character;
-
-    auto spawnAndScale = [&](auto makePtr, float fraction) {
-        auto ptr = makePtr(charType,
-                           sf::Vector2f(windowSize.x * fraction, windowSize.y * 0.76f),
-                           *navGrid,
-                           false,
-                           GetContext());
-        ptr->SetScale(10.f, 10.f);  // child-specific method
-        character = std::move(ptr);
+    // Helper to compute spawn position
+    auto computePos = [&](float fraction) {
+        return sf::Vector2f(windowSize.x * fraction, windowSize.y * 0.76f);
     };
 
+    // Create & scale the correct derived type
+    std::unique_ptr<Character> character;
     if (charType == "Fighter")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Fighter>(args...); }, 1.0f / 6);
+        auto ptr = std::make_unique<Fighter>(
+            charType, computePos(1.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Mage")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Mage>(args...); }, 2.0f / 6);
+        auto ptr =
+            std::make_unique<Mage>(charType, computePos(2.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Assassin")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Assassin>(args...); }, 3.0f / 6);
+        auto ptr = std::make_unique<Assassin>(
+            charType, computePos(3.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Necromancer")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Necromancer>(args...); },
-                      4.0f / 6);
+        auto ptr = std::make_unique<Necromancer>(
+            charType, computePos(4.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Berserker")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Berseker>(args...); }, 5.0f / 6);
+        auto ptr = std::make_unique<Berseker>(
+            charType, computePos(5.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else
     {
@@ -534,46 +538,53 @@ void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
     }
 
     // Register in UnitManager
-    const auto id = character->GetId();
+    const unsigned int id = character->GetId();
     GetContext().SetCharacterId(id);
     GetContext().GetUnitManager()->AddUnit(std::move(character));
 
-    // Configure unit stats
+    // Configure the base Unit
     auto* baseUnit = GetContext().GetUnitManager()->GetUnit(id);
-    baseUnit->SetName(parser.GetUnitStats().at("NAME"));
+    baseUnit->SetName(stats.at("NAME"));
 
     Stats tempStats;
-    tempStats.strength                 = std::stoi(parser.GetUnitStats().at("STRENGTH"));
-    tempStats.agility                  = std::stoi(parser.GetUnitStats().at("AGILITY"));
-    tempStats.intelligence             = std::stoi(parser.GetUnitStats().at("INTELLIGENCE"));
-    tempStats.buffMultiplier           = std::stof(parser.GetUnitStats().at("BUFF_MULTIPLIER"));
-    tempStats.criticalStrikeMultiplier = std::stof(parser.GetUnitStats().at("CRITICAL_STRIKE_"
-                                                                            "MULTIPLIER"));
-    tempStats.criticalStrikeChance = std::stof(parser.GetUnitStats().at("CRITICAL_STRIKE_CHANCE"));
-    tempStats.skipTurnChance       = std::stof(parser.GetUnitStats().at("SKIPTURNCHANCE"));
-    tempStats.luck                 = std::stoi(parser.GetUnitStats().at("LUCK"));
-    tempStats.physicalDefense      = std::stoi(parser.GetUnitStats().at("PHYSICAL_DEFENSE"));
-    tempStats.magicDefense         = std::stoi(parser.GetUnitStats().at("MAGIC_DEFENSE"));
-    tempStats.dodgeChance          = std::stof(parser.GetUnitStats().at("DODGE_CHANCE"));
-    tempStats.accuracy             = std::stof(parser.GetUnitStats().at("ACCURACY"));
-    tempStats.statusResistance     = std::stof(parser.GetUnitStats().at("STATUS_RESISTANCE"));
-    tempStats.hasteMultiplier      = std::stof(parser.GetUnitStats().at("HASTE_MULTIPLIER"));
-    tempStats.resourceCostMul = std::stof(parser.GetUnitStats().at("RESOURCE_COST_MULTIPLIER"));
+    tempStats.strength                 = std::stoi(stats.at("STRENGTH"));
+    tempStats.agility                  = std::stoi(stats.at("AGILITY"));
+    tempStats.intelligence             = std::stoi(stats.at("INTELLIGENCE"));
+    tempStats.buffMultiplier           = std::stof(stats.at("BUFF_MULTIPLIER"));
+    tempStats.criticalStrikeMultiplier = std::stof(stats.at("CRITICAL_STRIKE_MULTIPLIER"));
+    tempStats.criticalStrikeChance     = std::stof(stats.at("CRITICAL_STRIKE_CHANCE"));
+    tempStats.skipTurnChance           = std::stof(stats.at("SKIPTURNCHANCE"));
+    tempStats.luck                     = std::stoi(stats.at("LUCK"));
+    tempStats.physicalDefense          = std::stoi(stats.at("PHYSICAL_DEFENSE"));
+    tempStats.magicDefense             = std::stoi(stats.at("MAGIC_DEFENSE"));
+    tempStats.dodgeChance              = std::stof(stats.at("DODGE_CHANCE"));
+    tempStats.accuracy                 = std::stof(stats.at("ACCURACY"));
+    tempStats.statusResistance         = std::stof(stats.at("STATUS_RESISTANCE"));
+    tempStats.hasteMultiplier          = std::stof(stats.at("HASTE_MULTIPLIER"));
+    tempStats.resourceCostMul          = std::stof(stats.at("RESOURCE_COST_MULTIPLIER"));
 
     baseUnit->SetStats(tempStats);
     baseUnit->SetActive(false);
 
-    // Configure character stats
-    auto* charUnit = GetContext().GetUnitManager()->GetUnitOfType<Character>(id);
-    charUnit->SetGold(std::stoi(parser.GetCharStats().at("GOLD")));
-    charUnit->SetLevel(std::stoi(parser.GetCharStats().at("LEVEL")));
-    charUnit->SetExp(std::stoi(parser.GetCharStats().at("EXP")));
-    charUnit->SetMastery(std::stoi(parser.GetCharStats().at("MASTERY")));
+    // Configure the Character subclass
+    auto*       charUnit  = GetContext().GetUnitManager()->GetUnitOfType<Character>(id);
+    const auto& charStats = parser.GetCharStats();
+    charUnit->SetGold(std::stoi(charStats.at("GOLD")));
+    charUnit->SetLevel(std::stoi(charStats.at("LEVEL")));
+    charUnit->SetExp(std::stoi(charStats.at("EXP")));
+    charUnit->SetMastery(std::stoi(charStats.at("MASTERY")));
 
     // Configure skills
     for (const auto& skill : parser.GetSkillTree())
     {
-        /* TODO: Construct skill tree */
+        const_cast<SkillTree*>(charUnit->GetSkillTree())->setActive(skill);
+    }
+
+    // testing
+    auto activeSkill = charUnit->GetSkillTree()->getActiveSkill();
+    for (const auto& skillPtr : activeSkill)
+    {
+        std::cout << "Active skill: " << skillPtr->getName() << std::endl;
     }
 }
 
