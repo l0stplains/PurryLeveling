@@ -29,11 +29,15 @@ public:
                 ActionCompletionCallback callback = nullptr,
                 ActionCompletionCallback onDeath  = nullptr) override;
 
-    void UseSkill(Unit&                    target,
+    bool UseSkill(Unit&                    target,
                   ActionCompletionCallback callback = nullptr,
                   ActionCompletionCallback onDeath  = nullptr) override;
 
     int CalculateDamage(Unit& target) override;
+
+    void SetLevel(int level) override;
+
+    void ResetRage();
 
     /**
      * @brief Override RenderUI if fighter has specific visuals.
@@ -47,6 +51,9 @@ private:
     void PerformAttack(AnimatedUnit&            target,
                        ActionCompletionCallback callback,
                        ActionCompletionCallback onDeath);
+
+    float m_rageMultiplier = 1.0f;
+    float m_rageAddition   = 0.f;
 
     float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
 };

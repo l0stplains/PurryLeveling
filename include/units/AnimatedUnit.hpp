@@ -77,15 +77,17 @@ public:
     /**
      * @brief Overrides Unit::TakeDamage to play damage/death animations.
      */
-    void TakeDamage(int                      damage,
-                    ActionCompletionCallback callback = nullptr,
-                    ActionCompletionCallback onDeath  = nullptr) override;
+    virtual void TakeDamage(int                      damage,
+                            ActionCompletionCallback callback = nullptr,
+                            ActionCompletionCallback onDeath  = nullptr) override;
 
     /**
      * @brief Overrides Unit::Heal potentially to add a visual effect.
      */
     void Heal(int amount, ActionCompletionCallback callback = nullptr) override;  // Override if
                                                                                   // visual needed
+
+    void RestoreMana(int amount) override;
 
     /**
      * @brief Resets unit state (health, mana, position, animation).

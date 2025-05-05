@@ -11,51 +11,27 @@
 void UnitManager::AddUnit(std::unique_ptr<Unit> unit)
 {
     if (!unit)
-        return;  // Don't add null units
-
-    unsigned int id     = unit->GetId();
-    std::string  name   = unit->GetName();
-    Unit*        rawPtr = unit.get();  // Get raw pointer before moving
-
-    // Store raw pointers for fast lookup
-    m_unitsById[id] = rawPtr;
-
-    // Only store in name map if name is not empty and not already present (or handle duplicates)
-    if (!name.empty())
+        return;
+    if (m_inUpdate)
     {
-        m_unitsByName[name] = rawPtr;
+        m_pendingAdditions.push_back(std::move(unit));
     }
-
-    // Transfer ownership to the manager's vector
-    m_units.push_back(std::move(unit));
-
-    // Mark that sorting is needed before the next draw
-    m_needsSorting = true;
+    else
+    {
+        AddUnitImmediate(std::move(unit));
+    }
 }
 
+// --- Replace your RemoveUnit with this ---
 void UnitManager::RemoveUnit(unsigned int id)
 {
-    // Find the unit in the main vector using its ID
-    auto it = std::find_if(m_units.begin(), m_units.end(), [id](const std::unique_ptr<Unit>& u) {
-        return u->GetId() == id;
-    });
-
-    if (it != m_units.end())
+    if (m_inUpdate)
     {
-        // Get pointer details before erasing
-        Unit*       rawPtr = it->get();
-        std::string name   = rawPtr->GetName();
-
-        // Remove from lookup maps using details
-        m_unitsById.erase(id);
-        if (!name.empty())
-        {
-            m_unitsByName.erase(name);
-        }
-
-        // Erase the unique_ptr from the vector, triggering destruction
-        m_units.erase(it);
-        // No need to sort after removal, relative order maintained
+        m_pendingRemovals.push_back(id);
+    }
+    else
+    {
+        RemoveUnitImmediate(id);
     }
 }
 
@@ -105,28 +81,34 @@ Unit* UnitManager::GetUnitByName(const std::string& name)
 
 void UnitManager::Update(const sf::Time& dt)
 {
-    // Update all active units
-    for (auto& unitPtr : m_units)  // Iterate unique_ptrs
+    // 1) Entering update loop
+    m_inUpdate = true;
+
+    // 2) Iterate all units
+    for (auto& unitPtr : m_units)
     {
         if (unitPtr && unitPtr->IsActive())
         {
-            // dynamic cast to animated unit
-            if (AnimatedUnit* animatedUnit = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
-            {
-                animatedUnit->Update(dt);  // Call Update on AnimatedUnit
-            }
+            if (auto* animated = dynamic_cast<AnimatedUnit*>(unitPtr.get()))
+                animated->Update(dt);
             else
-            {
                 std::cerr << "Warning: Unit " << unitPtr->GetName()
                           << " is not an AnimatedUnit, cannot Update." << std::endl;
-            }
         }
     }
 
-    // --- Optional: Remove inactive units after update ---
-    // It's often better to mark units for removal and sweep them later
-    // to avoid issues while iterating during updates (e.g., callbacks).
-    // For simplicity, we don't auto-remove here. Call RemoveUnit explicitly.
+    // 3) Done iterating
+    m_inUpdate = false;
+
+    // 4) Flush removals first
+    for (auto id : m_pendingRemovals)
+        RemoveUnitImmediate(id);
+    m_pendingRemovals.clear();
+
+    // 5) Then flush additions
+    for (auto& u : m_pendingAdditions)
+        AddUnitImmediate(std::move(u));
+    m_pendingAdditions.clear();
 }
 
 void UnitManager::Draw(sf::RenderWindow& window)
@@ -237,6 +219,48 @@ void UnitManager::Clear()
     m_unitsById.clear();
     m_unitsByName.clear();
     m_needsSorting = false;
+}
+
+void UnitManager::AddUnitImmediate(std::unique_ptr<Unit> unit)
+{
+    if (!unit)
+        return;
+
+    unsigned int id     = unit->GetId();
+    std::string  name   = unit->GetName();
+    Unit*        rawPtr = unit.get();
+
+    // 1) store in lookup maps
+    m_unitsById[id] = rawPtr;
+    if (!name.empty())
+        m_unitsByName[name] = rawPtr;
+
+    // 2) store in main vector
+    m_units.push_back(std::move(unit));
+    m_needsSorting = true;
+}
+
+void UnitManager::RemoveUnitImmediate(unsigned int id)
+{
+    // 1) remove from lookup maps
+    auto itId = m_unitsById.find(id);
+    if (itId != m_unitsById.end())
+    {
+        auto* raw = itId->second;
+        auto  nm  = raw->GetName();
+        m_unitsById.erase(itId);
+        if (!nm.empty())
+            m_unitsByName.erase(nm);
+    }
+
+    // 2) remove from main vector
+    auto it =
+        std::find_if(m_units.begin(), m_units.end(), [id](auto& u) { return u->GetId() == id; });
+    if (it != m_units.end())
+    {
+        m_units.erase(it);
+        // no need to set m_needsSorting here
+    }
 }
 
 size_t UnitManager::GetUnitCount() const

@@ -1,4 +1,5 @@
 #include "skill/Skill.hpp"
+
 #include <iostream>
 
 Skill::Skill(string                       name,
@@ -23,11 +24,11 @@ Skill::Skill(string                       name,
 
 bool Skill::learn(int* masteryPoint)
 {
-    if(*masteryPoint >= this->getMasteryCost())
+    if (*masteryPoint >= this->getMasteryCost())
     {
-        this -> isLearned = true;
-        this -> activated = true;
-    
+        this->isLearned = true;
+        this->activated = true;
+
         *masteryPoint -= this->getMasteryCost();
         return true;
     }

@@ -737,8 +737,8 @@ public:
     {
         std::vector<IGFD::PathDisplayedName> res;
 #            ifdef _IGFD_WIN_
-        const DWORD                          mydevices = 2048;
-        char                                 lpBuffer[2048];
+        const DWORD mydevices = 2048;
+        char        lpBuffer[2048];
 #                define mini(a, b) (((a) < (b)) ? (a) : (b))
         const DWORD countChars = mini(GetLogicalDriveStringsA(mydevices, lpBuffer), 2047);
 #                undef mini
@@ -830,9 +830,9 @@ public:
                     case DT_LNK:
 #            endif
                     case DT_UNKNOWN: {
-                        struct stat sb       = {};
+                        struct stat sb = {};
 #            ifdef _IGFD_WIN_
-                        auto        filePath = vPath + ent->d_name;
+                        auto filePath = vPath + ent->d_name;
 #            else
                         auto filePath = vPath + IGFD::Utils::GetPathSeparator() + ent->d_name;
 #            endif
@@ -2238,7 +2238,7 @@ bool IGFD::FileInfos::FinalizeFileTypeParsing(const size_t& vMaxDotToExtract)
 IGFD::FileManager::FileManager()
 {
     fsRoot = IGFD::Utils::GetPathSeparator();
-#    define STR(x)              #    x
+#    define STR(x)              #x
 #    define STR_AFTER_EXPAND(x) STR(x)
     m_FileSystemName = STR_AFTER_EXPAND(FILE_SYSTEM_OVERRIDE);
 #    undef STR_AFTER_EXPAND

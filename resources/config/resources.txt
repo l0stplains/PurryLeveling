@@ -360,5 +360,7 @@ mob_zombie_jump_shadow   = resources/textures/mobs/Zombie/_Shadows/ZombieIdleSha
 
 [audio]
 menu_backsound = resources/audio/music/main_menu_theme.mp3
+world_backsound = resources/audio/music/world_menu_theme.mp3
+boss_backsound = resources/audio/music/boss_menu_theme.mp3
 button_hover = resources/audio/sfx/cursor_style_2.ogg
 button_click = resources/audio/sfx/confirm_style_4_001.ogg

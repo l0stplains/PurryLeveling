@@ -125,23 +125,23 @@ double DungeonFactory::getDifficultyMultiplier(const string& rank, int chamberIn
 
     if (normalizedRank == Dungeon::RANK_S)
     {
-        difficultyMultiplier = 5.0;
+        difficultyMultiplier = 2.5;
     }
     else if (normalizedRank == Dungeon::RANK_A)
     {
-        difficultyMultiplier = 4.0;
+        difficultyMultiplier = 2.0;
     }
     else if (normalizedRank == Dungeon::RANK_B)
     {
-        difficultyMultiplier = 3.0;
+        difficultyMultiplier = 1.7;
     }
     else if (normalizedRank == Dungeon::RANK_C)
     {
-        difficultyMultiplier = 2.0;
+        difficultyMultiplier = 1.5;
     }
     else if (normalizedRank == Dungeon::RANK_D)
     {
-        difficultyMultiplier = 1.5;
+        difficultyMultiplier = 1.2;
     }
     else if (normalizedRank == Dungeon::RANK_E)
     {
@@ -149,7 +149,7 @@ double DungeonFactory::getDifficultyMultiplier(const string& rank, int chamberIn
     }
     else if (normalizedRank == Dungeon::RANK_SPECIAL)
     {
-        difficultyMultiplier = 1.0 + (chamberIndex * 0.08);
+        difficultyMultiplier = 1.0 + (chamberIndex * 0.02);
     }
 
     return difficultyMultiplier;

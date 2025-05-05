@@ -5,6 +5,8 @@
 
 #include "core/ResourceManager.hpp"
 
+#include "systems/CheatConsole.hpp"
+
 #include "imgui.h"
 #include "rng/rng.hpp"
 #include "skill/characterSkill/Mastery1/Fury.hpp"
@@ -20,6 +22,7 @@
 // Constructor
 WorldState::WorldState(GameContext& context)
     : State(context),
+        m_backsound(GetContext().GetResourceManager()->GetSoundBuffer("world_backsound")),
       m_dungeonFactory(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
@@ -44,11 +47,14 @@ WorldState::WorldState(GameContext& context)
 
 void WorldState::Init()
 {
+    m_backsound.setLooping(true);
+    m_backsound.setVolume(25);
+    m_backsound.play();
+
     Character* character =
         GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
     character->SetLevel(30);
     generatePortals();
-    character->SetLevel(100);  // NOTES: delete this line later
 
     // Background setup
     m_backgroundSprite.setOrigin({0, 0});
@@ -669,6 +675,7 @@ vector<std::string> WorldState::generateDungeonRank(int level)
 
 void WorldState::Pause()
 {
+    m_backsound.pause();
     m_lastPosition = GetContext()
                          .GetUnitManager()
                          ->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId())
@@ -677,6 +684,7 @@ void WorldState::Pause()
 
 void WorldState::Resume()
 {
+    m_backsound.play();
     generatePortals();
     sf::Vector2u  windowSize  = GetContext().GetWindow()->getSize();
     unsigned int  characterId = GetContext().GetCharacterId();
@@ -691,6 +699,7 @@ void WorldState::Resume()
         auto            navGrid = nav->GetGrid();
         animatedCharacter->SetActive(true);
         animatedCharacter->SetScale({4.0f, 4.0f});
+        animatedCharacter->SetShowUI(false);
         animatedCharacter->SetPosition(m_lastPosition);
         animatedCharacter->SetControlledByPlayer(true);
     }
@@ -703,6 +712,7 @@ void WorldState::Resume()
 
 void WorldState::Exit()
 {
+    m_backsound.stop();
     GetContext().GetUnitManager()->Clear();
 
     // Save everything related to the user loaded thing
