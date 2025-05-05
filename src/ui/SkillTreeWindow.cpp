@@ -504,51 +504,42 @@ bool SkillTreeWindow::CanLearnSkill(const Skill* skill)
         return false;
     }
 
-    // Check prerequisites - find the parent skill
-    const Skill* rootSkill = m_skillTree.getSkill().get();
-    
     // Special case: root skill is always learnable if enough mastery points
+    const Skill* rootSkill = m_skillTree.getSkill().get();
     if (skill == rootSkill)
     {
         return true;
     }
     
+    // For non-root skills, check if there's a learned parent that directly connects to this skill
     // Find the direct parent of this skill
-    std::function<const Skill*(const Skill*, const Skill*)> findDirectParent;
+    std::function<bool(const Skill*, const Skill*)> isSkillLearnable;
     
-    findDirectParent = [&findDirectParent](const Skill* current, const Skill* target) -> const Skill* {
-        if (!current)
-            return nullptr;
+    isSkillLearnable = [&isSkillLearnable](const Skill* current, const Skill* target) -> bool {
+        if (!current || !current->getIsLearned())
+            return false;
             
         // Check direct children first
         for (const auto& child : current->getChildren())
         {
             if (child.get() == target)
             {
-                return current;  // This is the direct parent
+                return true;  // Direct child of a learned skill
             }
         }
         
         // Check children recursively
         for (const auto& child : current->getChildren())
         {
-            const Skill* foundParent = findDirectParent(child.get(), target);
-            if (foundParent)
-                return foundParent;
+            if (isSkillLearnable(child.get(), target))
+                return true;
         }
         
-        return nullptr;  // Not found in this branch
+        return false;  // Not learnable through this branch
     };
     
-    const Skill* parent = findDirectParent(rootSkill, skill);
-    
-    // If we found a parent, check if it's learned
-    if (parent && parent->getIsLearned())
-    {
-        return true;
-    }
-    
-    return false;  // No learned parent found
+    // Start checking from the root skill
+    return isSkillLearnable(rootSkill, skill);
 }
 
 void SkillTreeWindow::HandleSkillInteraction(Skill* skill)

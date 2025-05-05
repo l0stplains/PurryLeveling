@@ -20,7 +20,7 @@ world_background = resources/textures/ui/world_background.jpg
 inventory_background = resources/textures/ui/inventory_background.jpg
 shop_background = resources/textures/ui/shop_background.jpg
 shop_dialog_1 = resources/textures/ui/shop_dialog_1.jpg
-skill_tree_bg = resources/textures/ui/skill_tree_bg.png
+skill_tree_bg = resources/textures/ui/skill_tree_bg.jpg
 
 # Items
 ice_potion = resources/textures/items/ice_potion.png
