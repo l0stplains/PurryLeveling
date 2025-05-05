@@ -264,7 +264,8 @@ int Berseker::CalculateDamage(Unit& target)
     float critChance = rng.generateProbability();
     if (critChance < m_stats.criticalStrikeChance)
     {
-        totalDamage = m_stats.criticalStrikeMultiplier * m_stats.buffMultiplier;
+        totalDamage = static_cast<int>(totalDamage * m_stats.criticalStrikeMultiplier *
+                                       m_stats.buffMultiplier);
     }
 
     totalDamage = std::max(0, totalDamage - target.GetStats().magicDefense);

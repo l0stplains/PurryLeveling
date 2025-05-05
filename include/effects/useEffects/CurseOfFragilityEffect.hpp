@@ -4,12 +4,11 @@
 class CurseOfFragilityEffect : public Effect
 {
 public:
-    CurseOfFragilityEffect()
-        : Effect("Curse of Fragility", "PhysDef–4, MagDef–4, Buff×0.8", 3)
+    CurseOfFragilityEffect() : Effect("Curse of Fragility", "PhysDef–4, MagDef–4, Buff×0.8", 3)
     {
         m_modifiers.physicalDefense = -4;
-        m_modifiers.magicDefense = -4;
-        m_modifiers.buffMultiplier = 0.8f;
+        m_modifiers.magicDefense    = -4;
+        m_modifiers.buffMultiplier  = 0.8f;
     }
 
     CurseOfFragilityEffect(int defPen, float buffMulDebuff, int dur)

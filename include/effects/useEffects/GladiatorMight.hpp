@@ -4,10 +4,9 @@
 class GladiatorMight : public Effect
 {
 public:
-    GladiatorMight()
-        : Effect("Gladiator's Might", "Str+6, PhysDef+4, Cost×1.1", 3)
+    GladiatorMight() : Effect("Gladiator's Might", "Str+6, PhysDef+4, Cost×1.1", 3)
     {
-        m_modifiers.strength = 6;
+        m_modifiers.strength        = 6;
         m_modifiers.physicalDefense = 4;
         m_modifiers.resourceCostMul = 1.1f;
     }

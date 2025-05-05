@@ -69,7 +69,7 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
     m_useItemButton  = Button(m_buttonTexture, {120.f, 584.f}, {.9f, .9f}),
     m_exitButton     = Button(m_buttonTexture, {120.f, 668.f}, {.9f, .9f}),
 
-        m_chamberExitArea.setOrigin({0, 0});
+    m_chamberExitArea.setOrigin({0, 0});
     m_chamberExitArea.setScale({2.f, 25.f});
     m_chamberExitArea.setPosition({1200.f, 0.f});
 
@@ -378,29 +378,30 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
 
             // If quest is completed, add quest rewards to player
             if (m_dungeon.getQuest().isValid() && m_dungeon.isQuestCompleted())
-            if (m_dungeon.getQuest().isValid() && m_dungeon.isQuestCompleted())
-            {
-                Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
-                    GetContext().GetCharacterId());
-                character->AddExp(m_dungeon.getQuestExpReward());
-                character->AddGold(m_dungeon.getQuestGoldReward());
-
-                // Add quest item reward to backpack if there is one
-                Item questItem = m_dungeon.getQuestRewardItem();
-                if (!questItem.getItemID().empty())
+                if (m_dungeon.getQuest().isValid() && m_dungeon.isQuestCompleted())
                 {
-                    try
+                    Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
+                        GetContext().GetCharacterId());
+                    character->AddExp(m_dungeon.getQuestExpReward());
+                    character->AddGold(m_dungeon.getQuestGoldReward());
+
+                    // Add quest item reward to backpack if there is one
+                    Item questItem = m_dungeon.getQuestRewardItem();
+                    if (!questItem.getItemID().empty())
                     {
-                        GetContext().GetBackpack()->addItem(questItem, 1);
-                        cout << "Quest item added to backpack: " << questItem.getName() << endl;
-                    }
-                    catch (const std::exception& e)
-                    {
-                        std::cerr << "Exception: " << e.what() << std::endl;
-                        std::cerr << "Backpack is full, couldn't add quest reward item!" << std::endl;
+                        try
+                        {
+                            GetContext().GetBackpack()->addItem(questItem, 1);
+                            cout << "Quest item added to backpack: " << questItem.getName() << endl;
+                        }
+                        catch (const std::exception& e)
+                        {
+                            std::cerr << "Exception: " << e.what() << std::endl;
+                            std::cerr << "Backpack is full, couldn't add quest reward item!"
+                                      << std::endl;
+                        }
                     }
                 }
-            }
 
             return StateChange {StateAction::POP};
         }
@@ -495,11 +496,13 @@ void DungeonState::RenderUI()
     m_cheatConsole.render();
 
     // Render character info - ADDED THIS SECTION
-    Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
-    if (character && m_character) {
+    Character* character =
+        GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+    if (character && m_character)
+    {
         m_characterInfo.render(*character, *m_character);
     }
-    
+
     // m_battleUnitInfo.render(*m_character);
     if (m_chamber->getIsBossRoom() && m_mobsID.size() != 0)
     {
@@ -857,8 +860,8 @@ void DungeonState::initializeCheat()
                             temp.dodgeChance = 1.0f;
                             character->SetStats(temp);
                             character->SetAttackDamage(character->GetAttackDamage() *
-                                                       100.0f);  // set attack damage to
-                                                                 // 100x
+                                                       10000.0f);  // set attack damage to
+                                                                   // 10000x
                             return "God mode enabled";
                         }
                         else if (args[0] == "off")
@@ -867,8 +870,8 @@ void DungeonState::initializeCheat()
                             temp.dodgeChance = 0.0f;
                             character->SetStats(temp);
                             character->SetAttackDamage(character->GetAttackDamage() /
-                                                       100.0f);  // set attack damage to
-                                                                 // normal
+                                                       10000.0f);  // set attack damage to
+                                                                   // normal
                             return "God mode disabled";
                         }
                         else

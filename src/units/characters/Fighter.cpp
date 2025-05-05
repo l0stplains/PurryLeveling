@@ -351,7 +351,8 @@ int Fighter::CalculateDamage(Unit& target)
     float critChance = rng.generateProbability();
     if (critChance < m_stats.criticalStrikeChance)
     {
-        totalDamage = m_stats.criticalStrikeMultiplier * m_stats.buffMultiplier;
+        totalDamage = static_cast<int>(totalDamage * m_stats.criticalStrikeMultiplier *
+                                       m_stats.buffMultiplier);
     }
     totalDamage = target.GetStats().physicalDefense;
     totalDamage = std::max(0, m_attackDamage);

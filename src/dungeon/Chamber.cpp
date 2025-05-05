@@ -196,9 +196,9 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
         return;
     }
 
-    static int specialDungeonTotalDrops = 0;
-    const int MAX_SPECIAL_DUNGEON_DROPS = 5;
-    bool isSpecialDungeon = (chamberNumber > 7);
+    static int specialDungeonTotalDrops  = 0;
+    const int  MAX_SPECIAL_DUNGEON_DROPS = 5;
+    bool       isSpecialDungeon          = (chamberNumber > 7);
 
     if (isSpecialDungeon && specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
     {
@@ -213,8 +213,8 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
         {
             break;
         }
-        
-        Mob* mob = unitManager.GetUnitOfType<Mob>(mobId);
+
+        Mob*   mob     = unitManager.GetUnitOfType<Mob>(mobId);
         string mobName = mob->GetName();
 
         auto mobIt = mobLootData.find(mobName);
@@ -226,21 +226,22 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
             {
                 if (!itemsMap.empty())
                 {
-                    const auto& firstItem = *itemsMap.begin();
-                    const string& itemId = firstItem.first;
-                    
+                    const auto&   firstItem = *itemsMap.begin();
+                    const string& itemId    = firstItem.first;
+
                     try
                     {
                         Item& item = itemManager.getItem(itemId);
                         mobLoot.push_back(item);
                         specialDungeonTotalDrops++;
-                        
+
                         cout << "Mob " << mobName << " dropped item " << item.getName()
                              << " (ID: " << itemId << ")" << endl;
 
                         if (specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
                         {
-                            cout << "Special dungeon item drop cap reached (" << MAX_SPECIAL_DUNGEON_DROPS << " items)" << endl;
+                            cout << "Special dungeon item drop cap reached ("
+                                 << MAX_SPECIAL_DUNGEON_DROPS << " items)" << endl;
                             break;
                         }
                     }
@@ -255,8 +256,8 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
 
             for (const auto& itemEntry : itemsMap)
             {
-                const string& itemId = itemEntry.first;
-                float dropProbability = itemEntry.second;
+                const string& itemId          = itemEntry.first;
+                float         dropProbability = itemEntry.second;
 
                 double randomProb = rng.generateProbability();
 
@@ -266,7 +267,7 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
                     {
                         Item& item = itemManager.getItem(itemId);
                         mobLoot.push_back(item);
-                        
+
                         if (isSpecialDungeon)
                         {
                             specialDungeonTotalDrops++;
@@ -279,7 +280,8 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
                         {
                             if (specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
                             {
-                                cout << "Special dungeon item drop cap reached (" << MAX_SPECIAL_DUNGEON_DROPS << " items)" << endl;
+                                cout << "Special dungeon item drop cap reached ("
+                                     << MAX_SPECIAL_DUNGEON_DROPS << " items)" << endl;
                                 break;
                             }
                             break;

@@ -4,8 +4,7 @@
 class Chronoflux : public Effect
 {
 public:
-    Chronoflux()
-        : Effect("Chrono Mastery", "Resource cost×0.7, Haste×1.3", 3)
+    Chronoflux() : Effect("Chrono Mastery", "Resource cost×0.7, Haste×1.3", 3)
     {
         m_modifiers.resourceCostMul = 0.7f;
         m_modifiers.hasteMultiplier = 1.3f;

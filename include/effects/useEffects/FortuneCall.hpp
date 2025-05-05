@@ -4,10 +4,9 @@
 class FortunesCall : public Effect
 {
 public:
-    FortunesCall()
-        : Effect("Fortune's Call", "Luck+5, Buff×1.3", 3)
+    FortunesCall() : Effect("Fortune's Call", "Luck+5, Buff×1.3", 3)
     {
-        m_modifiers.luck = 5;
+        m_modifiers.luck           = 5;
         m_modifiers.buffMultiplier = 1.3f;
     }
 

@@ -13,8 +13,8 @@
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
 #include "ui/Button.hpp"
-#include "ui/QuestInfo.hpp"
 #include "ui/CharacterInfo.hpp"
+#include "ui/QuestInfo.hpp"
 
 #include "dungeon/Dungeon.hpp"
 #include "dungeon/DungeonFactory.hpp"
@@ -78,7 +78,7 @@ private:
     NavigationGrid m_mobNavGrid;
 
     BattleUnitInfo m_battleUnitInfo;
-    CharacterInfo m_characterInfo;
+    CharacterInfo  m_characterInfo;
     QuestInfo      m_questInfo;
 
     bool m_isPlayerTurn     = true;

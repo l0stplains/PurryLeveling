@@ -357,8 +357,8 @@ int Assassin::CalculateDamage(Unit& target)
     float critChance = rng.generateProbability();
     if (critChance < m_stats.criticalStrikeChance + m_criticalHitChance)
     {
-        totalDamage =
-            m_stats.criticalStrikeMultiplier * m_stats.buffMultiplier * m_criticalHitMultiplier;
+        totalDamage = static_cast<int>(totalDamage * m_stats.criticalStrikeMultiplier *
+                                       m_stats.buffMultiplier);
     }
 
     totalDamage = std::max(0, totalDamage - target.GetStats().magicDefense);

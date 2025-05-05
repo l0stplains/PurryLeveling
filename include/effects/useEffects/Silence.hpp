@@ -4,11 +4,10 @@
 class Silence : public Effect
 {
 public:
-    Silence()
-        : Effect("Silence", "Int–5, Acc×0.8", 2)
+    Silence() : Effect("Silence", "Int–5, Acc×0.8", 2)
     {
         m_modifiers.intelligence = -5;
-        m_modifiers.accuracy = 0.8f;
+        m_modifiers.accuracy     = 0.8f;
     }
 
     Silence(int intPen, float accMul, int dur)
