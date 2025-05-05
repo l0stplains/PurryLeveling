@@ -69,6 +69,11 @@
 
 ### Game Overview
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/c4bec585-0e9f-4c10-857e-2b6c802cf86b" alt="Game Screenshots" width="600"/>
+</div>
+
+<br />
 Purry Leveling is a strategic RPG-based game where players can use skills and items to conquer the dungeon break. Featuring SFML for rendering and ImGui for debugging overlays for stunning GUI. The game challenges players through a series of levels with turn-based battle mechanics.
 
  
@@ -104,7 +109,7 @@ Purry Leveling is a strategic RPG-based game where players can use skills and it
        bash
     git clone https://github.com/Labpro-21/if2010-2425-tubes-1-ctf.git
     
- 3. Make if2010-2425-tubes-1-ctf directory as root directory:
+ 3. go to if2010-2425-tubes-1-ctf directory:
        ```bash
     cd if2010-2425-tubes-1-ctf/
     
