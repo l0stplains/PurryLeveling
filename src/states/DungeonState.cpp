@@ -25,14 +25,15 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_mobNavGrid(
           GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_battleUnitInfo(context),
-      m_characterInfo(context),
-      m_questInfo(context, 250.0f, 150.0f),
+      m_questInfo(context, 250.0f, 150.0f),          // Quest info UI with reasonable size
+      m_mobInfo(context, 250.0f, 160.0f),            // Mob info UI with reasonable size
+      m_characterInfo(context, 250.0f, 160.0f),      // Character info UI with reasonable size
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
       m_chamber(&dungeon.getChamber(0)),
       m_chamberExitPointer(GetContext().GetResourceManager()->GetTexture("pointer_prop"),
-                           {1160.f, 540.f},
-                           {4.f, 4.f}),
+                          {1160.f, 540.f},
+                          {4.f, 4.f}),
       m_bossHealthBar(120.f),
       m_pendingStateChange({StateAction::NONE})
 {
@@ -68,6 +69,7 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
     m_useItemButton  = Button(m_buttonTexture, {120.f, 584.f}, {.9f, .9f}),
     m_exitButton     = Button(m_buttonTexture, {120.f, 668.f}, {.9f, .9f}),
 
+    // setup door enter area
         m_chamberExitArea.setOrigin({0, 0});
     m_chamberExitArea.setScale({2.f, 25.f});
     m_chamberExitArea.setPosition({1200.f, 0.f});
@@ -411,23 +413,33 @@ void DungeonState::Draw(sf::RenderWindow& window)
 
 void DungeonState::RenderUI()
 {
-    // Render character info - ADDED THIS SECTION
+    // Get the character pointers (both as Character and AnimatedUnit)
     Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
-    if (character && m_character) {
-        m_characterInfo.render(*character, *m_character);
+    AnimatedUnit* characterAnimated = GetContext().GetUnitManager()->GetUnitOfType<AnimatedUnit>(GetContext().GetCharacterId());
+    
+    // Render character info if character is valid
+    if (character && characterAnimated && characterAnimated->IsActive())
+    {
+        m_characterInfo.render(*character, *characterAnimated);
     }
     
-    // m_battleUnitInfo.render(*m_character);
-    if (m_chamber->getIsBossRoom() && m_mobsID.size() != 0)
+    bool isBossRoom = m_chamber->getIsBossRoom();
+    
+    // Render boss health bar if in boss room and there are mobs
+    if (isBossRoom && m_mobsID.size() != 0)
     {
         Unit* boss = GetContext().GetUnitManager()->GetUnitOfType<Unit>(m_mobsID[0]);
         m_bossHealthBar.render(*boss);
     }
-    // Render battle unit info
-    // m_battleUnitInfo.render(*m_character);
-
+    
     // Render quest info
     m_questInfo.render(m_dungeon);
+    
+    // Render mob info if there are mobs, not in a boss room, and not in the walk to exit state
+    if (!m_mobsID.empty() && !m_walkToExit)
+    {
+        m_mobInfo.render(m_mobsID, isBossRoom);
+    }
 
     // Display exit confirmation popup
     if (m_showExitPopup)
@@ -447,10 +459,6 @@ void DungeonState::RenderUI()
         float buttonWidth = 60.0f;
         float buttonPosX  = (ImGui::GetContentRegionAvail().x - 2 * buttonWidth - 10.0f);
         ImGui::SetCursorPosX(buttonPosX);
-        // ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));  // Red color
-        // ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.5f, 0.5f, 1.0f));  //
-        // Lighter red ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.2f, 0.2f, 1.0f));
-        // // Darker red
 
         if (ImGui::Button("Yes", ImVec2(buttonWidth, 0)))
         {
@@ -472,7 +480,6 @@ void DungeonState::RenderUI()
                 m_pendingStateChange = StateChange {StateAction::POP};
             }
         }
-        // ImGui::PopStyleColor(3);
         ImGui::SameLine();
         ImGui::SetCursorPosX(buttonPosX + buttonWidth + 10.0f);
 
