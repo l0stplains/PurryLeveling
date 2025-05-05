@@ -13,6 +13,8 @@
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
 #include "ui/Button.hpp"
+#include "ui/QuestInfo.hpp"
+#include "ui/MobInfo.hpp"
 #include "ui/CharacterInfo.hpp"
 #include "ui/QuestInfo.hpp"
 
@@ -51,7 +53,7 @@ public:
 
     void RenderUI() override;
 
-    void Exit() override;
+    void Exit() override;  // Important for thread cleanup!
     void Pause() override;
     void Resume() override;
 
@@ -63,32 +65,33 @@ private:
     sf::Sprite  m_backgroundSprite;
     sf::Sprite  m_chamberExitArea;
 
-    sf::Sound m_buttonHoverSound;
-    sf::Sound m_buttonClickSound;
+    sf::Sound m_buttonHoverSound;  ///< Button hover sound
+    sf::Sound m_buttonClickSound;  ///< Button click sound
 
-    sf::Texture m_buttonTexture;
+    sf::Texture m_buttonTexture;  ///< Button texture
 
-    Button m_attackButton;
+    Button m_attackButton;  ///< attack  button
     Button m_useSkillButton;
-    Button m_useItemButton;
-    Button m_exitButton;
+    Button m_useItemButton;  ///< use item button
+    Button m_exitButton;     ///< Start button
 
-    sf::Font m_font;
-    sf::Font m_boldFont;
+    sf::Font m_font;      ///< Font for UI text
+    sf::Font m_boldFont;  ///< Font for UI text
 
-    NavigationGrid m_navGrid;
-    NavigationGrid m_mobNavGrid;
+    NavigationGrid m_navGrid;     ///< Navigation grid for unit movement
+    NavigationGrid m_mobNavGrid;  ///< Navigation grid for mob movement
 
-    BattleUnitInfo m_battleUnitInfo;
-    CharacterInfo  m_characterInfo;
-    QuestInfo      m_questInfo;
+    BattleUnitInfo m_battleUnitInfo;  ///< Battle unit information UI
+    QuestInfo      m_questInfo;       ///< Quest information UI
+    MobInfo        m_mobInfo;         ///< Mob information UI
+    CharacterInfo  m_characterInfo;   ///< Character information UI
 
     bool m_isPlayerTurn     = true;
     bool m_wasInChamberExit = false;
 
     bool m_triggerActionTurn = false;
 
-    bool     m_showExitPopup = false;
+    bool     m_showExitPopup = false;  ///< Flag to show exit confirmation popup
     Dungeon  m_dungeon;
     Chamber* m_chamber;
 
@@ -99,7 +102,7 @@ private:
 
     AnimatedUnit*             m_character;
     std::vector<unsigned int> m_mobsID;
-    State::StateChange        m_pendingStateChange;
+    State::StateChange        m_pendingStateChange;  ///< Pending state change information
 
     bool m_isTransitioning = false;
     bool m_walkToExit      = false;
