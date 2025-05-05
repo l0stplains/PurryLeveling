@@ -10,7 +10,7 @@ SkillTreeWindow::SkillTreeWindow(GameContext& gameContext)
       m_initialized(false),
       m_windowSize(ImVec2(0, 0)),  // Will be set to match display size
       m_hoveredSkill(nullptr),
-      m_skillTree(*gameContext.GetUnitManager()->GetUnit(gameContext.GetCharacterId())->GetSkillTree())  
+      m_skillTree(*gameContext.GetUnitManager()->GetUnit(gameContext.GetCharacterId())->GetSkillTree()) 
 {
     LoadTextures();
 }
@@ -61,8 +61,6 @@ void SkillTreeWindow::Render()
         m_initialized = true;
     }
 
-    // Calculate window size (make it smaller like in ShopState)
-    // We leave space for the exit button in the top-right corner
     ImVec2 adjustedSize = ImVec2(m_windowSize.x * 0.78125f, m_windowSize.y * 0.8076171875f);
     ImGui::SetNextWindowPos(ImVec2(137, 117), ImGuiCond_Always);
     ImGui::SetNextWindowSize(adjustedSize, ImGuiCond_Always);
@@ -77,6 +75,9 @@ void SkillTreeWindow::Render()
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
                          ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar))
     {
+        // Render mastery points indicator in the upper left corner
+        RenderMasteryPointsIndicator();
+        
         // Rest of the function remains the same
         ImVec2      windowPos   = ImGui::GetWindowPos();
         ImVec2      contentSize = ImGui::GetContentRegionAvail();
@@ -131,6 +132,50 @@ void SkillTreeWindow::Render()
     ImGui::End();
     ImGui::PopStyleColor();
     ImGui::PopStyleVar(2);
+}
+
+void SkillTreeWindow::RenderMasteryPointsIndicator()
+{
+    // Set custom styles for the mastery points indicator
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 12.0f); // Rounded corners
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12, 6)); // Padding inside the frame
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1f, 0.1f, 0.2f, 0.7f)); // Dark background
+    ImGui::PushStyleColor(ImGuiCol_Border, MASTERY_COLOR); // Mastery color for border
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.5f); // Thicker border
+    
+    // Position for the indicator (left corner with some padding)
+    ImGui::SetCursorPos(ImVec2(20, 20));
+    
+    // Create a group to contain the indicator
+    ImGui::BeginGroup();
+    
+    // Display mastery points with an icon/symbol
+    ImGui::Text("*"); // Star symbol for mastery
+    ImGui::SameLine();
+    ImGui::TextColored(MASTERY_COLOR, "Mastery Points: %d", m_playerMasteryPoints);
+    
+    ImGui::EndGroup();
+    
+    // Draw a frame around our group
+    ImVec2 min_pos = ImGui::GetItemRectMin();
+    ImVec2 max_pos = ImGui::GetItemRectMax();
+    ImDrawList* draw_list = ImGui::GetWindowDrawList();
+    draw_list->AddRectFilled(
+        min_pos, 
+        max_pos, 
+        ImGui::ColorConvertFloat4ToU32(ImVec4(0.1f, 0.1f, 0.2f, 0.7f)), 
+        12.0f); // Rounded corner
+    draw_list->AddRect(
+        min_pos, 
+        max_pos, 
+        ImGui::ColorConvertFloat4ToU32(MASTERY_COLOR), 
+        12.0f, // Rounded corner
+        0, 
+        1.5f); // Border thickness
+    
+    // Restore original styles
+    ImGui::PopStyleVar(3);
+    ImGui::PopStyleColor(2);
 }
 
 void SkillTreeWindow::RenderSkillConnections(const Skill* skill, int x, int y, int depth, bool horizontal)
@@ -442,7 +487,13 @@ ImVec2 SkillTreeWindow::CalculateNodePosition(int x, int y, bool horizontal)
 
 bool SkillTreeWindow::CanLearnSkill(const Skill* skill)
 {
-    if (!skill || skill->getIsLearned())
+    if (!skill)
+    {
+        return false;
+    }
+    
+    // If already learned, can't learn again
+    if (skill->getIsLearned())
     {
         return false;
     }
@@ -453,60 +504,51 @@ bool SkillTreeWindow::CanLearnSkill(const Skill* skill)
         return false;
     }
 
-    // Check prerequisites (parent skill must be learned)
-    // This is a simplification - in a real implementation, you'd trace back to the root
-    const Skill*                                    parentSkill = nullptr;
-    std::function<bool(const Skill*, const Skill*)> findParent;
-
-    findParent = [&findParent](const Skill* current, const Skill* target) -> bool {
+    // Check prerequisites - find the parent skill
+    const Skill* rootSkill = m_skillTree.getSkill().get();
+    
+    // Special case: root skill is always learnable if enough mastery points
+    if (skill == rootSkill)
+    {
+        return true;
+    }
+    
+    // Find the direct parent of this skill
+    std::function<const Skill*(const Skill*, const Skill*)> findDirectParent;
+    
+    findDirectParent = [&findDirectParent](const Skill* current, const Skill* target) -> const Skill* {
         if (!current)
-            return false;
-
+            return nullptr;
+            
+        // Check direct children first
         for (const auto& child : current->getChildren())
         {
             if (child.get() == target)
             {
-                return true;
-            }
-            if (findParent(child.get(), target))
-            {
-                return true;
+                return current;  // This is the direct parent
             }
         }
-        return false;
+        
+        // Check children recursively
+        for (const auto& child : current->getChildren())
+        {
+            const Skill* foundParent = findDirectParent(child.get(), target);
+            if (foundParent)
+                return foundParent;
+        }
+        
+        return nullptr;  // Not found in this branch
     };
-
-    const Skill* rootSkill = m_skillTree.getSkill().get();
-    bool         hasParent = findParent(rootSkill, skill);
-
-    if (hasParent)
+    
+    const Skill* parent = findDirectParent(rootSkill, skill);
+    
+    // If we found a parent, check if it's learned
+    if (parent && parent->getIsLearned())
     {
-        // For a skill to be learnable, its parent must be learned
-        std::function<bool(const Skill*, const Skill*)> isParentLearned;
-
-        isParentLearned = [&isParentLearned](const Skill* current, const Skill* target) -> bool {
-            if (!current)
-                return false;
-
-            for (const auto& child : current->getChildren())
-            {
-                if (child.get() == target)
-                {
-                    return current->getIsLearned();
-                }
-                if (isParentLearned(child.get(), target))
-                {
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        return isParentLearned(rootSkill, skill);
+        return true;
     }
-
-    // If it's the root skill, it's always learnable if there are enough mastery points
-    return skill == rootSkill;
+    
+    return false;  // No learned parent found
 }
 
 void SkillTreeWindow::HandleSkillInteraction(Skill* skill)
@@ -517,12 +559,17 @@ void SkillTreeWindow::HandleSkillInteraction(Skill* skill)
     // If skill is already learned, we don't allow learning it again
     if (skill->getIsLearned())
     {
+        std::cout << skill->getName() << " is already learned." << std::endl; 
         return;
     }
+    std::cout << skill->getName() << " clicked" << std::endl;
 
     // Try to learn the skill
     if (CanLearnSkill(skill))
     {
+        // Deduct mastery points (this was missing in the original code)
+        m_playerMasteryPoints -= skill->getMasteryCost();
+        
         int masteryPoints = m_playerMasteryPoints;
         if (skill->learn(&masteryPoints))
         {
@@ -531,7 +578,17 @@ void SkillTreeWindow::HandleSkillInteraction(Skill* skill)
             
             // Update the activation status of skills based on the new learning state
             UpdateSkillActivationStatus(m_skillTree.getSkill().get());
+            
+            std::cout << "Successfully learned " << skill->getName() << std::endl;
         }
+        else
+        {
+            std::cout << "Failed to learn " << skill->getName() << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "Cannot learn " << skill->getName() << " - prerequisites not met" << std::endl;
     }
 }
 
@@ -611,4 +668,4 @@ void SkillTreeWindow::DrawSkillTooltip(const Skill* skill)
     }
 
     ImGui::EndTooltip();
-}   
+}

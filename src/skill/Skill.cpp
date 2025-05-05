@@ -29,5 +29,7 @@ bool Skill::learn(int* masteryPoint)
     this -> isLearned = true;
     this -> activated = true;
 
+    masteryPoint -= this->getMasteryCost();
+
     return true;
 }
