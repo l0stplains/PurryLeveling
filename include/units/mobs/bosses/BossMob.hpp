@@ -18,6 +18,13 @@ public:
 
     const Rage& GetRageSkill() const;
 
+    int CalculateDamage(Unit& target) override;
+
+    bool IsRageActive() const;
+
+protected:
+    bool m_isRageActive = false;
+
 private:
     Rage m_rageSkill;  // Rage skill for the boss
 };
