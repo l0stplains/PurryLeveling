@@ -108,29 +108,22 @@ bool PlayerConfigSaver::SaveToFolder(const std::string& rootDir,
         if (auto f = dynamic_cast<const Fighter*>(&character))
         {
             st << "TYPE " << "Fighter" << "\n";
-            st << "BLOCK_CHANCE " << 0 << "\n";
         }
         else if (auto m = dynamic_cast<const Mage*>(&character))
         {
             st << "TYPE " << "Mage" << "\n";
-            st << "EXTRA_MANA " << 0 << "\n";
         }
         else if (auto a = dynamic_cast<const Assassin*>(&character))
         {
             st << "TYPE " << "Assassin" << "\n";
-            st << "CRITICAL_CHANCE " << 0 << "\n";
-            st << "CRITICAL_MULTIPLIER " << 0 << "\n";
         }
         else if (auto b = dynamic_cast<const Berseker*>(&character))
         {
             st << "TYPE " << "Berseker" << "\n";
-            st << "RAGE_MULTIPLIER " << 0 << "\n";
         }
         else if (auto n = dynamic_cast<const Necromancer*>(&character))
         {
             st << "TYPE " << "Necromancer" << "\n";
-            st << "SUMMON " << 0 << "\n";
-            st << "SUMMON_CHANCE " << 0 << "\n";
         }
     }
 
