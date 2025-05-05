@@ -159,7 +159,7 @@ void ShopMenu::RenderModal()
         ImGui::TextWrapped("%s", m_selectedItem.getDescription().c_str());
 
         // Effects section
-        std::vector<std::shared_ptr<Effect>> effects = m_selectedItem.getEffects();
+        std::vector<std::string> effects = m_selectedItem.getEffects();
         ImGui::Dummy(ImVec2(0, spacing));
         ImGui::Text("Effects:");
         if (!effects.empty())
@@ -167,7 +167,7 @@ void ShopMenu::RenderModal()
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 0.0f, 1.0f));
             for (const auto& effect : effects)
             {
-                ImGui::Text("- %s", effect->GetName().c_str());
+                ImGui::Text("- %s", effect.c_str());
             }
             ImGui::PopStyleColor();
         }
@@ -769,7 +769,7 @@ void ShopMenu::RenderItemDescription()
         ImGui::PopStyleColor();
 
         // Effect
-        std::vector<std::shared_ptr<Effect>> effects = m_hoveredItem.getEffects();
+        std::vector<std::string> effects = m_hoveredItem.getEffects();
 
         // Display effects in format "Effect: <effect_1>, <effect_2>, ..."
         std::string effectText;
@@ -777,7 +777,7 @@ void ShopMenu::RenderItemDescription()
         {
             if (i > 0)
                 effectText += ", ";
-            effectText += effects[i]->GetName();
+            effectText += effects[i];
         }
 
         if (!effectText.empty())
