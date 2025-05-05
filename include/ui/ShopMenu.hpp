@@ -11,6 +11,8 @@
 
 #include "core/GameContext.hpp"
 
+#include "ui/Color.hpp"
+
 #include "imgui-SFML.h"
 #include "imgui.h"
 #include "inventory/Backpack.hpp"
@@ -71,9 +73,6 @@ private:
     void RenderModal();
 
     void RefreshStock();  // Helper to refresh stock when changing mode/filters/sort
-
-    ImVec4 GetItemColor(const std::string& itemname, const std::string& itemtype);
-    ImVec4 GetRarityColor(char rarity) const;
 
     // Error handling methods
     void ShowError(const std::string& message);

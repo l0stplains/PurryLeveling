@@ -18,8 +18,8 @@ lava_button = resources/textures/ui/lava_button.png
 crystal_button = resources/textures/ui/crystal_button.png
 world_background = resources/textures/ui/world_background.jpg
 inventory_background = resources/textures/ui/inventory_background.jpg
-shop_background = resources/textures/ui/shop_background.png
-shop_dialog_1 = resources/textures/ui/shop_dialog_1.png
+shop_background = resources/textures/ui/shop_background.jpg
+shop_dialog_1 = resources/textures/ui/shop_dialog_1.jpg
 
 # Items
 ice_potion = resources/textures/items/ice_potion.png

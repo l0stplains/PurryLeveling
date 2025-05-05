@@ -219,7 +219,7 @@ void ChooseCharacterState::RenderUI()
 
         const char*  characterNames[] = {"Fighter", "Mage", "Assassin", "Necromancer", "Berserker"};
         unsigned int characterIds[]   = {
-            m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
+              m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
 
         ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[0]);
 
