@@ -18,12 +18,12 @@ public:
 
     // --- RPG Stats Getters ---
     int  GetLevel() const;
+    float GetSkillProbabability() const;
     void SetLevel(int);  // virtual so it can be adjusted by basic or boss
-
-    const Healing& GetHealSkill() const;
 
 protected:
     // --- RPG Stats ---
     int     m_level = 1;
-    Healing m_healSkill;
+    float m_skillProbabability = 0.f;
+
 };

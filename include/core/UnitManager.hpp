@@ -143,11 +143,21 @@ public:
      */
     size_t GetUnitCount() const;
 
+    void AddUnitImmediate(std::unique_ptr<Unit> unit);
+
+    void RemoveUnitImmediate(unsigned int id);
+
 private:
     std::vector<std::unique_ptr<Unit>>      m_units;        ///< Owns the Unit objects
     std::unordered_map<unsigned int, Unit*> m_unitsById;    ///< Non-owning pointers for ID lookup
     std::unordered_map<std::string, Unit*>  m_unitsByName;  ///< Non-owning pointers for Name lookup
     bool m_needsSorting = false;  ///< Flag to indicate if sorting is needed before next Draw
+
+    // deferral buffers
+    std::vector<std::unique_ptr<Unit>> m_pendingAdditions;
+    std::vector<int>                   m_pendingRemovals;
+
+    bool m_inUpdate = false;  // guard flag
 
     /**
      * @brief Sort units vector by Z-order (using dynamic_cast)

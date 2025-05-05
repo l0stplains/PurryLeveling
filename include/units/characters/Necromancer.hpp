@@ -29,9 +29,11 @@ public:
                 ActionCompletionCallback callback = nullptr,
                 ActionCompletionCallback onDeath  = nullptr) override;
 
-    void UseSkill(Unit&                    target,
+    bool UseSkill(Unit&                    target,
                   ActionCompletionCallback callback = nullptr,
                   ActionCompletionCallback onDeath  = nullptr) override;
+
+    virtual void SetLevel(int level) override;
 
     void KillSummons(ActionCompletionCallback callback = nullptr);
 
@@ -52,6 +54,6 @@ private:
     vector<unsigned int> m_summons;  // List of summoned units
     int                  m_summonedUnits       = 1;
     float                m_lifestealPercentage = 0.1f;  // 10% lifesteal
-    float                m_summonChance        = 0.8f;  // 80/20, i like gambling
+    float                m_summonChance        = 0.5f;  // 50/50, i like gambling
     float                m_attackRange         = 32.0f;
 };

@@ -239,14 +239,16 @@ void Zombie::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Zombie::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+bool Zombie::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
         if (callback)
             callback();
-        return;
+        return false;
     }
+
+    return true;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements

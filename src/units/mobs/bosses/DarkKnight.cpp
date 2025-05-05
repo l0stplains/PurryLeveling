@@ -15,13 +15,9 @@ DarkKnight::DarkKnight(const std::string&  name,
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 12;
-    m_healthRegen  = 4;
-    m_manaRegen    = 4;
+
+    m_skillProbabability = 0.35f;
+
     m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
@@ -255,16 +251,20 @@ void DarkKnight::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void DarkKnight::UseSkill(Unit&                    target,
+bool DarkKnight::UseSkill(Unit&                    target,
                           ActionCompletionCallback callback,
                           ActionCompletionCallback onDeath)
 {
-    if (!m_active || m_currentHealth <= 0)
-    {
-        if (callback)
-            callback();
-        return;
-    }
+if (!m_active || m_currentHealth <= 0)
+{
+    if (callback)
+        callback();
+    return false;
+}
+
+PlayAnimation(UnitAnimationType::JUMP, callback);
+
+return true;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements

@@ -17,13 +17,7 @@ Orc::Orc(const std::string&  name,
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 12;
-    m_healthRegen  = 4;
-    m_manaRegen    = 4;
+    m_skillProbabability = 0.15f;
     m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
@@ -253,14 +247,18 @@ void Orc::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Orc::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+bool Orc::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
         if (callback)
             callback();
-        return;
+        return false;
     }
+
+    PlayAnimation(UnitAnimationType::JUMP, callback);
+
+    return true;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements

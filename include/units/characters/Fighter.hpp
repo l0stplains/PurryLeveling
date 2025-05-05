@@ -38,9 +38,15 @@ public:
     /**
      * @brief Fighter's skill implementation.
      */
-    void UseSkill(Unit&                    target,
+    bool UseSkill(Unit&                    target,
                   ActionCompletionCallback callback = nullptr,
                   ActionCompletionCallback onDeath  = nullptr) override;
+
+    void TakeDamage(int                      damage,
+                    ActionCompletionCallback callback = nullptr,
+                    ActionCompletionCallback onDeath  = nullptr) override;
+
+    void SetLevel(int level) override;
 
     int CalculateDamage(Unit& target) override;
 
@@ -62,7 +68,7 @@ private:
                        ActionCompletionCallback onDeath);
 
     // --- Fighter Specific Stats ---
-    float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
+    float m_attackRange = 32.0f;
 
-    float m_blockChance = 0.2f;  // Example: 20% chance to block an attack
+    float m_blockChance = 0.2f;
 };

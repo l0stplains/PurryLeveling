@@ -28,9 +28,13 @@ public:
                 ActionCompletionCallback callback = nullptr,
                 ActionCompletionCallback onDeath  = nullptr) override;
 
-    void UseSkill(Unit&                    target,
+    bool UseSkill(Unit&                    target,
                   ActionCompletionCallback callback = nullptr,
                   ActionCompletionCallback onDeath  = nullptr) override;
+
+    virtual void SetLevel(int level) override;
+
+    int CalculateDamage(Unit& target) override;
 
     /**
      * @brief Override RenderUI if fighter has specific visuals.

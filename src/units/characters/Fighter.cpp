@@ -2,7 +2,9 @@
 
 #include <cmath>     // For sqrt
 #include <iostream>  // For debug output
+#include "rng/rng.hpp"
 
+#include "skill/characterSkill/FighterSkill.hpp"
 #include "skill/characterSkill/Mastery1/Bravery.hpp"
 
 Fighter::Fighter(const std::string&  name,
@@ -15,13 +17,6 @@ Fighter::Fighter(const std::string&  name,
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
     // Fighter-specific stat overrides
-    m_maxHealth = 150;
-    SetHealth(m_maxHealth);
-    m_maxMana = 40;  // Fighters might have less mana
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 18;
-    m_healthRegen  = 2;
-    m_manaRegen    = 1;
     m_moveSpeed    = 110.f;
     m_attackRange  = 48.0f;
 
@@ -216,8 +211,6 @@ void Fighter::PerformAttack(AnimatedUnit&            target,
                 // Deal damage if still in range (maybe slightly larger range check here?)
                 if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
                 {
-                    std::cout << GetName() << " deals " << m_attackDamage << " damage to "
-                              << target.GetName() << std::endl;  // Debug
                     // Cast target back to AnimatedUnit if TakeDamage is needed
                     // This is risky if target might not be AnimatedUnit, but necessary
                     // for TakeDamage
@@ -254,7 +247,66 @@ void Fighter::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Fighter::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+bool Fighter::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+{
+    if (!m_active || m_currentHealth <= 0)
+    {
+        if (callback)
+            callback();
+        return false;
+    }
+
+    RNG rng;
+    int totalManaCost = 0;
+    std::vector<Skill*> activeSkills = m_skillTree->getActiveSkill();
+
+    // filter by mana cost lower or equal to current mana
+    std::vector<Skill*> filteredSkills;
+    for (auto& skill : activeSkills)
+    {
+        if (skill->getManaCost() <= m_currentMana)
+        {
+            filteredSkills.push_back(skill);
+        }
+    }
+
+    if(filteredSkills.empty())
+    {
+        AddFloatingText("Not enough mana", sf::Color::Yellow);  // Red text for no mana
+        return false;
+    }
+
+    int randomIndex = rng.generateInRange(0, filteredSkills.size() - 1);
+    Skill* selectedSkill = filteredSkills[randomIndex];
+    totalManaCost = selectedSkill->getManaCost();
+    m_currentMana -= totalManaCost;
+
+    float effectChance = rng.generateProbability();
+    if(effectChance < selectedSkill->getEffectChance())
+    {
+        AddFloatingText("Effect applied", sf::Color::Green);
+        // copy the unique ptr
+        for (auto& effect : selectedSkill->getEffects())
+        {
+        std::unique_ptr<Effect> effectTemp = std::make_unique<Effect>(*effect);
+        AddEffect(std::move(effectTemp));
+        }
+    }
+
+    int totalStrength = m_stats.strength;
+    FighterSkill* fighterSkill = dynamic_cast<FighterSkill*>(selectedSkill);
+    if(fighterSkill)
+    {
+        totalStrength *= fighterSkill->getStrengthMultiplier();
+    }
+
+    Heal(totalStrength, std::move(callback));
+    return true;
+}
+
+void Fighter::TakeDamage(int                      damage,
+                          ActionCompletionCallback callback,
+                          ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -262,6 +314,21 @@ void Fighter::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCo
             callback();
         return;
     }
+
+    RNG rng;
+    float blockChance = rng.generateProbability();
+    if (blockChance < m_blockChance)
+    {
+        AddFloatingText("Blocked", sf::Color::White);  // Green block text
+        damage = 0;  // blocked damage
+    }
+    AnimatedUnit::TakeDamage(damage, std::move(callback), std::move(onDeath));
+}
+
+void Fighter::SetLevel(int level)
+{
+    Character::SetLevel(level);
+    m_stats.strength = 20 * level / 4;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
@@ -272,5 +339,16 @@ void Fighter::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCo
 
 int Fighter::CalculateDamage(Unit& target)
 {
-    return m_attackDamage * m_attackDamageMultiplier;
+    int totalDamage = m_attackDamage;
+    totalDamage *= m_attackDamageMultiplier * m_stats.buffMultiplier;
+    RNG rng;
+    float critChance = rng.generateProbability();
+    if (critChance < m_stats.criticalStrikeChance)
+    {
+        totalDamage= m_stats.criticalStrikeMultiplier * m_stats.buffMultiplier;
+    }
+    totalDamage = target.GetStats().physicalDefense;
+    totalDamage = std::max(0, m_attackDamage);
+
+    return totalDamage;
 }

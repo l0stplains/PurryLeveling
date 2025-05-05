@@ -17,13 +17,7 @@ Skeleton::Skeleton(const std::string&  name,
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 12;
-    m_healthRegen  = 4;
-    m_manaRegen    = 4;
+    m_skillProbabability = 0.25f;
     m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
     m_attackRange  = 48.f;
 
@@ -255,7 +249,7 @@ void Skeleton::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Skeleton::UseSkill(Unit&                    target,
+bool Skeleton::UseSkill(Unit&                    target,
                         ActionCompletionCallback callback,
                         ActionCompletionCallback onDeath)
 {
@@ -263,8 +257,13 @@ void Skeleton::UseSkill(Unit&                    target,
     {
         if (callback)
             callback();
-        return;
+        return false;
     }
+
+    PlayAnimation(UnitAnimationType::JUMP, callback);
+
+
+    return true;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements

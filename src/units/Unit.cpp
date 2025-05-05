@@ -273,10 +273,13 @@ void Unit::AddEffect(std::unique_ptr<Effect> effect)
     {
         if (effectIt->GetName() == effect->GetName())
         {
-            effectIt->SetDuration(effectIt->GetDuration() + effect->GetDuration());
+            effectIt->SetRemainingDuration(effectIt->GetRemainingDuration() + effect->GetDuration());
             return;
         }
     }
+
+    m_stats += effect->GetModifiers();
+
     m_activeEffects.push_back(std::move(effect));
 }
 
@@ -285,22 +288,49 @@ void Unit::RemoveEffect(const std::string& effectName)
     if (!m_active || m_currentHealth <= 0)
         return;
 
-    auto it = std::find_if(
-        m_activeEffects.begin(), m_activeEffects.end(), [&](const std::unique_ptr<Effect>& effect) {
-            return effect->GetName() == effectName;
-        });
-
-    if (it != m_activeEffects.end())
+    for (auto it = m_activeEffects.begin(); it != m_activeEffects.end();)
     {
-        m_activeEffects.erase(it);
+        if ((*it)->GetName() == effectName)
+        {
+            m_stats -= (*it)->GetModifiers();
+            it = m_activeEffects.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
     }
 }
 
 void Unit::Reset()
 {
     // TODO: remove effect first then reset this shyt
+    for (auto& effect : m_activeEffects)
+    {
+        m_stats -= effect->GetModifiers();
+    }
+    m_activeEffects.clear();
     m_currentHealth = m_maxHealth;
     m_currentMana   = m_maxMana;
     m_active        = true;  // Ensure active is true
-    m_activeEffects.clear();
+}
+
+void Unit::RefreshEffects()
+{
+    if (!m_active || m_currentHealth <= 0)
+        return;
+
+    for (auto it = m_activeEffects.begin(); it != m_activeEffects.end();)
+    {
+        (*it)->SetRemainingDuration((*it)->GetRemainingDuration() - 1);
+        if ((*it)->GetRemainingDuration() <= 0)
+        {
+            m_stats -= (*it)->GetModifiers();
+            it = m_activeEffects.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
 }

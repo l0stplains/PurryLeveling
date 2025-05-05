@@ -609,11 +609,35 @@ void AnimatedUnit::TakeDamage(int                      damage,
         return;
     }
 
+    RNG rng;
+
+    float dodgeChance = rng.generateProbability();
+    if (dodgeChance < m_stats.dodgeChance && damage != 0)
+    {
+        AddFloatingText("Dodged", sf::Color::White);  // Green dodge text
+        damage = 0;                                   // dodged damage
+    }
+
+    float missChance = rng.generateProbability();
+    if (missChance > m_stats.accuracy && damage != 0)
+    {
+        AddFloatingText("Missed", sf::Color::White);  // Green miss text
+        damage = 0;                                   // missed damage
+    }
+
     // Store current health before taking damage to check if it resulted in death
     int healthBefore = m_currentHealth;
 
     // Call base class function FIRST to update health and active status
     Unit::TakeDamage(damage, nullptr);  // Don't pass callback here, we handle it after animation
+
+    if (damage == 0)
+    {
+        // No damage taken, just run the callback
+        if (callback)
+            callback();
+        return;
+    }
 
     std::string damageText = "-" + std::to_string(damage);
     AddFloatingText(damageText, sf::Color(255, 40, 40));  // Bright red
@@ -688,6 +712,16 @@ void AnimatedUnit::Heal(int amount, ActionCompletionCallback callback)
                 cb();
         },
         true);  // Force reset heal animation even if already playing
+}
+
+void AnimatedUnit::RestoreMana(int amount)
+{
+    if (!m_active || m_currentHealth <= 0)
+        return;
+
+    Unit::RestoreMana(amount);
+    std::string manaText = "+" + std::to_string(amount);
+    AddFloatingText(manaText, sf::Color::Blue);
 }
 
 // --- Reset Override ---

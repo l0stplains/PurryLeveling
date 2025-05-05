@@ -22,6 +22,11 @@ int Effect::GetRemainingDuration() const
     return m_remainingDuration;
 }
 
+const Stats& Effect::GetModifiers() const
+{
+    return m_modifiers;
+}
+
 // --- Setters ---
 void Effect::SetName(const std::string& name)
 {
@@ -38,4 +43,9 @@ void Effect::SetDuration(int duration)
 void Effect::SetRemainingDuration(int remainingDuration)
 {
     m_remainingDuration = remainingDuration;
+}
+
+void Effect::SetModifiers(const Stats& modifiers)
+{
+    m_modifiers = modifiers;
 }

@@ -38,10 +38,8 @@ void Character::SetLevel(int level)
     m_level = level;
 
     SetMaxHealth(100 * level / 4 * GetMaxHealthMultiplier());
-    SetHealth(GetMaxHealth());
-    SetMaxMana(50 * level / 4 * GetMaxManaMultiplier());
-    SetCurrentMana(GetMaxMana());
-    SetAttackDamage(10 * level / 4 * GetAttackDamageMultiplier());
+    SetMaxMana(50 * GetMaxManaMultiplier());
+    SetAttackDamage(15 * level / 4 * GetAttackDamageMultiplier());
 }
 
 void Character::SetExp(int exp)
@@ -80,6 +78,7 @@ void Character::CheckLevelUp()
     while (m_active && m_exp >= expNeeded)
     {
         SetLevel(m_level + 1);
+        AddMastery(1);
         m_exp -= expNeeded;
 
         std::cout << "Level Up! New level: " << m_level << std::endl;

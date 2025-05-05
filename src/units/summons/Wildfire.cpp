@@ -158,62 +158,62 @@ void Wildfire::PerformAttack(AnimatedUnit&            target,
     UpdateDirection(target.GetPosition() - m_position);
 
     // Play attack animation. The lambda executes *after* the animation finishes.
-    PlayAnimation(
-        UnitAnimationType::ATTACK,
-        [this, &target, cb = std::move(callback), od = std::move(onDeath)]() mutable {
-            // --- Animation Finished Callback ---
-            std::cout << GetName() << "'s attack animation finished." << std::endl;  // Debug
+    PlayAnimation(UnitAnimationType::ATTACK,
+                  [this, &target, cb = std::move(callback), od = std::move(onDeath)]() mutable {
+                      // --- Animation Finished Callback ---
+                      std::cout << GetName() << "'s attack animation finished." << std::endl;  // Debug
 
-            // Check if target is STILL valid and in range after animation delay
-            if (target.IsActive() && target.GetHealth() > 0)
-            {
-                sf::Vector2f vectorToTarget   = target.GetPosition() - m_position;
-                float        distanceToTarget = std::sqrt(vectorToTarget.x * vectorToTarget.x +
-                                                   vectorToTarget.y * vectorToTarget.y);
+                      // Check if target is STILL valid and in range after animation delay
+                      if (target.IsActive() && target.GetHealth() > 0)
+                      {
+                          sf::Vector2f vectorToTarget = target.GetPosition() - m_position;
+                          float distanceToTarget = std::sqrt(vectorToTarget.x * vectorToTarget.x +
+                                                             vectorToTarget.y * vectorToTarget.y);
 
-                // Deal damage if still in range (maybe slightly larger range check here?)
-                if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
-                {
-                    std::cout << GetName() << " deals " << m_attackDamage << " damage to "
-                              << target.GetName() << std::endl;  // Debug
-                    // Cast target back to AnimatedUnit if TakeDamage is needed
-                    // This is risky if target might not be AnimatedUnit, but necessary
-                    // for TakeDamage
-                    AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
-                    if (animatedTarget)
-                    {
-                        animatedTarget->TakeDamage(CalculateDamage(target), nullptr, od);  // Target
-                                                                                           // takes
-                                                                                           // damage
-                    }
-                    else
-                    {
-                        std::cerr << "Warning: Target " << target.GetName()
-                                  << " is not an AnimatedUnit, cannot TakeDamage." << std::endl;
-                    }
-                }
-                else
-                {
-                    std::cout << GetName()
-                              << " dealt no damage, target moved out of range during "
-                                 "animation."
-                              << std::endl;  // Debug
-                }
-            }
-            else
-            {
-                std::cout << GetName() << " dealt no damage, target is no longer valid."
-                          << std::endl;  // Debug
-            }
-            SetActive(false);
-            if (cb)
-            {
-                cb();
-            }
-        });
+                          // Deal damage if still in range (maybe slightly larger range check here?)
+                          if (distanceToTarget <= m_attackRange * 1.1f)  // Allow slight tolerance
+                          {
+                              std::cout << GetName() << " deals " << m_attackDamage << " damage to "
+                                        << target.GetName() << std::endl;  // Debug
+                              // Cast target back to AnimatedUnit if TakeDamage is needed
+                              // This is risky if target might not be AnimatedUnit, but necessary
+                              // for TakeDamage
+                              AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
+                              if (animatedTarget)
+                              {
+                                  animatedTarget->TakeDamage(m_attackDamage, nullptr, od);  // Target
+                                                                                            // takes
+                                                                                            // damage
+                              }
+                              else
+                              {
+                                  std::cerr << "Warning: Target " << target.GetName()
+                                            << " is not an AnimatedUnit, cannot TakeDamage."
+                                            << std::endl;
+                              }
+                          }
+                          else
+                          {
+                              std::cout << GetName()
+                                        << " dealt no damage, target moved out of range during "
+                                           "animation."
+                                        << std::endl;  // Debug
+                          }
+                      }
+                      else
+                      {
+                          std::cout << GetName() << " dealt no damage, target is no longer valid."
+                                    << std::endl;  // Debug
+                      }
+                      SetActive(false);
+                      if (cb)
+                      {
+                          cb();
+                      }
+                  });
 }
 
-void Wildfire::UseSkill(Unit&                    target,
+bool Wildfire::UseSkill(Unit&                    target,
                         ActionCompletionCallback callback,
                         ActionCompletionCallback onDeath)
 {
@@ -221,8 +221,9 @@ void Wildfire::UseSkill(Unit&                    target,
     {
         if (callback)
             callback();
-        return;
+        return false;
     }
+    return true;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
