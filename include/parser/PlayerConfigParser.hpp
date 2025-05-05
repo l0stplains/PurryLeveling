@@ -57,12 +57,6 @@ public:
     const std::map<std::string, std::string>& GetUnitStats() const { return m_unitstats; }
 
     /**
-     * @brief Gets the stats for type
-     * @return a map consisting of character type-specific stats
-     */
-    const std::map<std::string, std::string>& GetTypeStats() const { return m_typestats; }
-
-    /**
      * @brief Gets the skill tree
      * @return A set of strings consisting of the learned skills
      */
@@ -79,7 +73,6 @@ private:
     std::vector<std::pair<Item, int>>     m_backpackData;
     std::map<std::string, std::string>    m_charstats;
     std::map<std::string, std::string>    m_unitstats;
-    std::map<std::string, std::string>    m_typestats;
     std::set<std::string>                 m_skilltree;
     ItemManager&                          m_itemManager;  // Item database for backpack items
 };

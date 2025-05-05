@@ -41,7 +41,6 @@ void PlayerConfigParser::ParseFromFile(const std::string& basePath)
 
     m_charstats.clear();
     m_unitstats.clear();
-    m_typestats.clear();
 
     for (size_t i = 0; i < statsRecs.size(); ++i)
     {
@@ -54,15 +53,10 @@ void PlayerConfigParser::ParseFromFile(const std::string& basePath)
             // LEVEL, EXP, GOLD, MASTERY
             m_charstats[key] = val;
         }
-        else if (i < 20)
+        else if (i < 21)
         {
             // NAME + core stats
             m_unitstats[key] = val;
-        }
-        else
-        {
-            // TYPE, ATTACK_RANGE, BLOCK_CHANCE, etc.
-            m_typestats[key] = val;
         }
     }
 

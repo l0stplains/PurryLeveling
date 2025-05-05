@@ -91,6 +91,7 @@ void MainMenuState::Init()
 
     m_loadButton.setOnClickCallback([this]() {
         m_showFileDialog = true;
+        /*
         IGFD::FileDialogConfig config;
         config.path              = ".";  // starting folder
         config.countSelectionMax = 1;    // just one selection (optional)
@@ -109,6 +110,7 @@ void MainMenuState::Init()
                                                           // :contentReference[oaicite:0]{index=0}
                                                 config    // flags
         );
+        */
     });
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
@@ -191,13 +193,15 @@ void MainMenuState::renderNewSaveModal()
         ImGui::OpenPopup(PopupId);
         m_showSaveNamePopup = false;
     }
-    if (!ImGui::BeginPopupModal(PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (!ImGui::BeginPopupModal(
+            PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
         return;
 
     ImGui::Text("Please enter a name for your save folder:");
     ImGui::InputText("##SaveName", m_saveNameBuf, sizeof(m_saveNameBuf));
     ImGui::Separator();
 
+    // Lambda to perform the actual save-confirm action
     auto confirmSave = [&]() {
         const auto fullPath = std::filesystem::path("data") / m_saveNameBuf;
         if (std::filesystem::exists(fullPath))
@@ -207,6 +211,7 @@ void MainMenuState::renderNewSaveModal()
         else
         {
             GetContext().SetCurrentFolderName(m_saveNameBuf);
+            GetContext().SetFirstSaveState(true);
             ImGui::CloseCurrentPopup();
             parseNonPlayerConfig("resources/config");
             m_pendingStateChange =
@@ -214,8 +219,13 @@ void MainMenuState::renderNewSaveModal()
         }
     };
 
+    // Disable OK if the user hasn't typed anything
+    bool hasName = (m_saveNameBuf[0] != '\0');
+    ImGui::BeginDisabled(!hasName);
     if (ImGui::Button("OK", ImVec2(BtnWidth, 0)))
         confirmSave();
+    ImGui::EndDisabled();
+
     ImGui::SameLine();
     if (ImGui::Button("Cancel", ImVec2(BtnWidth, 0)))
         ImGui::CloseCurrentPopup();
@@ -225,37 +235,41 @@ void MainMenuState::renderNewSaveModal()
 
 void MainMenuState::renderLoadSaveModal()
 {
-    if (!m_showFileDialog)
+    constexpr char  PopupId[]      = "Load Game";
+    constexpr float CancelBtnWidth = 100.0f;
+
+    // 1) Trigger popup
+    if (m_showFileDialog)
+    {
+        ImGui::OpenPopup(PopupId);
+        m_showFileDialog = false;
+    }
+
+    // 2) Begin modal
+    if (!ImGui::BeginPopupModal(
+            PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
         return;
 
-    ImVec2 screenSize((float)GetContext().GetWindow()->getSize().x,
-                      (float)GetContext().GetWindow()->getSize().y);
-    ImVec2 dialogSize(800, 600);
-    ImVec2 dialogPos((screenSize.x - dialogSize.x) * 0.5f, (screenSize.y - dialogSize.y) * 0.5f);
+    ImGui::Text("Select a save folder:");
+    ImGui::Separator();
 
-    ImGui::SetNextWindowPos(dialogPos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(dialogSize, ImGuiCond_Always);
-
-    if (ImGuiFileDialog::Instance()->Display("ChooseFolderDlgKey"))
+    // 3) List each subfolder in "data/" as a selectable entry
+    for (const auto& entry : std::filesystem::directory_iterator("data"))
     {
-        if (ImGuiFileDialog::Instance()->IsOk())
+        if (!entry.is_directory())
+            continue;
+
+        const std::string folderName = entry.path().filename().string();
+        if (ImGui::Selectable(folderName.c_str()))
         {
-            std::filesystem::path absPath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            std::filesystem::path relPath;
+            // Immediately attempt to load when clicked
+            m_selectedFolder = folderName;
             try
             {
-                relPath = std::filesystem::relative(absPath, std::filesystem::current_path());
-            }
-            catch (...)
-            {
-                relPath = absPath.filename();
-            }
-
-            m_selectedFolder = relPath.string();
-
-            try
-            {
+                m_selectedFolder = "data/" + m_selectedFolder;
                 validateFolder(m_selectedFolder);
+
+                // Strip any leading "data/" if present
                 constexpr char dataPrefix[] = "data/";
                 if (m_selectedFolder.rfind(dataPrefix, 0) == 0)
                     m_selectedFolder.erase(0, sizeof(dataPrefix) - 1);
@@ -264,64 +278,53 @@ void MainMenuState::renderLoadSaveModal()
                 m_pendingStateChange =
                     StateChange {StateAction::PUSH, std::make_unique<WorldState>(GetContext())};
                 std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
+                ImGui::CloseCurrentPopup();
             }
             catch (const FileNotFoundException& e)
             {
-                std::string message = "File not found: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
+                showError("File not found: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
             }
             catch (const LineTooShortException& e)
             {
-                std::string message = "Line too short in file: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
+                showError("Line too short in file: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
             }
             catch (const InvalidFormatException& e)
             {
-                std::string message = "Invalid format in file: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
+                showError("Invalid format in file: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
             }
             catch (const ResourceNotFoundException& e)
             {
-                std::string message = "Resource not found: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
+                showError("Resource not found: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
             }
             catch (const MissingFileException& e)
             {
-                std::string message = "Missing file: " + e.getFilename();
-                if (!e.getErrorMessage().empty())
-                    message += " - " + e.getErrorMessage();
-                std::cout << message << std::endl;
-                showError(message);
+                showError("Missing file: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
             }
             catch (const InvalidCharacterTypeException& e)
             {
-                std::string message = std::string("Invalid character type: ") + e.what();
-                std::cout << message << std::endl;
-                showError(message);
+                showError(std::string("Invalid character type: ") + e.what());
             }
             catch (const std::exception& e)
             {
-                std::string message = std::string("An error occurred: ") + e.what();
-                std::cout << message << std::endl;
-                showError(message);
+                showError(std::string("An error occurred: ") + e.what());
             }
         }
-
-        m_showFileDialog = false;
-        ImGuiFileDialog::Instance()->Close();
     }
+
+    ImGui::Separator();
+
+    // 4) Cancel button only
+    if (ImGui::Button("Cancel", ImVec2(CancelBtnWidth, 0)))
+    {
+        ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
 }
 
 void MainMenuState::renderErrorModal()
@@ -459,21 +462,21 @@ void MainMenuState::setupNavigationGrid()
 {
     sf::Vector2u                   windowSize = GetContext().GetWindow()->getSize();
     std::vector<std::vector<bool>> grid       = {
-        {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-        {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-        {1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-        {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0},
-        {1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0},
-        {1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0},
-        {1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0},
-        {1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0},
-        {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0},
-        {1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0},
-        {1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0},
-        {1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0},
-        {1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0},
-        {1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+              {1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+              {1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+              {1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+              {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0},
+              {1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0},
+              {1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0},
+              {1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0},
+              {1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0},
+              {1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0},
+              {1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0},
+              {1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0},
+              {1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0},
+              {1, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0},
+              {1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0},
+              {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
     GetContext().GetNavigationGrid()->SetGrid(grid);
 }
 
@@ -482,43 +485,52 @@ void MainMenuState::setupNavigationGrid()
  */
 void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
 {
-    const auto&       stats      = parser.GetTypeStats();
+    const auto&       stats      = parser.GetUnitStats();
     const std::string charType   = stats.at("TYPE");
     NavigationGrid*   navGrid    = GetContext().GetNavigationGrid();
     sf::Vector2u      windowSize = GetContext().GetWindow()->getSize();
 
-    std::unique_ptr<Character> character;
-
-    auto spawnAndScale = [&](auto makePtr, float fraction) {
-        auto ptr = makePtr(charType,
-                           sf::Vector2f(windowSize.x * fraction, windowSize.y * 0.76f),
-                           *navGrid,
-                           false,
-                           GetContext());
-        ptr->SetScale(10.f, 10.f);  // child-specific method
-        character = std::move(ptr);
+    // Helper to compute spawn position
+    auto computePos = [&](float fraction) {
+        return sf::Vector2f(windowSize.x * fraction, windowSize.y * 0.76f);
     };
 
+    // Create & scale the correct derived type
+    std::unique_ptr<Character> character;
     if (charType == "Fighter")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Fighter>(args...); }, 1.0f / 6);
+        auto ptr = std::make_unique<Fighter>(
+            charType, computePos(1.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Mage")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Mage>(args...); }, 2.0f / 6);
+        auto ptr =
+            std::make_unique<Mage>(charType, computePos(2.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Assassin")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Assassin>(args...); }, 3.0f / 6);
+        auto ptr = std::make_unique<Assassin>(
+            charType, computePos(3.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Necromancer")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Necromancer>(args...); },
-                      4.0f / 6);
+        auto ptr = std::make_unique<Necromancer>(
+            charType, computePos(4.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else if (charType == "Berserker")
     {
-        spawnAndScale([](auto&&... args) { return std::make_unique<Berseker>(args...); }, 5.0f / 6);
+        auto ptr = std::make_unique<Berseker>(
+            charType, computePos(5.0f / 6.0f), *navGrid, false, GetContext());
+        ptr->SetScale(10.f, 10.f);
+        character = std::move(ptr);
     }
     else
     {
@@ -526,18 +538,54 @@ void MainMenuState::spawnCharacter(const PlayerConfigParser& parser)
     }
 
     // Register in UnitManager
-    const auto id = character->GetId();
+    const unsigned int id = character->GetId();
     GetContext().SetCharacterId(id);
     GetContext().GetUnitManager()->AddUnit(std::move(character));
 
-    // Configure the unit
+    // Configure the base Unit
     auto* baseUnit = GetContext().GetUnitManager()->GetUnit(id);
-    baseUnit->SetName(parser.GetUnitStats().at("NAME"));
+    baseUnit->SetName(stats.at("NAME"));
+
+    Stats tempStats;
+    tempStats.strength                 = std::stoi(stats.at("STRENGTH"));
+    tempStats.agility                  = std::stoi(stats.at("AGILITY"));
+    tempStats.intelligence             = std::stoi(stats.at("INTELLIGENCE"));
+    tempStats.buffMultiplier           = std::stof(stats.at("BUFF_MULTIPLIER"));
+    tempStats.criticalStrikeMultiplier = std::stof(stats.at("CRITICAL_STRIKE_MULTIPLIER"));
+    tempStats.criticalStrikeChance     = std::stof(stats.at("CRITICAL_STRIKE_CHANCE"));
+    tempStats.skipTurnChance           = std::stof(stats.at("SKIPTURNCHANCE"));
+    tempStats.luck                     = std::stoi(stats.at("LUCK"));
+    tempStats.physicalDefense          = std::stoi(stats.at("PHYSICAL_DEFENSE"));
+    tempStats.magicDefense             = std::stoi(stats.at("MAGIC_DEFENSE"));
+    tempStats.dodgeChance              = std::stof(stats.at("DODGE_CHANCE"));
+    tempStats.accuracy                 = std::stof(stats.at("ACCURACY"));
+    tempStats.statusResistance         = std::stof(stats.at("STATUS_RESISTANCE"));
+    tempStats.hasteMultiplier          = std::stof(stats.at("HASTE_MULTIPLIER"));
+    tempStats.resourceCostMul          = std::stof(stats.at("RESOURCE_COST_MULTIPLIER"));
+
+    baseUnit->SetStats(tempStats);
     baseUnit->SetActive(false);
 
-    // Only Character has SetGold, so retrieve as Character
-    auto* charUnit = GetContext().GetUnitManager()->GetUnitOfType<Character>(id);
-    charUnit->SetGold(std::stoi(parser.GetCharStats().at("GOLD")));
+    // Configure the Character subclass
+    auto*       charUnit  = GetContext().GetUnitManager()->GetUnitOfType<Character>(id);
+    const auto& charStats = parser.GetCharStats();
+    charUnit->SetGold(std::stoi(charStats.at("GOLD")));
+    charUnit->SetLevel(std::stoi(charStats.at("LEVEL")));
+    charUnit->SetExp(std::stoi(charStats.at("EXP")));
+    charUnit->SetMastery(std::stoi(charStats.at("MASTERY")));
+
+    // Configure skills
+    for (const auto& skill : parser.GetSkillTree())
+    {
+        const_cast<SkillTree*>(charUnit->GetSkillTree())->setActive(skill);
+    }
+
+    // testing
+    auto activeSkill = charUnit->GetSkillTree()->getActiveSkill();
+    for (const auto& skillPtr : activeSkill)
+    {
+        std::cout << "Active skill: " << skillPtr->getName() << std::endl;
+    }
 }
 
 void MainMenuState::showError(const std::string& message)

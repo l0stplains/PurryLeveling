@@ -81,7 +81,8 @@ void ShopMenu::RenderModal()
     if (ImGui::BeginPopupModal(modalTitle.c_str(),
                                nullptr,
                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                   ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+                                   ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
+                                   ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar))
     {
         const float spacing        = 4.0f;  // Standard spacing value
         const float sectionSpacing = 8.0f;  // Smaller spacing between sections
@@ -146,7 +147,7 @@ void ShopMenu::RenderModal()
         ImGui::Text("Rarity:");
         ImGui::SameLine();
         ImGui::TextColored(
-            GetRarityColor(m_selectedItem.getRarity()), "%c", m_selectedItem.getRarity());
+            Color::GetRarityColor(m_selectedItem.getRarity()), "%c", m_selectedItem.getRarity());
         ImGui::SetWindowFontScale(1.0f);
         ImGui::EndGroup();
 
@@ -762,7 +763,7 @@ void ShopMenu::RenderItemDescription()
         std::replace(itemName.begin(), itemName.end(), '_', ' ');
 
         // Set color based on item type
-        ImVec4 itemColor = GetItemColor(m_hoveredItem.getName(), m_hoveredItem.getType());
+        ImVec4 itemColor = Color::GetTypeColor(m_hoveredItem.getType());
         ImGui::PushStyleColor(ImGuiCol_Text, itemColor);
         ImGui::Text("%s", itemName.c_str());
         ImGui::PopStyleColor();
@@ -959,9 +960,10 @@ void ShopMenu::RenderGrid()
                 // Normal item slot with hover effects
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.35f, 0.18f, 0.12f, 1.0f));  // Background
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                      ImVec4(0.2f, 0.5f, 0.2f, 1.0f));  // Green hover
+                                      ImVec4(0.45f, 0.25f, 0.15f, 1.0f));  // Darker
+                                                                           // brown hover
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                                      ImVec4(0.25f, 0.6f, 0.25f, 1.0f));  // Brighter green active
+                                      ImVec4(0.55f, 0.35f, 0.25f, 1.0f));  // Lighter brown
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.42f, 0.22f, 0.14f, 1.0f));  // Border
             }
 
@@ -1115,32 +1117,7 @@ void ShopMenu::RenderGrid()
                                                                                             // corner
 
                     // Set color based on rarity
-                    ImVec4 rarityColor;
-                    switch (r)
-                    {
-                        case 'S':
-                            rarityColor = ImVec4(0.5f, 0.5f, 1.0f, 1.0f);
-                            break;  // Light blue for S
-                        case 'A':
-                            rarityColor = ImVec4(0.5f, 1.0f, 0.5f, 1.0f);
-                            break;  // Light green for A
-                        case 'B':
-                            rarityColor = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
-                            break;  // Orange for B
-                        case 'C':
-                            rarityColor = ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
-                            break;  // Light red for C
-                        case 'D':
-                            rarityColor = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
-                            break;  // Light grey for D
-                        case 'E':
-                            rarityColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
-                            break;  // Darker grey for E
-                        default:
-                            rarityColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-                            break;  // White for others
-                    }
-
+                    ImVec4 rarityColor = Color::GetRarityColor(r);
                     ImGui::PushStyleColor(ImGuiCol_Text, rarityColor);
                     ImGui::Text("%c", r);
                     ImGui::PopStyleColor();
@@ -1195,41 +1172,5 @@ void ShopMenu::RenderGrid()
     if (!ImGui::IsAnyItemHovered() || !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow))
     {
         m_hoveredItem = Item();  // Reset to empty item
-    }
-}
-
-ImVec4 ShopMenu::GetItemColor(const std::string& itemName, const std::string& itemType)
-{
-    // m_equipment type colors
-    if (itemType == "Potion")
-        return ImVec4(0.2f, 0.8f, 0.2f, 1.0f);
-    else if (itemType == "Weapon")
-        return ImVec4(0.8f, 0.2f, 0.2f, 1.0f);
-    else if (itemType == "HeadArmor" || itemType == "BodyArmor" || itemType == "FootArmor")
-        return ImVec4(0.2f, 0.6f, 0.8f, 1.0f);
-    else if (itemType == "Pendant")
-        return ImVec4(0.8f, 0.6f, 0.2f, 1.0f);
-
-    return ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-}
-
-ImVec4 ShopMenu::GetRarityColor(char rarity) const
-{
-    switch (rarity)
-    {
-        case 'S':
-            return ImVec4(0.5f, 0.5f, 1.0f, 1.0f);  // Light blue for S
-        case 'A':
-            return ImVec4(0.5f, 1.0f, 0.5f, 1.0f);  // Light green for A
-        case 'B':
-            return ImVec4(1.0f, 0.5f, 0.0f, 1.0f);  // Orange for B
-        case 'C':
-            return ImVec4(1.0f, 0.5f, 0.5f, 1.0f);  // Light red for C
-        case 'D':
-            return ImVec4(0.8f, 0.8f, 0.8f, 1.0f);  // Light grey for D
-        case 'E':
-            return ImVec4(0.6f, 0.6f, 0.6f, 1.0f);  // Darker grey for E
-        default:
-            return ImVec4(1.0f, 1.0f, 1.0f, 1.0f);  // White for others
     }
 }
