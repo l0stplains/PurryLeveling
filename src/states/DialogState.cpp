@@ -1,12 +1,5 @@
 #include "states/DialogState.hpp"
 
-#include <iostream>
-
-#include "core/ResourceManager.hpp"
-
-#include "imgui.h"
-#include "states/ShopState.hpp"
-
 // Constructor
 DialogState::DialogState(GameContext&                    context,
                          const std::vector<std::string>& dialogTextures,

@@ -1,12 +1,6 @@
 #include "states/DungeonState.hpp"
 
-#include <iostream>
-
-#include "units/AnimatedUnit.hpp"
-#include "units/characters/Necromancer.hpp"
-#include "units/summons/Summon.hpp"
-#include "units/summons/Wildfire.hpp"
-
+// Constructor
 DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon)
     : State(context),
     m_bossBacksound(GetContext().GetResourceManager()->GetSoundBuffer("boss_backsound")),

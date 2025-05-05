@@ -1,14 +1,5 @@
 #include "states/MainMenuState.hpp"
 
-#include <iostream>
-
-#include "core/ResourceManager.hpp"
-
-#include "exception/Exception.hpp"
-#include "imgui.h"
-#include "states/ChooseCharacterState.hpp"
-#include "states/WorldState.hpp"
-
 // Constructor
 MainMenuState::MainMenuState(GameContext& context)
     : State(context),
@@ -134,11 +125,6 @@ State::StateChange MainMenuState::ProcessEvent(const sf::Event& event)
 
 State::StateChange MainMenuState::Update(const sf::Time& dt)
 {
-    if (ImGuiFileDialog::Instance()->IsOpened("ChooseFolderDlgKey"))
-    {
-        return StateChange {StateAction::NONE};
-    }
-
     sf::RenderWindow* window = GetContext().GetWindow();
 
     // Update all buttons
@@ -185,21 +171,77 @@ void MainMenuState::RenderUI()
 
 void MainMenuState::renderNewSaveModal()
 {
-    constexpr char  PopupId[] = "Enter Save Name";
-    constexpr float BtnWidth  = 80.0f;
+    constexpr char  PopupId[]     = "Enter Save Name";
+    constexpr float ButtonWidth   = 90.0f;
+    constexpr float ButtonHeight  = 40.0f;
+    constexpr float ButtonSpacing = 10.0f;
+
+    // Center the modal window
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 0));  // Width fixed, height auto
+
+    // Apply modal styling directly
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 
     if (m_showSaveNamePopup)
     {
         ImGui::OpenPopup(PopupId);
         m_showSaveNamePopup = false;
     }
-    if (!ImGui::BeginPopupModal(
-            PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
-        return;
 
-    ImGui::Text("Please enter a name for your save folder:");
-    ImGui::InputText("##SaveName", m_saveNameBuf, sizeof(m_saveNameBuf));
+    if (!ImGui::BeginPopupModal(PopupId,
+                                nullptr,
+                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                                    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar))
+    {
+        ImGui::PopStyleVar(5);
+        ImGui::PopStyleColor(3);
+        return;
+    }
+
+    const float sectionSpacing = 3.0f;
+
+    // Title header with green text
+    ImGui::SetWindowFontScale(1.2f);
+    ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 1.0f), "Create New Game");
+    ImGui::SetWindowFontScale(1.0f);
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
     ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 0.75f));
+
+    // Instruction text with wrapping
+    ImGui::TextWrapped("Please enter a name for your save folder:");
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+
+    // Input field styling
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+
+    // Make the input field fill the width with a specific size
+    float availableWidth = ImGui::GetContentRegionAvail().x;
+    ImGui::SetNextItemWidth(availableWidth);
+    ImGui::InputText("##SaveName", m_saveNameBuf, sizeof(m_saveNameBuf));
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 1.5f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
 
     // Lambda to perform the actual save-confirm action
     auto confirmSave = [&]() {
@@ -219,24 +261,100 @@ void MainMenuState::renderNewSaveModal()
         }
     };
 
-    // Disable OK if the user hasn't typed anything
+    // Check if the field is empty
     bool hasName = (m_saveNameBuf[0] != '\0');
-    ImGui::BeginDisabled(!hasName);
-    if (ImGui::Button("OK", ImVec2(BtnWidth, 0)))
-        confirmSave();
-    ImGui::EndDisabled();
 
-    ImGui::SameLine();
-    if (ImGui::Button("Cancel", ImVec2(BtnWidth, 0)))
+    // Buttons at the bottom - centered
+    float contentWidth      = ImGui::GetContentRegionAvail().x;
+    float totalButtonsWidth = (ButtonWidth * 2) + ButtonSpacing;
+    float startPos          = (contentWidth - totalButtonsWidth) / 2.0f + 12.0f;
+    ImGui::SetCursorPosX(startPos);
+
+    // OK button (green)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+
+    // Change button style based on whether input is provided
+    if (!hasName)
+    {
+        // Disabled style with reduced alpha and grayed-out colors
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.2f, 0.5f));  // Muted green
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.4f, 0.2f, 0.5f));  // No hover
+                                                                                        // effect
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.4f, 0.2f, 0.5f));   // No active
+                                                                                        // effect
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.2f, 0.4f, 0.2f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));  // Dimmed text
+    }
+    else
+    {
+        // Normal enabled style
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));  // Green
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.9f, 0.4f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+    }
+
+    if (ImGui::Button("OK", ImVec2(ButtonWidth, ButtonHeight)) && hasName)
+    {
+        confirmSave();
+    }
+
+    // Display tooltip on hover when button is disabled
+    if (!hasName && ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Please enter a save name");
+    }
+
+    ImGui::PopStyleColor(5);  // Pop all 5 style colors
+    ImGui::PopStyleVar(2);
+
+    ImGui::SameLine(0, ButtonSpacing);
+
+    // Cancel button (gray)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));  // Dark Gray
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.35f, 0.35f, 0.35f, 1.0f));
+
+    if (ImGui::Button("Cancel", ImVec2(ButtonWidth, ButtonHeight)))
+    {
         ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
 
     ImGui::EndPopup();
+
+    // Pop the modal window styles
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(3);
 }
 
 void MainMenuState::renderLoadSaveModal()
 {
     constexpr char  PopupId[]      = "Load Game";
     constexpr float CancelBtnWidth = 100.0f;
+    constexpr float ButtonHeight   = 40.0f;
+
+    // Center the modal window
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 0));  // Width fixed, height auto
+
+    // Apply modal styling directly
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
 
     // 1) Trigger popup
     if (m_showFileDialog)
@@ -245,22 +363,53 @@ void MainMenuState::renderLoadSaveModal()
         m_showFileDialog = false;
     }
 
-    // 2) Begin modal
-    if (!ImGui::BeginPopupModal(
-            PopupId, nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove))
+    // 2) Begin modal with improved styling
+    if (!ImGui::BeginPopupModal(PopupId,
+                                nullptr,
+                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                                    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar))
+    {
+        ImGui::PopStyleVar(5);
+        ImGui::PopStyleColor(3);
         return;
+    }
 
-    ImGui::Text("Select a save folder:");
+    const float sectionSpacing = 3.0f;
+
+    // Title header with golden text
+    ImGui::SetWindowFontScale(1.2f);
+    ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "Load Saved Game");
+    ImGui::SetWindowFontScale(1.0f);
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
     ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 0.75f));
 
-    // 3) List each subfolder in "data/" as a selectable entry
+    // Instruction text with wrapping
+    ImGui::TextWrapped("Select a save folder to continue your adventure:");
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+
+    // Create a child window with fixed height for scrollable save list only
+    // Calculate a reasonable fixed height (e.g., enough for 5-6 items)
+    float fixedChildHeight = 150.0f;  // Fixed height for the scrollable area
+    ImGui::BeginChild(
+        "SaveList", ImVec2(0, fixedChildHeight), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
+    // 3) List each subfolder in "data/" as a selectable entry with improved styling
     for (const auto& entry : std::filesystem::directory_iterator("data"))
     {
         if (!entry.is_directory())
             continue;
 
         const std::string folderName = entry.path().filename().string();
-        if (ImGui::Selectable(folderName.c_str()))
+
+        // Style for save folder items
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.4f, 0.6f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.3f, 0.5f, 0.7f, 0.7f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.4f, 0.6f, 0.8f, 0.7f));
+
+        if (ImGui::Selectable(folderName.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick))
         {
             // Immediately attempt to load when clicked
             m_selectedFolder = folderName;
@@ -314,82 +463,234 @@ void MainMenuState::renderLoadSaveModal()
                 showError(std::string("An error occurred: ") + e.what());
             }
         }
+
+        ImGui::PopStyleColor(3);
     }
 
-    ImGui::Separator();
+    ImGui::EndChild();
 
-    // 4) Cancel button only
-    if (ImGui::Button("Cancel", ImVec2(CancelBtnWidth, 0)))
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+
+    // 4) Center the Cancel button
+    float contentWidth = ImGui::GetContentRegionAvail().x;
+    float startPos     = (contentWidth - CancelBtnWidth) / 2.0f;
+    ImGui::SetCursorPosX(startPos);
+
+    // Cancel button styling (dark gray)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));  // Dark Gray
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.35f, 0.35f, 0.35f, 1.0f));
+
+    if (ImGui::Button("Cancel", ImVec2(CancelBtnWidth, ButtonHeight)))
     {
         ImGui::CloseCurrentPopup();
     }
 
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
+
     ImGui::EndPopup();
+
+    // Pop the modal window styles
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(3);
 }
 
 void MainMenuState::renderErrorModal()
 {
+    constexpr char  PopupId[]    = "Error";
+    constexpr float ButtonWidth  = 100.0f;
+    constexpr float ButtonHeight = 40.0f;
+
+    // Center the modal window
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 0));  // Width fixed, height auto
+
+    // Apply modal styling directly
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+
     if (m_showErrorPopup)
     {
-        ImGui::OpenPopup("Error");
+        ImGui::OpenPopup(PopupId);
         m_showErrorPopup = false;
     }
-    if (ImGui::BeginPopupModal("Error",
-                               nullptr,
-                               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
+
+    if (!ImGui::BeginPopupModal(PopupId,
+                                nullptr,
+                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                                    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar))
     {
-        ImGui::Text("%s", m_errorMessage.c_str());
-        ImGui::Separator();
-        float buttonWidth = 120.0f;
-        float buttonPosX  = (ImGui::GetContentRegionAvail().x - buttonWidth) * 0.5f;
-        ImGui::SetCursorPosX(buttonPosX);
-
-        if (ImGui::Button("OK", ImVec2(buttonWidth, 0)))
-        {
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
+        ImGui::PopStyleVar(5);
+        ImGui::PopStyleColor(3);
+        return;
     }
+
+    const float sectionSpacing = 3.0f;
+
+    // Title header with red error text
+    ImGui::SetWindowFontScale(1.2f);
+    ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Error");
+    ImGui::SetWindowFontScale(1.0f);
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 0.75f));
+
+    // Error message with wrapping
+    ImGui::TextWrapped("%s", m_errorMessage.c_str());
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 1.5f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+
+    // Center the OK button
+    float contentWidth = ImGui::GetContentRegionAvail().x;
+    float startPos     = (contentWidth - ButtonWidth) / 2.0f;
+    ImGui::SetCursorPosX(startPos);
+
+    // OK button styling (dark gray)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));  // Dark Gray
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.35f, 0.35f, 0.35f, 1.0f));
+
+    if (ImGui::Button("OK", ImVec2(ButtonWidth, ButtonHeight)))
+    {
+        ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
+
+    ImGui::EndPopup();
+
+    // Pop the modal window styles
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(3);
 }
 
 void MainMenuState::renderExitConfirmationModal()
 {
+    constexpr char  PopupId[]     = "Exit Confirmation";
+    constexpr float ButtonWidth   = 90.0f;  // Reduced width to fit 3 buttons
+    constexpr float ButtonHeight  = 40.0f;
+    constexpr float ButtonSpacing = 10.0f;
+
+    // Center the modal window
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(320, 180));  // Fixed size like in WorldState
+
+    // Apply modal styling directly
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+
     if (m_showExitPopup)
     {
-        ImGui::OpenPopup("Exit Confirmation");
+        ImGui::OpenPopup(PopupId);
         m_showExitPopup = false;
     }
-    if (ImGui::BeginPopupModal("Exit Confirmation",
-                               nullptr,
-                               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings))
+
+    if (!ImGui::BeginPopupModal(PopupId,
+                                nullptr,
+                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                                    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar))
     {
-        ImGui::Text("Are you sure you want to exit?");
-        ImGui::Dummy(ImVec2(0, 4.0f));
-        ImGui::Separator();
-        ImGui::Dummy(ImVec2(0, 4.0f));
-        float buttonWidth = 60.0f;
-        float buttonPosX  = (ImGui::GetContentRegionAvail().x - 2 * buttonWidth - 10.0f);
-        ImGui::SetCursorPosX(buttonPosX);
-
-        if (ImGui::Button("Yes", ImVec2(buttonWidth, 0)))
-        {
-            ImGui::CloseCurrentPopup();
-            GetContext().GetWindow()->close();
-            m_pendingStateChange = StateChange {};
-        }
-        ImGui::SameLine();
-        ImGui::SetCursorPosX(buttonPosX + buttonWidth + 10.0f);
-
-        if (ImGui::Button("No", ImVec2(buttonWidth, 0)))
-        {
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
+        ImGui::PopStyleVar(5);
+        ImGui::PopStyleColor(3);
+        return;
     }
+
+    const float sectionSpacing = 3.0f;
+
+    // Title header with golden text
+    ImGui::SetWindowFontScale(1.2f);
+    ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.0f, 1.0f), "Exit Confirmation");
+    ImGui::SetWindowFontScale(1.0f);
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 0.75f));
+
+    // Warning message
+    ImGui::TextWrapped("Do you want to exit?");
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 1.5f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+
+    // Buttons at the bottom - centered
+    float contentWidth      = ImGui::GetContentRegionAvail().x;
+    float totalButtonsWidth = (ButtonWidth * 2) + (ButtonSpacing * 2);
+    float startPos          = (contentWidth - totalButtonsWidth) / 2.0f + 12.0f;
+    ImGui::SetCursorPosX(startPos);
+
+    // Yes button (green)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));  // Green
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.8f, 0.3f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.9f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.2f, 0.7f, 0.2f, 1.0f));
+
+    if (ImGui::Button("Yes", ImVec2(ButtonWidth, ButtonHeight)))
+    {
+        ImGui::CloseCurrentPopup();
+        GetContext().GetWindow()->close();
+        m_pendingStateChange = StateChange {};
+    }
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
+
+    ImGui::SameLine(0, ButtonSpacing);
+
+    // No button (red)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.5f, 0.1f, 0.1f, 1.0f));  // Dark red
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.7f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+
+    if (ImGui::Button("No", ImVec2(ButtonWidth, ButtonHeight)))
+    {
+        ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
+
+    ImGui::SameLine(0, ButtonSpacing);
+
+    ImGui::EndPopup();
+
+    // Pop the modal window styles
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(3);
 }
 
 void MainMenuState::validateFolder(const std::string& folderPath)

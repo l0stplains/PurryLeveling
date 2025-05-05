@@ -1,11 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include <SFML/System.hpp>  // brings in sf::Time, sf::milliseconds, etc.
-#include <SFML/Window.hpp>  // brings in Event, Keyboard, Mouse, etc.
-
-#include <vector>
-
+#include "states/ShopState.hpp"
 #include "states/State.hpp"
 
 class DialogState : public State
