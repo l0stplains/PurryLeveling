@@ -91,6 +91,7 @@ void MainMenuState::Init()
 
     m_loadButton.setOnClickCallback([this]() {
         m_showFileDialog = true;
+        /*
         IGFD::FileDialogConfig config;
         config.path              = ".";  // starting folder
         config.countSelectionMax = 1;    // just one selection (optional)
@@ -109,6 +110,7 @@ void MainMenuState::Init()
                                                           // :contentReference[oaicite:0]{index=0}
                                                 config    // flags
         );
+        */
     });
 
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
@@ -227,6 +229,106 @@ void MainMenuState::renderNewSaveModal()
 
 void MainMenuState::renderLoadSaveModal()
 {
+    constexpr char PopupId[] = "Load Game";
+    constexpr float CancelBtnWidth = 100.0f;
+
+    // 1) Trigger popup
+    if (m_showFileDialog)
+    {
+        ImGui::OpenPopup(PopupId);
+        m_showFileDialog = false;
+    }
+
+    // 2) Begin modal
+    if (!ImGui::BeginPopupModal(PopupId,
+                                nullptr,
+                                ImGuiWindowFlags_AlwaysAutoResize |
+                                ImGuiWindowFlags_NoMove))
+        return;
+
+    ImGui::Text("Select a save folder:");
+    ImGui::Separator();
+
+    // 3) List each subfolder in "data/" as a selectable entry
+    for (const auto& entry : std::filesystem::directory_iterator("data"))
+    {
+        if (!entry.is_directory())
+            continue;
+
+        const std::string folderName = entry.path().filename().string();
+        if (ImGui::Selectable(folderName.c_str()))
+        {
+            // Immediately attempt to load when clicked
+            m_selectedFolder = folderName;
+            try
+            {
+                m_selectedFolder = "data/" + m_selectedFolder;
+                validateFolder(m_selectedFolder);
+
+                // Strip any leading "data/" if present
+                constexpr char dataPrefix[] = "data/";
+                if (m_selectedFolder.rfind(dataPrefix, 0) == 0)
+                    m_selectedFolder.erase(0, sizeof(dataPrefix) - 1);
+
+                GetContext().SetCurrentFolderName(m_selectedFolder);
+                m_pendingStateChange = StateChange {
+                    StateAction::PUSH,
+                    std::make_unique<WorldState>(GetContext())
+                };
+                std::cout << "Selected valid save folder: " << m_selectedFolder << std::endl;
+                ImGui::CloseCurrentPopup();
+            }
+            catch (const FileNotFoundException& e)
+            {
+                showError("File not found: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
+            }
+            catch (const LineTooShortException& e)
+            {
+                showError("Line too short in file: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
+            }
+            catch (const InvalidFormatException& e)
+            {
+                showError("Invalid format in file: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
+            }
+            catch (const ResourceNotFoundException& e)
+            {
+                showError("Resource not found: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
+            }
+            catch (const MissingFileException& e)
+            {
+                showError("Missing file: " + e.getFilename() +
+                          (e.getErrorMessage().empty() ? "" : " - " + e.getErrorMessage()));
+            }
+            catch (const InvalidCharacterTypeException& e)
+            {
+                showError(std::string("Invalid character type: ") + e.what());
+            }
+            catch (const std::exception& e)
+            {
+                showError(std::string("An error occurred: ") + e.what());
+            }
+        }
+    }
+
+    ImGui::Separator();
+
+    // 4) Cancel button only
+    if (ImGui::Button("Cancel", ImVec2(CancelBtnWidth, 0)))
+    {
+        ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::EndPopup();
+}
+
+
+/*
+void MainMenuState::renderLoadSaveModal()
+{
     if (!m_showFileDialog)
         return;
 
@@ -326,6 +428,7 @@ void MainMenuState::renderLoadSaveModal()
         ImGuiFileDialog::Instance()->Close();
     }
 }
+*/
 
 void MainMenuState::renderErrorModal()
 {
