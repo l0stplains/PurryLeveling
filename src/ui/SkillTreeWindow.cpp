@@ -546,19 +546,19 @@ void SkillTreeWindow::HandleSkillInteraction(Skill* skill)
 {
     if (!skill)
         return;
-
+    // DEBUG CHECK IS LEARNED AND ACTIVATED OF A SKILL
+    std::cout << "Skill: " << skill->getName() << " isLearned: " << skill->getIsLearned()
+              << " activated: " << skill->getActivated() << std::endl;
     // If skill is already learned, we don't allow learning it again
     if (skill->getIsLearned())
     {
         std::cout << skill->getName() << " is already learned." << std::endl; 
         return;
     }
-    std::cout << skill->getName() << " clicked" << std::endl;
 
     // Try to learn the skill
     if (CanLearnSkill(skill))
     {
-        // Deduct mastery points (this was missing in the original code)
         m_playerMasteryPoints -= skill->getMasteryCost();
         
         int masteryPoints = m_playerMasteryPoints;
@@ -567,13 +567,15 @@ void SkillTreeWindow::HandleSkillInteraction(Skill* skill)
             // Update player's mastery points
             m_playerMasteryPoints = masteryPoints;
             
-            // Update the activation status of skills based on the new learning state
             UpdateSkillActivationStatus(m_skillTree.getSkill().get());
+            RefreshSkillTreeState(m_skillTree.getSkill().get());
             
             std::cout << "Successfully learned " << skill->getName() << std::endl;
         }
         else
         {
+            // Restore mastery points if learning failed
+            m_playerMasteryPoints += skill->getMasteryCost();
             std::cout << "Failed to learn " << skill->getName() << std::endl;
         }
     }
@@ -623,6 +625,20 @@ void SkillTreeWindow::UpdateSkillActivationStatus(Skill* skill)
     for (const auto& child : children)
     {
         UpdateSkillActivationStatus(child.get());
+    }
+}
+
+void SkillTreeWindow::RefreshSkillTreeState(Skill* skill)
+{
+    if (!skill)
+        return;
+        
+    // Process all skills in the tree to ensure UI is updated
+    // This is a recursive function that visits all nodes
+    const auto& children = skill->getChildren();
+    for (const auto& child : children)
+    {
+        RefreshSkillTreeState(child.get());
     }
 }
 

@@ -1,4 +1,5 @@
 #include "skill/Skill.hpp"
+#include <iostream>
 
 Skill::Skill(string                       name,
              float                        manaCost,
@@ -22,14 +23,14 @@ Skill::Skill(string                       name,
 
 bool Skill::learn(int* masteryPoint)
 {
-    if (children.empty())
+    if(*masteryPoint >= this->getMasteryCost())
     {
-        return false;
+        this -> isLearned = true;
+        this -> activated = true;
+    
+        *masteryPoint -= this->getMasteryCost();
+        return true;
     }
-    this -> isLearned = true;
-    this -> activated = true;
-
-    masteryPoint -= this->getMasteryCost();
-
-    return true;
+    std::cout << "Skill Obj : MasteryPoint tidak cukup " << std::endl;
+    return false;
 }

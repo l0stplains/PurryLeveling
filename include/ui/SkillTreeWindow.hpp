@@ -47,6 +47,7 @@ private:
     bool CanLearnSkill(const Skill* skill);
     void HandleSkillInteraction(Skill* skill);
     void UpdateSkillActivationStatus(Skill* skill);
+    void RefreshSkillTreeState(Skill* skill); // New method to refresh skill tree state
     void DrawSkillTooltip(const Skill* skill);
 
 public:
