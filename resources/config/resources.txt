@@ -20,6 +20,7 @@ world_background = resources/textures/ui/world_background.jpg
 inventory_background = resources/textures/ui/inventory_background.jpg
 shop_background = resources/textures/ui/shop_background.jpg
 shop_dialog_1 = resources/textures/ui/shop_dialog_1.jpg
+skill_tree_bg = resources/textures/ui/skill_tree_bg.jpg
 
 # Items
 ice_potion = resources/textures/items/ice_potion.png
@@ -359,5 +360,7 @@ mob_zombie_jump_shadow   = resources/textures/mobs/Zombie/_Shadows/ZombieIdleSha
 
 [audio]
 menu_backsound = resources/audio/music/main_menu_theme.mp3
+world_backsound = resources/audio/music/world_menu_theme.mp3
+boss_backsound = resources/audio/music/boss_menu_theme.mp3
 button_hover = resources/audio/sfx/cursor_style_2.ogg
 button_click = resources/audio/sfx/confirm_style_4_001.ogg

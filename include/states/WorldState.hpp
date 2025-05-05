@@ -7,6 +7,7 @@
 #include "states/MainMenuState.hpp"
 #include "states/ShopState.hpp"
 #include "states/State.hpp"
+#include "states/SkillTreeState.hpp"
 
 class WorldState : public State
 {
@@ -40,6 +41,7 @@ public:
     void Resume() override;
 
 private:
+    sf::Sound m_backsound;
     DungeonFactory m_dungeonFactory;
     sf::Texture    m_backgroundTexture;  ///< Background texture
     sf::Sprite     m_backgroundSprite;   ///< Background sprite

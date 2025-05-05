@@ -18,7 +18,7 @@ Necromancer::Necromancer(const std::string&  name,
       Character(name),
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
-    m_summonedUnits = 2;
+    m_summonedUnits = 1;
 
     m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<LifeSteal>()));
 
@@ -134,11 +134,15 @@ void Necromancer::Attack(Unit&                    target,
 
                     // Keep the raw pointer so we can grab its ID after registration
                     Zombie* rawZ = z.get();
-                    m_gameContext.GetUnitManager()->AddUnit(std::move(z));
+                    m_gameContext.GetUnitManager()->AddUnitImmediate(std::move(z));
                     m_summons.push_back(rawZ->GetId());
                 }
 
                 std::cout << "Summoned " << summonCount << " zombies!" << std::endl;
+            }
+            else
+            {
+                AddFloatingText("Summon Failed", sf::Color::Red);
             }
             // In either case, call the callback so the mage's turn can finish
             if (cb)
@@ -235,7 +239,7 @@ void Necromancer::KillSummons(ActionCompletionCallback callback)
     m_summons.clear();
 }
 
-void Necromancer::UseSkill(Unit&                    target,
+bool Necromancer::UseSkill(Unit&                    target,
                            ActionCompletionCallback callback,
                            ActionCompletionCallback onDeath)
 {
@@ -243,8 +247,92 @@ void Necromancer::UseSkill(Unit&                    target,
     {
         if (callback)
             callback();
-        return;
+        return false;
     }
+
+    RNG                 rng;
+    int                 totalManaCost = 0;
+    std::vector<Skill*> activeSkills  = m_skillTree->getActiveSkill();
+
+    // filter by mana cost lower or equal to current mana
+    std::vector<Skill*> filteredSkills;
+    for (auto& skill : activeSkills)
+    {
+        if (skill->getManaCost() <= m_currentMana)
+        {
+            filteredSkills.push_back(skill);
+        }
+    }
+
+    if (filteredSkills.empty())
+    {
+        AddFloatingText("Not enough mana", sf::Color::Yellow);  // Red text for no mana
+        return false;
+    }
+
+    int    randomIndex   = rng.generateInRange(0, filteredSkills.size() - 1);
+    Skill* selectedSkill = filteredSkills[randomIndex];
+    totalManaCost        = selectedSkill->getManaCost();
+    m_currentMana -= totalManaCost;
+
+    float effectChance = rng.generateProbability();
+    if (effectChance < selectedSkill->getEffectChance())
+    {
+        AddFloatingText("Effect applied", sf::Color::Green);
+        // copy the unique ptr
+        for (auto& effect : selectedSkill->getEffects())
+        {
+            std::unique_ptr<Effect> effectTemp = std::make_unique<Effect>(*effect);
+            AddEffect(std::move(effectTemp));
+        }
+    }
+
+    float             lifeStealPercentage = m_lifestealPercentage;
+    NecromancerSkill* necromancerSkill    = dynamic_cast<NecromancerSkill*>(selectedSkill);
+    if (necromancerSkill)
+    {
+        lifeStealPercentage += necromancerSkill->getLifestealPercentage();
+    }
+
+    int targetLastHealth = target.GetHealth();
+
+    auto wrappedCallback = [this, &target, targetLastHealth, lifeStealPercentage, callback]() mutable {
+        if (!target.IsActive() || target.GetHealth() <= 0)
+        {
+            if (callback)
+                callback();
+        }
+        int damageDone = targetLastHealth - target.GetHealth();
+        if (damageDone > 0)
+        {
+            Heal(damageDone);
+        }
+        if (callback)
+            callback();
+    };
+
+    auto wrappedOnDeath = [this, &target, targetLastHealth, lifeStealPercentage, onDeath]() mutable {
+        if (!target.IsActive() || target.GetHealth() <= 0)
+        {
+            int damageDone = targetLastHealth - target.GetHealth();
+            if (damageDone > 0)
+            {
+                Heal(damageDone);
+            }
+        }
+        if (onDeath)
+            onDeath();
+    };
+
+    target.TakeDamage(target.GetHealth() * lifeStealPercentage, wrappedCallback, wrappedCallback);
+
+    return true;
+}
+
+void Necromancer::SetLevel(int level)
+{
+    Character::SetLevel(level);
+    m_summonedUnits = 1 + level / 40;
 }
 
 const std::vector<unsigned int>& Necromancer::GetSummons() const

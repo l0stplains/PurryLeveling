@@ -29,9 +29,15 @@ public:
                 ActionCompletionCallback callback = nullptr,
                 ActionCompletionCallback onDeath  = nullptr) override;
 
-    void UseSkill(Unit&                    target,
+    bool UseSkill(Unit&                    target,
                   ActionCompletionCallback callback = nullptr,
                   ActionCompletionCallback onDeath  = nullptr) override;
+
+    void TakeDamage(int                      damage,
+                    ActionCompletionCallback callback = nullptr,
+                    ActionCompletionCallback onDeath  = nullptr) override;
+
+    void SetLevel(int level) override;
 
     int CalculateDamage(Unit& target) override;
 
@@ -48,5 +54,10 @@ private:
                        ActionCompletionCallback callback,
                        ActionCompletionCallback onDeath);
 
-    float m_attackRange = 32.0f;  // Example: Attack range in pixels (e.g., one tile)
+    float m_criticalHitChance     = 0.25f;
+    float m_criticalHitMultiplier = 2.0f;
+
+    float m_agilityMultiplier = 1.0f;
+
+    float m_attackRange = 48.0f;
 };

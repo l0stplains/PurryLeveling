@@ -90,11 +90,11 @@ void Chamber::generateMobs(bool isBossRoom)
         int bossLevel        = rng.generateInRange(mobLevelMin, mobLevelMax);
         int healthMultiplier = 2;
 
-        bossMob->SetMaxHealth(100 * bossLevel / 10 * healthMultiplier * difficultyMultiplier);
+        bossMob->SetMaxHealth(100 * bossLevel / 8 * healthMultiplier * difficultyMultiplier);
         bossMob->SetHealth(bossMob->GetMaxHealth());
         bossMob->SetMaxMana(50 * bossLevel / 10 * difficultyMultiplier);
         bossMob->SetCurrentMana(bossMob->GetMaxMana());
-        bossMob->SetAttackDamage(10 * bossLevel / 10 * difficultyMultiplier);
+        bossMob->SetAttackDamage(15 * bossLevel / 8 * difficultyMultiplier);
         bossMob->SetLevel(bossLevel);
 
         bossMob->SetLevel(bossLevel);
@@ -107,7 +107,6 @@ void Chamber::generateMobs(bool isBossRoom)
     {
         int numMobs = std::min(1 + chamberNumber / 2, 4);
 
-        // Double chambers have more mobs
         if (isDoubleChamber)
         {
             numMobs = static_cast<int>(numMobs * 1.5);
@@ -139,19 +138,17 @@ void Chamber::generateMobs(bool isBossRoom)
                         "Orc", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
                     break;
                 default:
-                    // it should never reach here
                     mob = std::make_unique<Slime>(
                         "Slime", sf::Vector2f(0, 0), *gameContext.GetNavigationGrid(), gameContext);
             }
 
-            // Set mob stats based on chamber difficulty
             int mobLevel = rng.generateInRange(mobLevelMin, mobLevelMax);
 
-            mob->SetMaxHealth(60 * mobLevel / 10 * difficultyMultiplier);
+            mob->SetMaxHealth(60 * mobLevel / 8 * difficultyMultiplier);
             mob->SetHealth(mob->GetMaxHealth());
             mob->SetMaxMana(30 * mobLevel / 10 * difficultyMultiplier);
             mob->SetCurrentMana(mob->GetMaxMana());
-            mob->SetAttackDamage(8 * mobLevel / 10 * difficultyMultiplier);
+            mob->SetAttackDamage(12 * mobLevel / 8 * difficultyMultiplier);
             mob->SetLevel(mobLevel);
             mob->SetActive(false);
 
@@ -165,12 +162,6 @@ void Chamber::generateMobs(bool isBossRoom)
 
 void Chamber::calculateRewards(bool isDoubleChamber)
 {
-    // First term (chamber number) for adjusting rewards based on chamber number
-    // It's compesating player in the Special Dungeon.
-    //
-    // The second term (mob level) is for adjusting rewards based on mob level
-    // It's compesating player for defeating mobs based on their level
-
     goldReward = chamberNumber * 50 + std::pow((mobLevelMin + mobLevelMax) / 2, 1.2) * 1 + 10;
     expReward  = chamberNumber * 100 + std::pow((mobLevelMin + mobLevelMax) / 2, 1.2) * 2 + 100;
 
@@ -205,8 +196,24 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
         return;
     }
 
+    static int specialDungeonTotalDrops  = 0;
+    const int  MAX_SPECIAL_DUNGEON_DROPS = 5;
+    bool       isSpecialDungeon          = (chamberNumber > 7);
+
+    if (isSpecialDungeon && specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
+    {
+        return;
+    }
+
+    bool directDropSpecial = isSpecialDungeon && chamberNumber >= 7;
+
     for (const auto& mobId : mobsId)
     {
+        if (isSpecialDungeon && specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
+        {
+            break;
+        }
+
         Mob*   mob     = unitManager.GetUnitOfType<Mob>(mobId);
         string mobName = mob->GetName();
 
@@ -214,6 +221,38 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
         if (mobIt != mobLootData.end())
         {
             const auto& itemsMap = mobIt->second;
+
+            if (directDropSpecial)
+            {
+                if (!itemsMap.empty())
+                {
+                    const auto&   firstItem = *itemsMap.begin();
+                    const string& itemId    = firstItem.first;
+
+                    try
+                    {
+                        Item& item = itemManager.getItem(itemId);
+                        mobLoot.push_back(item);
+                        specialDungeonTotalDrops++;
+
+                        cout << "Mob " << mobName << " dropped item " << item.getName()
+                             << " (ID: " << itemId << ")" << endl;
+
+                        if (specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
+                        {
+                            cout << "Special dungeon item drop cap reached ("
+                                 << MAX_SPECIAL_DUNGEON_DROPS << " items)" << endl;
+                            break;
+                        }
+                    }
+                    catch (const ItemNotFoundException& e)
+                    {
+                        cout << "Item ID not found in mob loot: " << itemId
+                             << ". Error: " << e.what() << endl;
+                    }
+                }
+                continue;
+            }
 
             for (const auto& itemEntry : itemsMap)
             {
@@ -227,11 +266,26 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
                     try
                     {
                         Item& item = itemManager.getItem(itemId);
-
                         mobLoot.push_back(item);
+
+                        if (isSpecialDungeon)
+                        {
+                            specialDungeonTotalDrops++;
+                        }
 
                         cout << "Mob " << mobName << " dropped item " << item.getName()
                              << " (ID: " << itemId << ")" << endl;
+
+                        if (isSpecialDungeon)
+                        {
+                            if (specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
+                            {
+                                cout << "Special dungeon item drop cap reached ("
+                                     << MAX_SPECIAL_DUNGEON_DROPS << " items)" << endl;
+                                break;
+                            }
+                            break;
+                        }
                     }
                     catch (const ItemNotFoundException& e)
                     {
@@ -240,6 +294,11 @@ void Chamber::generateMobLoot(const MobLootConfigParser& lootConfigParser, ItemM
                         continue;
                     }
                 }
+            }
+
+            if (isSpecialDungeon && specialDungeonTotalDrops >= MAX_SPECIAL_DUNGEON_DROPS)
+            {
+                break;
             }
         }
     }

@@ -9,7 +9,7 @@ CXXFLAGS_COMMON := -std=c++17 -Wall -Wextra -Wpedantic \
 	-Iinclude \
 	-I/usr/local/include \
 	$(shell pkg-config --cflags sfml-graphics sfml-window sfml-system)
-CXXFLAGS_DEBUG := -g -DDEBUG -O3
+CXXFLAGS_DEBUG := -g -DDEBUG -O1
 CXXFLAGS_RELEASE := -O3 -DNDEBUG
 
 # default release build, use DEBUG=1 for debug build

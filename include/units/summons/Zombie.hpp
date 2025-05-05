@@ -29,7 +29,7 @@ public:
                 ActionCompletionCallback callback = nullptr,
                 ActionCompletionCallback onDeath  = nullptr) override;
 
-    void UseSkill(Unit&                    target,
+    bool UseSkill(Unit&                    target,
                   ActionCompletionCallback callback = nullptr,
                   ActionCompletionCallback onDeath  = nullptr) override;
 

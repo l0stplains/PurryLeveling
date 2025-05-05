@@ -24,11 +24,10 @@ void Summon::SetLevel(int level)
         return;
     m_level = level;
 
-    SetMaxHealth(30 * level / 4 * GetMaxHealthMultiplier());
-    SetHealth(GetMaxHealth());
-    SetMaxMana(20 * level / 4 * GetMaxManaMultiplier());
-    SetCurrentMana(GetMaxMana());
+    SetMaxHealth(10 * level / 4 * GetMaxHealthMultiplier());
     SetAttackDamage(10 * level / 4 * GetAttackDamageMultiplier());
+    SetHealth(GetMaxHealth());
+    SetCurrentMana(GetMaxMana());
 }
 
 std::vector<sf::Vector2f> Summon::generateSummonSpawnPoints(const sf::Vector2f& center,

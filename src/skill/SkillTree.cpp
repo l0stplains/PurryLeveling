@@ -32,6 +32,33 @@ std::vector<Skill*> SkillTree::getActiveSkill(const Skill* skill) const
     return activeSkill;
 }
 
+std::vector<std::string> SkillTree::getSkillName(const Skill* skill) const
+{
+    std::vector<std::string> skillName;
+
+    if (skill == nullptr)
+    {
+        if (this->skill != nullptr)
+        {
+            skill = this->skill.get();
+        }
+        else
+        {
+            return skillName;
+        }
+    }
+
+    skillName.push_back(skill->getName());
+
+    for (const auto& child : skill->getChildren())
+    {
+        std::vector<std::string> childSkillName = getSkillName(child.get());
+        skillName.insert(skillName.end(), childSkillName.begin(), childSkillName.end());
+    }
+
+    return skillName;
+}
+
 void SkillTree::setActive(std::string skillName, Skill* skill)
 {
     if (skill == nullptr)

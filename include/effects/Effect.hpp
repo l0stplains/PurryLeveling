@@ -9,9 +9,8 @@ public:
     Effect(const std::string& name, const std::string& description, int duration);
     virtual ~Effect() = default;
 
-    // Prevent copying and assignment
-    Effect(const Effect&)            = delete;
-    Effect& operator=(const Effect&) = delete;
+    Effect(const Effect&)            = default;
+    Effect& operator=(const Effect&) = default;
     Effect(Effect&&)                 = default;
     Effect& operator=(Effect&&)      = default;
 
@@ -20,12 +19,14 @@ public:
     const std::string& GetDescription() const;
     int                GetDuration() const;
     int                GetRemainingDuration() const;
+    const Stats&       GetModifiers() const;
 
     // --- Setters ---
     void SetName(const std::string& name);
     void SetDescription(const std::string& description);
     void SetDuration(int duration);
     void SetRemainingDuration(int remainingDuration);
+    void SetModifiers(const Stats& modifiers);
 
 protected:
     std::string m_name;

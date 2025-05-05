@@ -45,7 +45,7 @@ public:
     /**
      * @brief Uses a skill, playing a generic skill animation.
      */
-    virtual void UseSkill(Unit&                    target,
+    virtual bool UseSkill(Unit&                    target,
                           ActionCompletionCallback callback = nullptr,
                           ActionCompletionCallback onDeath  = nullptr) = 0;
 
@@ -97,6 +97,8 @@ public:
 
     void ApplyEffect(std::unique_ptr<Effect> effect);
     void RemoveEffectByName(const std::string& effectName);
+
+    void RefreshTurn();
 
 protected:
     unsigned int m_id;

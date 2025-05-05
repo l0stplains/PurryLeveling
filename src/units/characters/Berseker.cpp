@@ -255,7 +255,24 @@ void Berseker::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Berseker::UseSkill(Unit&                    target,
+int Berseker::CalculateDamage(Unit& target)
+{
+    int totalDamage = static_cast<int>(
+        m_attackDamage * m_attackDamageMultiplier * m_rageMultiplier + m_stats.strength);
+    totalDamage *= m_stats.buffMultiplier;
+    RNG   rng;
+    float critChance = rng.generateProbability();
+    if (critChance < m_stats.criticalStrikeChance)
+    {
+        totalDamage = static_cast<int>(totalDamage * m_stats.criticalStrikeMultiplier *
+                                       m_stats.buffMultiplier);
+    }
+
+    totalDamage = std::max(0, totalDamage - target.GetStats().magicDefense);
+    return totalDamage;
+}
+
+bool Berseker::UseSkill(Unit&                    target,
                         ActionCompletionCallback callback,
                         ActionCompletionCallback onDeath)
 {
@@ -263,17 +280,75 @@ void Berseker::UseSkill(Unit&                    target,
     {
         if (callback)
             callback();
-        return;
+        return false;
     }
+
+    RNG                 rng;
+    int                 totalManaCost = 0;
+    std::vector<Skill*> activeSkills  = m_skillTree->getActiveSkill();
+
+    // filter by mana cost lower or equal to current mana
+    std::vector<Skill*> filteredSkills;
+    for (auto& skill : activeSkills)
+    {
+        if (skill->getManaCost() <= m_currentMana)
+        {
+            filteredSkills.push_back(skill);
+        }
+    }
+
+    if (filteredSkills.empty())
+    {
+        AddFloatingText("Not enough mana", sf::Color::Yellow);  // Red text for no mana
+        return false;
+    }
+
+    int    randomIndex   = rng.generateInRange(0, filteredSkills.size() - 1);
+    Skill* selectedSkill = filteredSkills[randomIndex];
+    totalManaCost        = selectedSkill->getManaCost();
+    m_currentMana -= totalManaCost;
+
+    float effectChance = rng.generateProbability();
+    if (effectChance < selectedSkill->getEffectChance())
+    {
+        AddFloatingText("Effect applied", sf::Color::Green);
+        // copy the unique ptr
+        for (auto& effect : selectedSkill->getEffects())
+        {
+            std::unique_ptr<Effect> effectTemp = std::make_unique<Effect>(*effect);
+            AddEffect(std::move(effectTemp));
+        }
+    }
+
+    BerserkerSkill* bersekerSkill = dynamic_cast<BerserkerSkill*>(selectedSkill);
+    if (bersekerSkill)
+    {
+        m_rageAddition = bersekerSkill->getFuryMultiplier();
+    }
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2) << m_rageAddition;
+    std::string addedText = "Rage added: " + oss.str();
+    AddFloatingText(addedText, sf::Color::Yellow);
+
+    if (callback)
+        callback();
+
+    return true;
 }
 
+void Berseker::ResetRage()
+{
+    m_rageAddition = 0.f;
+}
+
+void Berseker::SetLevel(int level)
+{
+    Character::SetLevel(level);
+    m_rageMultiplier = 1.0f + (level - 1) * 0.01f;  // Example: Increase rage multiplier with level
+}
 // Optional: Override RenderUI if Fighter has unique elements
 // void Berseker::RenderUI(sf::RenderWindow& window) {
 //     Character::RenderUI(window); // Call base UI rendering
 //     // Add fighter-specific UI elements here (e.g., rage bar?)
 // }
-
-int Berseker::CalculateDamage(Unit& target)
-{
-    return m_attackDamage * m_attackDamageMultiplier;
-}

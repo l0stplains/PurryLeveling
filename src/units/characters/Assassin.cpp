@@ -14,16 +14,10 @@ Assassin::Assassin(const std::string&  name,
       Character(name),
       AnimatedUnit(name, position, navGrid, isPlayerControlled, gameContext)
 {
-    // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 25;
-    m_healthRegen  = 3;
-    m_manaRegen    = 3;
-    m_moveSpeed    = 180.f;
-    m_attackRange  = 48.f;
+    // Assassin-specific stat overrides
+    m_maxHealthMultiplier = 0.7;
+    m_moveSpeed           = 180.f;
+    m_attackRange         = 48.f;
 
     m_skillTree = std::make_unique<SkillTree>(std::move(std::make_unique<Stealth>()));
 
@@ -255,9 +249,9 @@ void Assassin::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Assassin::UseSkill(Unit&                    target,
-                        ActionCompletionCallback callback,
-                        ActionCompletionCallback onDeath)
+void Assassin::TakeDamage(int                      damage,
+                          ActionCompletionCallback callback,
+                          ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
@@ -265,6 +259,87 @@ void Assassin::UseSkill(Unit&                    target,
             callback();
         return;
     }
+
+    RNG   rng;
+    float blockChance = rng.generateProbability();
+    float rationalAgilityGrowth =
+        (m_stats.agility * m_agilityMultiplier) / (m_stats.agility * m_agilityMultiplier + 1);
+    if (blockChance < rationalAgilityGrowth)
+    {
+        AddFloatingText("Blocked", sf::Color::White);  // Green block text
+        damage = 0;                                    // blocked damage
+    }
+    AnimatedUnit::TakeDamage(damage, std::move(callback), std::move(onDeath));
+}
+
+bool Assassin::UseSkill(Unit&                    target,
+                        ActionCompletionCallback callback,
+                        ActionCompletionCallback onDeath)
+{
+    if (!m_active || m_currentHealth <= 0)
+    {
+        if (callback)
+            callback();
+        return false;
+    }
+
+    RNG                 rng;
+    int                 totalManaCost = 0;
+    std::vector<Skill*> activeSkills  = m_skillTree->getActiveSkill();
+
+    // filter by mana cost lower or equal to current mana
+    std::vector<Skill*> filteredSkills;
+    for (auto& skill : activeSkills)
+    {
+        if (skill->getManaCost() <= m_currentMana)
+        {
+            filteredSkills.push_back(skill);
+        }
+    }
+
+    if (filteredSkills.empty())
+    {
+        AddFloatingText("Not enough mana", sf::Color::Yellow);  // Red text for no mana
+        return false;
+    }
+
+    int    randomIndex   = rng.generateInRange(0, filteredSkills.size() - 1);
+    Skill* selectedSkill = filteredSkills[randomIndex];
+    totalManaCost        = selectedSkill->getManaCost();
+    m_currentMana -= totalManaCost;
+
+    float effectChance = rng.generateProbability();
+    if (effectChance < selectedSkill->getEffectChance())
+    {
+        AddFloatingText("Effect applied", sf::Color::Green);
+        // copy the unique ptr
+        for (auto& effect : selectedSkill->getEffects())
+        {
+            std::unique_ptr<Effect> effectTemp = std::make_unique<Effect>(*effect);
+            AddEffect(std::move(effectTemp));
+        }
+    }
+
+    float          agilityMultiplier = 1.0f;
+    int            manaBonus         = 0;
+    AssassinSkill* assassinSkill     = dynamic_cast<AssassinSkill*>(selectedSkill);
+    if (assassinSkill)
+    {
+        agilityMultiplier *= assassinSkill->getAgilityMultiplier();
+    }
+    RestoreMana(manaBonus);
+
+    m_agilityMultiplier = agilityMultiplier;
+
+    if (callback)
+        callback();
+
+    return true;
+}
+void Assassin::SetLevel(int level)
+{
+    Character::SetLevel(level);
+    m_stats.intelligence = level / 8;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements
@@ -275,5 +350,17 @@ void Assassin::UseSkill(Unit&                    target,
 
 int Assassin::CalculateDamage(Unit& target)
 {
-    return m_attackDamage * m_attackDamageMultiplier;
+    int totalDamage =
+        static_cast<int>(m_attackDamage * m_attackDamageMultiplier + m_stats.intelligence);
+    totalDamage *= m_stats.buffMultiplier;
+    RNG   rng;
+    float critChance = rng.generateProbability();
+    if (critChance < m_stats.criticalStrikeChance + m_criticalHitChance)
+    {
+        totalDamage = static_cast<int>(totalDamage * m_stats.criticalStrikeMultiplier *
+                                       m_stats.buffMultiplier);
+    }
+
+    totalDamage = std::max(0, totalDamage - target.GetStats().magicDefense);
+    return totalDamage;
 }

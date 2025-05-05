@@ -4,6 +4,22 @@
 class HarmoniousEmpowerment : public Effect
 {
 public:
+    HarmoniousEmpowerment()
+        : Effect("Harmonious Empowerment", "All Primary+3, Defenses+3, BuffMul×1.2", 3)
+    {
+        // Primary stats
+        m_modifiers.strength     = 3;
+        m_modifiers.intelligence = 3;
+        m_modifiers.agility      = 3;
+
+        // Defenses
+        m_modifiers.physicalDefense = 3;
+        m_modifiers.magicDefense    = 3;
+
+        // Enhanced buff multiplier
+        m_modifiers.buffMultiplier = 1.2f;
+    }
+
     HarmoniousEmpowerment(int primaryStatBonus, int defenseBonus, float buffMultBonus, int duration)
         : Effect("Harmonious Empowerment",
                  "All Primary+" + std::to_string(primaryStatBonus) + ", Defenses+" +

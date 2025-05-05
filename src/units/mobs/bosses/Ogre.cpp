@@ -15,15 +15,9 @@ Ogre::Ogre(const std::string&  name,
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
     // Fighter-specific stat overrides
-    m_maxHealth = 100;
-    SetHealth(m_maxHealth);
-    m_maxMana = 100;
-    SetCurrentMana(m_maxMana);
-    m_attackDamage = 12;
-    m_healthRegen  = 4;
-    m_manaRegen    = 4;
-    m_moveSpeed    = 200.f;  // Maybe slightly slower, heavier armor?
-    m_attackRange  = 48.f;
+    m_skillProbabability = 0.3f;
+    m_moveSpeed          = 200.f;  // Maybe slightly slower, heavier armor?
+    m_attackRange        = 48.f;
 
     sf::Vector2i ogreFrameSize(32, 32);
 
@@ -252,14 +246,18 @@ void Ogre::PerformAttack(AnimatedUnit&            target,
         });
 }
 
-void Ogre::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
+bool Ogre::UseSkill(Unit& target, ActionCompletionCallback callback, ActionCompletionCallback onDeath)
 {
     if (!m_active || m_currentHealth <= 0)
     {
         if (callback)
             callback();
-        return;
+        return false;
     }
+
+    PlayAnimation(UnitAnimationType::JUMP, callback);
+
+    return true;
 }
 
 // Optional: Override RenderUI if Fighter has unique elements

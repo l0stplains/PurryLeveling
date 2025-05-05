@@ -1,7 +1,12 @@
 #pragma once
 
+#include "systems/CheatConsole.hpp"
+
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
+#include "ui/QuestInfo.hpp"
+#include "ui/MobInfo.hpp"
+#include "ui/CharacterInfo.hpp"
 #include "ui/QuestInfo.hpp"
 
 #include "states/State.hpp"
@@ -40,10 +45,12 @@ public:
     void Resume() override;
 
 private:
-    sf::Texture m_backgroundTexture;      ///< Background texture
-    sf::Texture m_bossBackgroundTexture;  ///< Boss background texture
-    sf::Sprite  m_backgroundSprite;       ///< Background sprite
-    sf::Sprite  m_chamberExitArea;        ///< Door enter area sprite
+    sf::Sound m_bossBacksound;
+
+    sf::Texture m_backgroundTexture;
+    sf::Texture m_bossBackgroundTexture;
+    sf::Sprite  m_backgroundSprite;
+    sf::Sprite  m_chamberExitArea;
 
     sf::Sound m_buttonHoverSound;  ///< Button hover sound
     sf::Sound m_buttonClickSound;  ///< Button click sound
@@ -63,6 +70,8 @@ private:
 
     BattleUnitInfo m_battleUnitInfo;  ///< Battle unit information UI
     QuestInfo      m_questInfo;       ///< Quest information UI
+    MobInfo        m_mobInfo;         ///< Mob information UI
+    CharacterInfo  m_characterInfo;   ///< Character information UI
 
     bool m_isPlayerTurn     = true;
     bool m_wasInChamberExit = false;
@@ -85,9 +94,13 @@ private:
     bool m_isTransitioning = false;
     bool m_walkToExit      = false;
 
+    CheatConsole m_cheatConsole;
+
     void playMobTurn();
 
     void nextChamber();
+
+    void initializeCheat();
 
     std::vector<sf::Vector2f> generateMobSpawnPoints(const sf::Vector2f& center,
                                                      unsigned int        mobCount,
