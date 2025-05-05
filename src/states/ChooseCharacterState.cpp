@@ -336,36 +336,31 @@ void ChooseCharacterState::RenderCharacterInfoWindow()
         switch (selIdx)
         {
             case 0:  // Fighter
-                ImGui::Text("Special: Strong against physical attacks");
-                ImGui::Text("Weakness: Low magic resistance");
+                ImGui::Text("Special: Blocking");
                 ImGui::Separator();
                 ImGui::TextWrapped("A powerful melee fighter with high physical damage and "
                                    "durability.");
                 break;
             case 1:  // Mage
-                ImGui::Text("Special: Area damage spells");
-                ImGui::Text("Weakness: Low physical defense");
+                ImGui::Text("Special: Extra mana");
                 ImGui::Separator();
                 ImGui::TextWrapped("A master of arcane arts with powerful area-of-effect "
                                    "spells.");
                 break;
             case 2:  // Assassin
-                ImGui::Text("Special: High dodge chance");
-                ImGui::Text("Weakness: Low health pool");
+                ImGui::Text("Special: High critical chance");
                 ImGui::Separator();
                 ImGui::TextWrapped("A swift dealer of deadly strikes with high critical damage "
                                    "potential.");
                 break;
             case 3:  // Necromancer
-                ImGui::Text("Special: Can summon undead minions");
-                ImGui::Text("Weakness: Vulnerable while summoning");
+                ImGui::Text("Special: Can summon undead zombie");
                 ImGui::Separator();
-                ImGui::TextWrapped("Commands the powers of death to summon minions and drain "
+                ImGui::TextWrapped("Commands the powers of death to summon zombies and drain "
                                    "life force.");
                 break;
             case 4:  // Berserker
-                ImGui::Text("Special: Damage increases as health lowers");
-                ImGui::Text("Weakness: Hard to control when enraged");
+                ImGui::Text("Special: Rage buff");
                 ImGui::Separator();
                 ImGui::TextWrapped("A fearsome warrior whose power grows with rage and battle "
                                    "damage.");
