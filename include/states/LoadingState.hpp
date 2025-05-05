@@ -1,15 +1,7 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include <SFML/System/Clock.hpp>
-
-#include <atomic>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <thread>
-
 #include "parser/ResourceConfigParser.hpp"
+#include "states/MainMenuState.hpp"
 #include "states/State.hpp"
 
 /**

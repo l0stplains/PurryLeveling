@@ -1,16 +1,7 @@
 #pragma once
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Graphics.hpp>
-
-#include <string>
-#include <thread>
-#include <vector>
-
-#include "core/GameContext.hpp"
-
-#include "ui/Button.hpp"
 
 #include "states/State.hpp"
+#include "states/WorldState.hpp"
 
 class ChooseCharacterState : public State
 {
@@ -29,6 +20,11 @@ public:
 
     void Exit() override;  // Important for thread cleanup!
 private:
+    // Helper UI rendering functions
+    void RenderCharacterSelectionUI();
+    void RenderCharacterInfoWindow();
+    void RenderNameInputModal();
+
     unsigned int m_fighterId;      ///< ID for the Fighter character
     unsigned int m_mageId;         ///< ID for the Mage character
     unsigned int m_assassinId;     ///< ID for the Assassin character

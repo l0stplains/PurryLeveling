@@ -1,30 +1,17 @@
 #pragma once
-#include <SFML/Audio/Sound.hpp>
-#include <SFML/Graphics.hpp>
-
-#include <cmath>
-#include <queue>
-#include <vector>
-
-#include "core/GameContext.hpp"
 
 #include "systems/CheatConsole.hpp"
 
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
-#include "ui/Button.hpp"
 #include "ui/QuestInfo.hpp"
 #include "ui/MobInfo.hpp"
 #include "ui/CharacterInfo.hpp"
 #include "ui/QuestInfo.hpp"
 
-#include "dungeon/Dungeon.hpp"
-#include "dungeon/DungeonFactory.hpp"
-#include "props/Pointer.hpp"
-#include "props/Portal.hpp"
-#include "states/Enums.hpp"
 #include "states/State.hpp"
-#include "units/NavigationGrid.hpp"
+#include "units/summons/Summon.hpp"
+#include "units/summons/Wildfire.hpp"
 
 class DungeonState : public State
 {

@@ -1,18 +1,5 @@
 #include "states/ChooseCharacterState.hpp"
 
-#include <iostream>
-
-#include "core/ResourceManager.hpp"
-
-#include "imgui.h"
-#include "states/WorldState.hpp"
-#include "units/NavigationGrid.hpp"
-#include "units/characters/Assassin.hpp"
-#include "units/characters/Berseker.hpp"
-#include "units/characters/Fighter.hpp"
-#include "units/characters/Mage.hpp"
-#include "units/characters/Necromancer.hpp"
-
 // Constructor
 ChooseCharacterState::ChooseCharacterState(GameContext& context)
     : State(context),
@@ -164,9 +151,15 @@ State::StateChange ChooseCharacterState::Update(const sf::Time& dt)
 {
     sf::RenderWindow* window = GetContext().GetWindow();
 
-    m_confirmButton.setActive(m_selectedCharacterId != -1);
+    // The confirm button should only be active if a character is selected
+    // AND no modals are currently being displayed
+    bool isNameModalActive = ImGui::IsPopupOpen("Enter Username");
 
-    if (!m_showNameModal)
+    // Only enable the confirm button if a character is selected and no modals are open
+    m_confirmButton.setActive(m_selectedCharacterId != -1 && !isNameModalActive);
+
+    // Only update buttons if no modals are open
+    if (!isNameModalActive)
     {
         m_exitButton.update(*window);
         m_confirmButton.update(*window);
@@ -192,9 +185,8 @@ void ChooseCharacterState::Draw(sf::RenderWindow& window)
     m_confirmButton.draw(window);
 }
 
-void ChooseCharacterState::RenderUI()
+void ChooseCharacterState::RenderCharacterSelectionUI()
 {
-    // 1) Full-screen character selection window (won't steal focus)
     sf::Vector2u     windowSize   = GetContext().GetWindow()->getSize();
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
@@ -259,7 +251,7 @@ void ChooseCharacterState::RenderUI()
             ImGui::PopStyleColor();
         }
 
-        // — Info “?” button next to selected character —
+        // — Info "?" button next to selected character —
         if (m_selectedCharacterId != -1)
         {
             int selIdx = -1;
@@ -277,7 +269,7 @@ void ChooseCharacterState::RenderUI()
 
             if (ImGui::Button("?", ImVec2(30, 30)))
             {
-                // Urmm acthually you can just flip it twwewewew
+                // Toggle character info window
                 if (m_showCharacterInfo)
                 {
                     m_showCharacterInfo       = false;
@@ -300,169 +292,263 @@ void ChooseCharacterState::RenderUI()
         ImGui::PopStyleColor(5);
     }
     ImGui::End();
+}
 
-    // 2) Modeless Info-Window (only focused the first frame it opens)
-    if (m_selectedCharacterId != -1 && m_showCharacterInfo)
+void ChooseCharacterState::RenderCharacterInfoWindow()
+{
+    // Only render if character is selected and info window should be shown
+    if (m_selectedCharacterId == -1 || !m_showCharacterInfo)
+        return;
+
+    sf::Vector2u windowSize = GetContext().GetWindow()->getSize();
+
+    if (m_justOpenedCharacterInfo)
     {
-        if (m_justOpenedCharacterInfo)
-        {
-            ImGui::SetNextWindowFocus();
-            m_justOpenedCharacterInfo = false;
-        }
-
-        ImGuiWindowFlags infoFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                                     ImGuiWindowFlags_AlwaysAutoResize |
-                                     ImGuiWindowFlags_NoSavedSettings;
-
-        const char* characterNamesInfo[] = {"Fighter", "Mage", "Assassin", "Necromancer", "Berserker"};
-        unsigned int characterIdsInfo[] = {
-            m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
-
-        int selIdx = -1;
-        for (int i = 0; i < 5; ++i)
-            if (characterIdsInfo[i] == m_selectedCharacterId)
-                selIdx = i;
-
-        float infoX = windowSize.x * ((selIdx + 1.0f) / 6.0f) - 150.0f;
-        float infoY = windowSize.y * 0.4f;
-        ImGui::SetNextWindowPos(ImVec2(infoX, infoY), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(300, 0), ImGuiCond_Once);
-
-        std::string title = std::string(characterNamesInfo[selIdx]) + " Info";
-        if (ImGui::Begin(title.c_str(), &m_showCharacterInfo, infoFlags))
-        {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
-            ImGui::TextColored(
-                ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Character Class: %s", characterNamesInfo[selIdx]);
-            ImGui::Separator();
-
-            switch (selIdx)
-            {
-                case 0:  // Fighter
-                    ImGui::Text("Health: 100");
-                    ImGui::Text("Stamina: 80");
-                    ImGui::Text("Strength: 9");
-                    ImGui::Text("Defense: 7");
-                    ImGui::Text("Special: Strong against physical attacks");
-                    ImGui::Text("Weakness: Low magic resistance");
-                    ImGui::Separator();
-                    ImGui::TextWrapped("A powerful melee fighter with high physical damage and "
-                                       "durability.");
-                    break;
-                case 1:  // Mage
-                    ImGui::Text("Health: 70");
-                    ImGui::Text("Mana: 120");
-                    ImGui::Text("Intelligence: 10");
-                    ImGui::Text("Magic Defense: 8");
-                    ImGui::Text("Special: Area damage spells");
-                    ImGui::Text("Weakness: Low physical defense");
-                    ImGui::Separator();
-                    ImGui::TextWrapped("A master of arcane arts with powerful area-of-effect "
-                                       "spells.");
-                    break;
-                case 2:  // Assassin
-                    ImGui::Text("Health: 80");
-                    ImGui::Text("Energy: 100");
-                    ImGui::Text("Agility: 10");
-                    ImGui::Text("Critical Rate: 25%%");
-                    ImGui::Text("Special: High dodge chance");
-                    ImGui::Text("Weakness: Low health pool");
-                    ImGui::Separator();
-                    ImGui::TextWrapped("A swift dealer of deadly strikes with high critical damage "
-                                       "potential.");
-                    break;
-                case 3:  // Necromancer
-                    ImGui::Text("Health: 75");
-                    ImGui::Text("Mana: 110");
-                    ImGui::Text("Dark Power: 9");
-                    ImGui::Text("Summon Capacity: 3");
-                    ImGui::Text("Special: Can summon undead minions");
-                    ImGui::Text("Weakness: Vulnerable while summoning");
-                    ImGui::Separator();
-                    ImGui::TextWrapped("Commands the powers of death to summon minions and drain "
-                                       "life force.");
-                    break;
-                case 4:  // Berserker
-                    ImGui::Text("Health: 120");
-                    ImGui::Text("Rage: 100");
-                    ImGui::Text("Strength: 10");
-                    ImGui::Text("Toughness: 8");
-                    ImGui::Text("Special: Damage increases as health lowers");
-                    ImGui::Text("Weakness: Hard to control when enraged");
-                    ImGui::Separator();
-                    ImGui::TextWrapped("A fearsome warrior whose power grows with rage and battle "
-                                       "damage.");
-                    break;
-            }
-
-            ImGui::Separator();
-            ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 120) * 0.5f);
-            if (ImGui::Button("Close", ImVec2(120, 30)))
-                m_showCharacterInfo = false;
-
-            ImGui::PopStyleColor();
-        }
-        ImGui::End();
+        ImGui::SetNextWindowFocus();
+        m_justOpenedCharacterInfo = false;
     }
+
+    ImGuiWindowFlags infoFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                                 ImGuiWindowFlags_AlwaysAutoResize |
+                                 ImGuiWindowFlags_NoSavedSettings;
+
+    const char* characterNames[] = {"Fighter", "Mage", "Assassin", "Necromancer", "Berserker"};
+    unsigned int characterIds[] = {m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
+
+    int selIdx = -1;
+    for (int i = 0; i < 5; ++i)
+        if (characterIds[i] == m_selectedCharacterId)
+            selIdx = i;
+
+    float infoX = windowSize.x * ((selIdx + 1.0f) / 6.0f) - 150.0f;
+    float infoY = windowSize.y * 0.4f;
+    ImGui::SetNextWindowPos(ImVec2(infoX, infoY), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(300, 0), ImGuiCond_Once);
+
+    std::string title = std::string(characterNames[selIdx]) + " Info";
+    if (ImGui::Begin(title.c_str(), &m_showCharacterInfo, infoFlags))
+    {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 1, 1, 1));
+        ImGui::TextColored(
+            ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Character Class: %s", characterNames[selIdx]);
+        ImGui::Separator();
+
+        switch (selIdx)
+        {
+            case 0:  // Fighter
+                ImGui::Text("Special: Blocking");
+                ImGui::Separator();
+                ImGui::TextWrapped("A powerful melee fighter with high physical damage and "
+                                   "durability.");
+                break;
+            case 1:  // Mage
+                ImGui::Text("Special: Extra mana");
+                ImGui::Separator();
+                ImGui::TextWrapped("A master of arcane arts with powerful area-of-effect "
+                                   "spells.");
+                break;
+            case 2:  // Assassin
+                ImGui::Text("Special: High critical chance");
+                ImGui::Separator();
+                ImGui::TextWrapped("A swift dealer of deadly strikes with high critical damage "
+                                   "potential.");
+                break;
+            case 3:  // Necromancer
+                ImGui::Text("Special: Can summon undead zombie");
+                ImGui::Separator();
+                ImGui::TextWrapped("Commands the powers of death to summon zombies and drain "
+                                   "life force.");
+                break;
+            case 4:  // Berserker
+                ImGui::Text("Special: Rage buff");
+                ImGui::Separator();
+                ImGui::TextWrapped("A fearsome warrior whose power grows with rage and battle "
+                                   "damage.");
+                break;
+        }
+
+        ImGui::Separator();
+        ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 120) * 0.5f);
+        if (ImGui::Button("Close", ImVec2(120, 30)))
+            m_showCharacterInfo = false;
+
+        ImGui::PopStyleColor();
+    }
+    ImGui::End();
+}
+
+void ChooseCharacterState::RenderNameInputModal()
+{
+    constexpr char  PopupId[]     = "Enter Username";
+    constexpr float ButtonWidth   = 100.0f;
+    constexpr float ButtonHeight  = 40.0f;
+    constexpr float ButtonSpacing = 20.0f;
+
+    // Center the modal window
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSize(ImVec2(400, 0));  // Width fixed, height auto
+
+    // Apply modal styling directly
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ModalWindowDimBg, ImVec4(0.0f, 0.0f, 0.0f, 0.7f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 8.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16, 16));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 8));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+
+    // Open popup if flag is set
     if (m_showNameModal)
     {
-        ImGui::OpenPopup("Enter Username");
+        ImGui::OpenPopup(PopupId);
+        m_showNameModal = false;  // Reset flag to prevent reopening every frame
     }
 
-    // 2) Before BeginPopupModal, position it at the center on first appearance:
-    ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(),
-                            ImGuiCond_Appearing,
-                            ImVec2(0.5f, 0.5f)  // pivot in the middle of the popup
-    );
-
-    // 3) The modal itself
-    if (ImGui::BeginPopupModal("Enter Username", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (!ImGui::BeginPopupModal(PopupId,
+                                nullptr,
+                                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse |
+                                    ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar))
     {
-        ImGui::Text("Please type your name:");
-        ImGui::Spacing();
-
-        // input field
-        ImGui::InputText("##username", m_userNameBuffer, sizeof(m_userNameBuffer));
-
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
-
-        // Disable "Finish" when name is empty
-        bool hasName = (m_userNameBuffer[0] != '\0');
-        ImGui::BeginDisabled(!hasName);
-        if (ImGui::Button("Finish", ImVec2(100, 0)))
-        {
-            GetContext().SetCharacterId(m_selectedCharacterId);
-            m_showNameModal = false;
-
-            unsigned int characterIds[] = {
-                m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
-            for (const auto& id : characterIds)
-            {
-                if (m_selectedCharacterId != id)
-                    GetContext().GetUnitManager()->RemoveUnit(id);
-            }
-
-            Character* character =
-                GetContext().GetUnitManager()->GetUnitOfType<Character>(m_selectedCharacterId);
-            character->SetName(m_userNameBuffer);
-
-            m_pendingStateChange =
-                StateChange {StateAction::REPLACE, std::make_unique<WorldState>(GetContext())};
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::EndDisabled();
-
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(100, 0)))
-        {
-            m_showNameModal = false;
-            ImGui::CloseCurrentPopup();
-        }
-
-        ImGui::EndPopup();
+        ImGui::PopStyleVar(5);
+        ImGui::PopStyleColor(3);
+        return;
     }
+
+    const float sectionSpacing = 3.0f;
+
+    // Title header with blue text
+    ImGui::SetWindowFontScale(1.2f);
+    ImGui::TextColored(ImVec4(0.2f, 0.5f, 0.8f, 1.0f), "Enter Character Name");
+    ImGui::SetWindowFontScale(1.0f);
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 0.75f));
+
+    // Instruction text with wrapping
+    ImGui::TextWrapped("Please enter a name for your character:");
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+
+    // Input field styling
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, ImVec4(0.25f, 0.25f, 0.25f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));
+
+    // Make the input field fill the width
+    float availableWidth = ImGui::GetContentRegionAvail().x;
+    ImGui::SetNextItemWidth(availableWidth);
+    ImGui::InputText("##username", m_userNameBuffer, sizeof(m_userNameBuffer));
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
+
+    ImGui::Dummy(ImVec2(0, sectionSpacing * 1.5f));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, sectionSpacing));
+
+    // Check if the field is empty
+    bool hasName = (m_userNameBuffer[0] != '\0');
+
+    // Buttons at the bottom - centered
+    float contentWidth      = ImGui::GetContentRegionAvail().x;
+    float totalButtonsWidth = (ButtonWidth * 2) + ButtonSpacing;
+    float startPos          = (contentWidth - totalButtonsWidth) / 2.0f;
+    ImGui::SetCursorPosX(startPos);
+
+    // Finish button (blue)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+
+    // Change button style based on whether input is provided
+    if (!hasName)
+    {
+        // Disabled style with reduced alpha and grayed-out colors
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.3f, 0.5f, 0.5f));  // Muted blue
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.3f, 0.5f, 0.5f));  // No hover
+                                                                                        // effect
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.3f, 0.5f, 0.5f));   // No active
+                                                                                        // effect
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.2f, 0.3f, 0.5f, 0.5f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 0.5f));  // Dimmed text
+    }
+    else
+    {
+        // Normal enabled style
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.4f, 0.8f, 1.0f));  // Blue
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.5f, 0.9f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.6f, 1.0f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.3f, 0.5f, 0.8f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+    }
+
+    if (ImGui::Button("Finish", ImVec2(ButtonWidth, ButtonHeight)) && hasName)
+    {
+        GetContext().SetCharacterId(m_selectedCharacterId);
+
+        unsigned int characterIds[] = {
+            m_fighterId, m_mageId, m_assassinId, m_necromancerId, m_bersekerId};
+        for (const auto& id : characterIds)
+        {
+            if (m_selectedCharacterId != id)
+                GetContext().GetUnitManager()->RemoveUnit(id);
+        }
+
+        Character* character =
+            GetContext().GetUnitManager()->GetUnitOfType<Character>(m_selectedCharacterId);
+        character->SetName(m_userNameBuffer);
+
+        m_pendingStateChange =
+            StateChange {StateAction::REPLACE, std::make_unique<WorldState>(GetContext())};
+        ImGui::CloseCurrentPopup();
+    }
+
+    // Display tooltip on hover when button is disabled
+    if (!hasName && ImGui::IsItemHovered())
+    {
+        ImGui::SetTooltip("Please enter a character name");
+    }
+
+    ImGui::PopStyleColor(5);
+    ImGui::PopStyleVar(2);
+
+    ImGui::SameLine(0, ButtonSpacing);
+
+    // Cancel button (gray)
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 1.0f));  // Dark Gray
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.35f, 0.35f, 0.35f, 1.0f));
+
+    if (ImGui::Button("Cancel", ImVec2(ButtonWidth, ButtonHeight)))
+    {
+        ImGui::CloseCurrentPopup();
+    }
+
+    ImGui::PopStyleColor(4);
+    ImGui::PopStyleVar(2);
+
+    ImGui::EndPopup();
+
+    // Pop the modal window styles
+    ImGui::PopStyleVar(5);
+    ImGui::PopStyleColor(3);
+}
+
+// Main RenderUI function that calls the separated functions
+void ChooseCharacterState::RenderUI()
+{
+    // Render all UI components
+    RenderCharacterSelectionUI();
+    RenderCharacterInfoWindow();
+    RenderNameInputModal();
 }
 
 void ChooseCharacterState::Exit() {}
