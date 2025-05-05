@@ -144,115 +144,125 @@ Item& Equipment::findSlot(const std::string& slotType)
     }
 }
 
+Item Equipment::findAndFillSlot(const std::string& slotType, Item item)
+{
+    Item& slot    = findSlot(slotType);
+    Item  oldItem = slot;
+    slot          = item;
+    return oldItem;
+}
+
 void Equipment::equipItemFromBackpack(Backpack& backpack, int x, int y, const std::string& slotType)
 {
-    Item  itemToEquip = backpack.getItemAtTile(x, y);
-    Item& slot        = findSlot(slotType);
+    Item itemToEquip;
+    int  quantity;
+
+    itemToEquip = backpack.getItemAtTile(x, y);
+    quantity    = backpack.getQuantityAtTile(x, y);
 
     if (itemToEquip.getType() != slotType)
     {
         throw InvalidEquipmentTypeException("Item type doesn't match required slot type");
     }
-    else
-    {
-        backpack.takeItem(itemToEquip, 1);
-    }
 
-    if (!slot.isNull())
-    {
-        unequipItemToBackpack(backpack, x, y, slotType);
-    }
+    Item& slot = findSlot(slotType);
+
+    if (!slot.isNull() && slot == itemToEquip)
+        return;
+
+    Item oldEquippedItem = slot;
+    backpack.takeItemAtTile(x, y, 1);
     slot = itemToEquip;
+
+    if (!oldEquippedItem.isNull())
+    {
+        try
+        {
+            if (quantity == 1)
+            {
+                backpack.addItemAtTile(x, y, oldEquippedItem, 1);
+            }
+            else
+            {
+                // This might throw BackpackOvercapacityException, which we let propagate up
+                backpack.addItem(oldEquippedItem, 1);
+            }
+        }
+        catch (const std::exception&)
+        {
+            // For other exceptions, try the general add method
+            // Note: BackpackOvercapacityException will propagate up from here
+            backpack.addItem(oldEquippedItem, 1);
+        }
+    }
 }
 
 void Equipment::unequipItemToBackpack(Backpack& backpack, int x, int y, const std::string& slotType)
 {
-    Item itemToUnequip;
+    Item& equipmentSlot = findSlot(slotType);
 
-    // Get the item from the specified slot but don't remove it yet
-    if (slotType == "Weapon")
+    if (equipmentSlot.isNull())
     {
-        itemToUnequip = weapon;
-        if (itemToUnequip.isNull())
-            throw EmptyCellException();
-    }
-    else if (slotType == "HeadArmor")
-    {
-        itemToUnequip = headArmor;
-        if (itemToUnequip.isNull())
-            throw EmptyCellException();
-    }
-    else if (slotType == "BodyArmor")
-    {
-        itemToUnequip = bodyArmor;
-        if (itemToUnequip.isNull())
-            throw EmptyCellException();
-    }
-    else if (slotType == "FootArmor")
-    {
-        itemToUnequip = footArmor;
-        if (itemToUnequip.isNull())
-            throw EmptyCellException();
-    }
-    else if (slotType == "Pendant")
-    {
-        itemToUnequip = pendant;
-        if (itemToUnequip.isNull())
-            throw EmptyCellException();
-    }
-    else
-    {
-        // Unknown slot type
-        throw InvalidEquipmentTypeException("Invalid equipment slot type");
+        throw EmptyCellException();
     }
 
-    // First, let's try to get the item at the target slot (if any)
-    // If the target tile has no item, getItemAtTile will throw EmptyCellException
-    // which will propagate up from this function - that's what we want
-    bool targetIsEmpty = false;
+    Item itemToUnequip = equipmentSlot;
 
-    Item targetItem;
     try
     {
-        targetItem = backpack.getItemAtTile(x, y);
-    }
-    catch (const EmptyCellException&)
-    {
-        targetIsEmpty = true;
-    }
+        bool targetHasItem = false;
+        Item targetItem;
+        int  targetQuantity = 0;
 
-    std::cout << "Target is empty: " << targetIsEmpty << std::endl;
-
-    if (targetIsEmpty)
-    {
-        // Target is empty - simply place the unequipped item there
-        backpack.addItemAtTile(x, y, itemToUnequip, 1);
-
-        // Clear the equipment slot
-        findSlot(slotType) = Item();
-    }
-    else
-    {
-        // Check if items are of the same type
-        if (targetItem.getType() == itemToUnequip.getType())
+        try
         {
-            // Same item type - swap only 1 from target
-            if (backpack.getQuantityAtTile(x, y) == 1)
+            targetItem     = backpack.getItemAtTile(x, y);
+            targetQuantity = backpack.getQuantityAtTile(x, y);
+            targetHasItem  = true;
+        }
+        catch (const EmptyCellException&)
+        {
+            targetHasItem = false;
+        }
+
+        if (!targetHasItem)
+        {
+            backpack.addItemAtTile(x, y, itemToUnequip, 1);
+            equipmentSlot = Item();
+        }
+        else if (targetItem == itemToUnequip)
+        {
+            try
             {
-                backpack.takeItemAtTile(x, y, 1);
                 backpack.addItemAtTile(x, y, itemToUnequip, 1);
+                equipmentSlot = Item();
             }
-            else
+            catch (const std::exception&)
             {
-                backpack.takeItemAtTile(x, y, 1);
                 backpack.addItem(itemToUnequip, 1);
+                equipmentSlot = Item();
             }
-            findSlot(slotType) = targetItem;
+        }
+        else if (targetItem.getType() == slotType)
+        {
+            // Target has a different item of the same equipment type
+            // Swap them: take the target item and equip it
+            Item newEquipItem = backpack.takeItemAtTile(x, y, 1);
+            backpack.addItemAtTile(x, y, itemToUnequip, 1);
+            equipmentSlot = newEquipItem;
         }
         else
         {
+            // Target has an incompatible item - find another place for the unequipped item
             backpack.addItem(itemToUnequip, 1);
-            findSlot(slotType) = Item();
+            equipmentSlot = Item();
         }
+    }
+    catch (const std::exception& e)
+    {
+        // Handle failure to unequip by finding any available slot
+        // Note: BackpackOvercapacityException will propagate up from here
+        backpack.addItem(itemToUnequip, 1);
+        equipmentSlot = Item();
     }
 }

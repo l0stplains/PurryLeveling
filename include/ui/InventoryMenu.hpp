@@ -1,16 +1,14 @@
+#pragma once
+
 #include <SFML/Graphics.hpp>
 
-#include <algorithm>
-#include <cstring>
-#include <iostream>
-#include <memory>
-#include <string>
-#include <vector>
+#include <imgui-SFML.h>
+#include <imgui.h>
 
 #include "core/GameContext.hpp"
 
-#include "imgui-SFML.h"
-#include "imgui.h"
+#include "ui/Color.hpp"
+
 #include "inventory/Backpack.hpp"
 #include "inventory/Equipment.hpp"
 #include "items/Item.hpp"
@@ -30,25 +28,31 @@ class InventoryMenu
     };
 
 public:
-    InventoryMenu(GameContext&);
-
+    InventoryMenu(GameContext& gameContext);
     void Render();
 
 private:
-    GameContext&                          m_gameContext;
-    Backpack&                             m_backpack;
-    Equipment&                            m_equipment;
-    std::unique_ptr<std::pair<Item, int>> m_draggedItem;
-    bool                                  m_isDragging              = false;
-    int                                   m_dragSourceX             = -1;
-    int                                   m_dragSourceY             = -1;
-    bool                                  m_isDraggingFromEquipment = false;
+    GameContext& m_gameContext;
+    Backpack&    m_backpack;
+    Equipment&   m_equipment;
+
+    std::string m_hoveredDescription;
+
+    // Drag & drop support
+    bool                                  m_isDragging;
+    int                                   m_dragSourceX;
+    int                                   m_dragSourceY;
+    bool                                  m_isDraggingFromEquipment;
     std::string                           m_equipmentSlotType;
-    std::string                           m_hoveredDescription;
+    std::unique_ptr<std::pair<Item, int>> m_draggedItem;
 
+    // Error handling
+    bool        m_showErrorPopup;
+    std::string m_errorMessage;
+
+    // Component rendering methods
     void RenderBackpack(float startX, float startY);
-
     void RenderEquipment(float startX, float startY);
-
-    ImVec4 GetItemColor(const std::string& itemname, const std::string& itemtype);
+    void RenderDescriptionBox(float startX, float startY);
+    void RenderErrorPopups();
 };
