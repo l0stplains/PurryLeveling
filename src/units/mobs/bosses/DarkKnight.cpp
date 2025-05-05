@@ -14,8 +14,6 @@ DarkKnight::DarkKnight(const std::string&  name,
       BossMob(name),  // ← must initialize the virtual base
       AnimatedUnit(name, position, navGrid, false, gameContext)
 {
-    // Fighter-specific stat overrides
-
     m_skillProbabability = 0.35f;
 
     m_moveSpeed   = 200.f;  // Maybe slightly slower, heavier armor?
@@ -97,6 +95,26 @@ void DarkKnight::Attack(Unit&                    target,
         if (callback)
             callback();  // Cannot attack, call callback immediately
         return;
+    }
+
+    RNG   rng;
+    float healChance = rng.generateProbability();
+    if (healChance < 0.05)
+    {
+        Heal(GetMaxHealth() * 0.15f);
+        if (callback)
+            callback();
+        return;
+    }
+
+    if (GetHealth() < GetMaxHealth() * 0.2f && !m_isRageActive)
+    {
+        m_isRageActive = true;
+        m_stats.dodgeChance *= 1.5f;
+        m_stats.criticalStrikeChance *= 1.5f;
+        m_stats.criticalStrikeMultiplier *= 1.5f;
+        AddFloatingText("Rage activated", sf::Color::Red);
+        std::cout << GetName() << " activated Rage!" << std::endl;  // Debug
     }
 
     AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);

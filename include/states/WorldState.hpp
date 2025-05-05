@@ -48,7 +48,7 @@ public:
     void Resume() override;
 
 private:
-    sf::Sound m_backsound;
+    sf::Sound      m_backsound;
     DungeonFactory m_dungeonFactory;
     sf::Texture    m_backgroundTexture;  ///< Background texture
     sf::Sprite     m_backgroundSprite;   ///< Background sprite

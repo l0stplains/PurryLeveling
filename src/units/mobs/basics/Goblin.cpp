@@ -4,6 +4,7 @@
 #include <iostream>  // For debug output
 #include <limits>
 
+#include "rng/rng.hpp"
 #include "units/mobs/basics/BasicMob.hpp"
 
 Goblin::Goblin(const std::string&  name,
@@ -93,6 +94,16 @@ void Goblin::Attack(Unit& target, ActionCompletionCallback callback, ActionCompl
     {  // Check self and target state
         if (callback)
             callback();  // Cannot attack, call callback immediately
+        return;
+    }
+
+    RNG   rng;
+    float healChance = rng.generateProbability();
+    if (healChance < 0.05)
+    {
+        Heal(GetMaxHealth() * 0.15f);
+        if (callback)
+            callback();
         return;
     }
 

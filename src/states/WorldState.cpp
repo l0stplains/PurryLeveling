@@ -22,7 +22,7 @@
 // Constructor
 WorldState::WorldState(GameContext& context)
     : State(context),
-        m_backsound(GetContext().GetResourceManager()->GetSoundBuffer("world_backsound")),
+      m_backsound(GetContext().GetResourceManager()->GetSoundBuffer("world_backsound")),
       m_dungeonFactory(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
@@ -53,7 +53,6 @@ void WorldState::Init()
 
     Character* character =
         GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
-    character->SetLevel(30);
     generatePortals();
 
     // Background setup

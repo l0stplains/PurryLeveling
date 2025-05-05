@@ -97,6 +97,16 @@ void Skeleton::Attack(Unit& target, ActionCompletionCallback callback, ActionCom
         return;
     }
 
+    RNG   rng;
+    float healChance = rng.generateProbability();
+    if (healChance < 0.05)
+    {
+        Heal(GetMaxHealth() * 0.15f);
+        if (callback)
+            callback();
+        return;
+    }
+
     AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
 
     sf::Vector2f vectorToTarget = animatedTarget->GetPosition() - m_position;

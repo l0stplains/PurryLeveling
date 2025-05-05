@@ -13,9 +13,8 @@
 #include "ui/BattleUnitInfo.hpp"
 #include "ui/BossHealthBar.hpp"
 #include "ui/Button.hpp"
-#include "ui/QuestInfo.hpp"
-#include "ui/MobInfo.hpp"
 #include "ui/CharacterInfo.hpp"
+#include "ui/MobInfo.hpp"
 #include "ui/QuestInfo.hpp"
 
 #include "dungeon/Dungeon.hpp"

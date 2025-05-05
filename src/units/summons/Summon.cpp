@@ -24,7 +24,7 @@ void Summon::SetLevel(int level)
         return;
     m_level = level;
 
-    SetMaxHealth(10 * level / 4 * GetMaxHealthMultiplier());
+    SetMaxHealth(20 * level / 4 * GetMaxHealthMultiplier());
     SetAttackDamage(10 * level / 4 * GetAttackDamageMultiplier());
     SetHealth(GetMaxHealth());
     SetCurrentMana(GetMaxMana());

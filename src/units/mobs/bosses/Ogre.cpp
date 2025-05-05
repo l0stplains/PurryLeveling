@@ -94,6 +94,26 @@ void Ogre::Attack(Unit& target, ActionCompletionCallback callback, ActionComplet
         return;
     }
 
+    RNG   rng;
+    float healChance = rng.generateProbability();
+    if (healChance < 0.05)
+    {
+        Heal(GetMaxHealth() * 0.15f);
+        if (callback)
+            callback();
+        return;
+    }
+
+    if (GetHealth() < GetMaxHealth() * 0.2f && !m_isRageActive)
+    {
+        m_isRageActive = true;
+        m_stats.dodgeChance *= 1.5f;
+        m_stats.criticalStrikeChance *= 1.5f;
+        m_stats.criticalStrikeMultiplier *= 1.5f;
+        AddFloatingText("Rage activated", sf::Color::Red);
+        std::cout << GetName() << " activated Rage!" << std::endl;  // Debug
+    }
+
     AnimatedUnit* animatedTarget = dynamic_cast<AnimatedUnit*>(&target);
 
     sf::Vector2f vectorToTarget = animatedTarget->GetPosition() - m_position;

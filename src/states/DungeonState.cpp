@@ -9,7 +9,7 @@
 
 DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon)
     : State(context),
-    m_bossBacksound(GetContext().GetResourceManager()->GetSoundBuffer("boss_backsound")),
+      m_bossBacksound(GetContext().GetResourceManager()->GetSoundBuffer("boss_backsound")),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_bossBackgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
       m_backgroundSprite(m_backgroundTexture),
@@ -26,15 +26,15 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_mobNavGrid(
           GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_battleUnitInfo(context),
-      m_questInfo(context, 250.0f, 150.0f),          // Quest info UI with reasonable size
-      m_mobInfo(context, 250.0f, 160.0f),            // Mob info UI with reasonable size
-      m_characterInfo(context, 250.0f, 160.0f),      // Character info UI with reasonable size
+      m_questInfo(context, 250.0f, 150.0f),      // Quest info UI with reasonable size
+      m_mobInfo(context, 250.0f, 160.0f),        // Mob info UI with reasonable size
+      m_characterInfo(context, 250.0f, 160.0f),  // Character info UI with reasonable size
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
       m_chamber(&dungeon.getChamber(0)),
       m_chamberExitPointer(GetContext().GetResourceManager()->GetTexture("pointer_prop"),
-                          {1160.f, 540.f},
-                          {4.f, 4.f}),
+                           {1160.f, 540.f},
+                           {4.f, 4.f}),
       m_bossHealthBar(120.f),
       m_pendingStateChange({StateAction::NONE}),
       m_cheatConsole(*GetContext().GetWindow())
@@ -333,7 +333,8 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
         m_dungeon.getPenalty(expPenalty, goldPenalty);
         Character* character =
             GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
-        expPenalty = std::min(expPenalty, character->GetExp());
+        expPenalty  = std::min(expPenalty, character->GetExp());
+        goldPenalty = std::min(goldPenalty, character->GetGold());
         character->AddExp(-expPenalty);
         character->AddGold(-goldPenalty);
         return StateChange {StateAction::POP};
@@ -509,17 +510,17 @@ void DungeonState::RenderUI()
     }
 
     bool isBossRoom = m_chamber->getIsBossRoom();
-    
+
     // Render boss health bar if in boss room and there are mobs
     if (isBossRoom && m_mobsID.size() != 0)
     {
         Unit* boss = GetContext().GetUnitManager()->GetUnitOfType<Unit>(m_mobsID[0]);
         m_bossHealthBar.render(*boss);
     }
-    
+
     // Render quest info
     m_questInfo.render(m_dungeon);
-    
+
     // Render mob info if there are mobs, not in a boss room, and not in the walk to exit state
     if (!m_mobsID.empty() && !m_walkToExit)
     {
@@ -552,7 +553,8 @@ void DungeonState::RenderUI()
             m_dungeon.getPenalty(expPenalty, goldPenalty);
             Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
                 GetContext().GetCharacterId());
-            expPenalty = std::min(expPenalty, character->GetExp());
+            expPenalty  = std::min(expPenalty, character->GetExp());
+            goldPenalty = std::min(goldPenalty, character->GetGold());
             character->AddExp(-expPenalty);
             character->AddGold(-goldPenalty);
             Necromancer* necromancer = GetContext().GetUnitManager()->GetUnitOfType<Necromancer>(
@@ -585,15 +587,17 @@ void DungeonState::RenderUI()
     }
 }
 
-void DungeonState::Pause() {
-    if(m_chamber->getIsBossRoom())
+void DungeonState::Pause()
+{
+    if (m_chamber->getIsBossRoom())
     {
         m_bossBacksound.stop();
     }
 }
 
-void DungeonState::Resume() {
-    if(m_chamber->getIsBossRoom())
+void DungeonState::Resume()
+{
+    if (m_chamber->getIsBossRoom())
     {
         m_bossBacksound.play();
     }
@@ -601,7 +605,7 @@ void DungeonState::Resume() {
 
 void DungeonState::Exit()
 {
-    if(m_chamber->getIsBossRoom())
+    if (m_chamber->getIsBossRoom())
     {
         m_bossBacksound.stop();
     }
