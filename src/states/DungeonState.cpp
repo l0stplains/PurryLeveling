@@ -7,7 +7,6 @@
 #include "units/summons/Summon.hpp"
 #include "units/summons/Wildfire.hpp"
 
-// Constructor
 DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeon& dungeon)
     : State(context),
       m_backgroundTexture(GetContext().GetResourceManager()->GetTexture("world_background")),
@@ -26,7 +25,8 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
       m_mobNavGrid(
           GetContext().GetWindow()->getSize().x, GetContext().GetWindow()->getSize().y, 51, 51),
       m_battleUnitInfo(context),
-      m_questInfo(context, 250.0f, 150.0f),  // Initialize QuestInfo with reasonable size
+      m_characterInfo(context),
+      m_questInfo(context, 250.0f, 150.0f),
       m_chamberExitArea(GetContext().GetResourceManager()->GetTexture("empty_prop")),
       m_dungeon(dungeon),
       m_chamber(&dungeon.getChamber(0)),
@@ -69,7 +69,6 @@ DungeonState::DungeonState(GameContext& context, DimensionType dimension, Dungeo
     m_useItemButton  = Button(m_buttonTexture, {120.f, 584.f}, {.9f, .9f}),
     m_exitButton     = Button(m_buttonTexture, {120.f, 668.f}, {.9f, .9f}),
 
-    // setup door enter area
         m_chamberExitArea.setOrigin({0, 0});
     m_chamberExitArea.setScale({2.f, 25.f});
     m_chamberExitArea.setPosition({1200.f, 0.f});
@@ -257,7 +256,6 @@ void DungeonState::Init()
         return;
     }
 
-    // setup turn queue
     m_turnQueue.push(m_character->GetId());
     for (auto id : m_mobsID)
     {
@@ -271,7 +269,6 @@ void DungeonState::Init()
 
 State::StateChange DungeonState::ProcessEvent(const sf::Event& event)
 {
-    // Reset pending state change if it was handled
     if (m_pendingStateChange.GetAction() != StateAction::NONE)
     {
         StateChange change   = std::move(m_pendingStateChange);
@@ -337,7 +334,6 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
         return StateChange {StateAction::POP};
     }
 
-    // checks if mob clears
     if (!m_walkToExit && m_mobsID.size() == 0 && m_turnQueue.front() == m_character->GetId() &&
         !m_isTransitioning)
     {
@@ -362,6 +358,7 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
                 try
                 {
                     GetContext().GetBackpack()->addItem(item, 1);
+                    std::cout << "Loot added to backpack: " << item.getName() << std::endl;
                 }
                 catch (const std::exception& e)
                 {
@@ -381,6 +378,7 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
 
             // If quest is completed, add quest rewards to player
             if (m_dungeon.getQuest().isValid() && m_dungeon.isQuestCompleted())
+            if (m_dungeon.getQuest().isValid() && m_dungeon.isQuestCompleted())
             {
                 Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(
                     GetContext().GetCharacterId());
@@ -394,6 +392,7 @@ State::StateChange DungeonState::Update(const sf::Time& dt)
                     try
                     {
                         GetContext().GetBackpack()->addItem(questItem, 1);
+                        cout << "Quest item added to backpack: " << questItem.getName() << endl;
                     }
                     catch (const std::exception& e)
                     {
@@ -495,6 +494,12 @@ void DungeonState::RenderUI()
 {
     m_cheatConsole.render();
 
+    // Render character info - ADDED THIS SECTION
+    Character* character = GetContext().GetUnitManager()->GetUnitOfType<Character>(GetContext().GetCharacterId());
+    if (character && m_character) {
+        m_characterInfo.render(*character, *m_character);
+    }
+    
     // m_battleUnitInfo.render(*m_character);
     if (m_chamber->getIsBossRoom() && m_mobsID.size() != 0)
     {

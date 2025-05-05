@@ -15,6 +15,7 @@
 #include "states/DungeonState.hpp"
 #include "states/InventoryMenuState.hpp"
 #include "states/ShopState.hpp"
+#include "states/SkillTreeState.hpp"
 #include "units/AnimatedUnit.hpp"          // Include AnimatedUnit header
 #include "units/characters/Character.hpp"  // Include Character header
 
@@ -68,6 +69,14 @@ void WorldState::Init()
     m_skillTreeButton.setText("Skill Tree", m_font, 24);
     m_skillTreeButton.setHoverSound(m_buttonHoverSound);
     m_skillTreeButton.setClickSound(m_buttonClickSound);
+
+    m_skillTreeButton.setOnClickCallback([this]() {
+        // Deactivate the player's current unit if needed
+        GetContext().GetUnitManager()->GetUnit(GetContext().GetCharacterId())->SetActive(false);
+        // Push the SkillTreeState onto the state stack
+        m_pendingStateChange =
+            StateChange {StateAction::PUSH, std::make_unique<SkillTreeState>(GetContext())};
+    });
 
     // Set button callbacks
     m_exitButton.setOnClickCallback([this]() { m_showExitPopup = true; });
