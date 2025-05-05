@@ -21,6 +21,7 @@ public:
 
     const std::unique_ptr<Skill>& getSkill() const { return this->skill; }
     std::vector<Skill*>           getActiveSkill(const Skill* skill = nullptr) const;
+    std::vector<std::string>      getSkillName(const Skill* skill = nullptr) const;
     void                          setActive(std::string skillName, Skill* skill = nullptr);
 };
 
