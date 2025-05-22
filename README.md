@@ -1,7 +1,7 @@
 # CTF! - Purry Leveling
- 
+
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/0efdf650-7da5-47b2-a6f9-b819fbf5dea5" alt="Logo" />
+  <img src="https://github.com/user-attachments/assets/1aeca1e5-46f3-4951-9f31-0c2a916a3f2e" alt="Logo" />
 </div>
 
 <!-- CONTRIBUTOR -->
@@ -70,7 +70,7 @@
 ### Game Overview
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/c4bec585-0e9f-4c10-857e-2b6c802cf86b" alt="Game Screenshots" width="600"/>
+  <img src="https://github.com/user-attachments/assets/8aac2998-3015-45c1-9e6b-79abe14ffd55" alt="Game Screenshots" width="600"/>
 </div>
 
 <br />
